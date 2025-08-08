@@ -102,7 +102,7 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
                 </div>
               )}
             </div>
-            <p className="text-gray-500 text-xs">@{post.author?.username} ��� {formatDateTime(post.createdAt)}</p>
+            <p className="text-gray-500 text-xs">@{post.author?.username} • {formatDateTime(post.createdAt)}</p>
           </div>
         </div>
         <button className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full">
@@ -237,12 +237,15 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
                     <MessageCircle size={16} />
                     <span>Enviar por DM</span>
                   </button>
-                  <button 
-                    onClick={handleRepost}
+                  <button
+                    onClick={() => {
+                      setShowShareAsStory(true)
+                      setShowShareMenu(false)
+                    }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
                     <Repeat2 size={16} />
-                    <span>Repostar</span>
+                    <span>Compartilhar como Story</span>
                   </button>
                 </div>
               )}
