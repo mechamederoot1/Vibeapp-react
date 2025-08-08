@@ -94,7 +94,7 @@ const SplashScreen = ({ onComplete, duration = 5000 }) => {
         </svg>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes loading-bar {
           from { width: 0%; }
           to { width: 100%; }
