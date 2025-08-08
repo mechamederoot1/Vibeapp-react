@@ -286,10 +286,14 @@ async def migrate_database():
         return {
             "message": "Migração concluída",
             "applied_migrations": applied_migrations,
-            "total_applied": len(applied_migrations)
+            "total_applied": len(applied_migrations),
+            "success": True
         }
 
     except Exception as e:
+        import traceback
         return {
-            "error": f"Erro durante migração: {str(e)}"
+            "error": f"Erro durante migração: {str(e)}",
+            "traceback": traceback.format_exc(),
+            "success": False
         }
