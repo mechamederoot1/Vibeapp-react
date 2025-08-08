@@ -599,6 +599,15 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         onClose={() => setShowStoryCreator(false)}
         onStoryCreate={handleStoryCreate}
       />
+
+      {/* Story Viewer */}
+      <StoryViewer
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={currentUserStories}
+        initialStoryIndex={initialStoryIndex}
+        currentUser={user}
+      />
     </>
   )
 }
