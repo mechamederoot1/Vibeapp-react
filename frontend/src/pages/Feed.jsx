@@ -362,6 +362,7 @@ const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
 }
 
 const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
+  const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
