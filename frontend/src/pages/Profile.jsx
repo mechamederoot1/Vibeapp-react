@@ -362,23 +362,11 @@ const Profile = () => {
             
             {friendsExpanded && (
               <div className="px-3 pb-3">
-                {/* Avatares dos amigos lado a lado */}
-                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                  {recentFriends.map((friend) => (
-                    <AvatarWithStory 
-                      key={friend.id} 
-                      user={friend} 
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
-                  ))}
+                <div className="text-center py-4">
+                  <Users size={24} className="text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">Sistema de amizades em desenvolvimento</p>
+                  <p className="text-gray-400 text-xs">Em breve você poderá conectar-se com outros usuários!</p>
                 </div>
-                <button 
-                  onClick={() => setShowFriends(true)}
-                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                >
-                  Ver todos os amigos
-                </button>
               </div>
             )}
           </div>
