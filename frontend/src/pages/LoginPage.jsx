@@ -41,10 +41,9 @@ const LoginPage = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-2xl p-4 mx-auto mb-4 w-20 h-20 flex items-center justify-center">
-            <VibeLogoSound size="lg" className="text-white" />
+          <div className="mb-6">
+            <VibeLogoSimple size="xl" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent mb-2">Vibe</h1>
           <p className="text-gray-600">Entre na sua conta</p>
         </div>
 
