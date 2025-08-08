@@ -139,7 +139,7 @@ const StoryPhotoEditor = ({
   }
 
   const handleMouseMove = (e) => {
-    if (!isDrawing || activeTools === 'move' || activeTools === 'text') return
+    if (!isDrawing || activeTool === 'move' || activeTool === 'text') return
 
     const coords = getCanvasCoordinates(e)
     setPaths(prev => {
