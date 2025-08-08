@@ -31,6 +31,11 @@ const Profile = () => {
   })
   const [uploadError, setUploadError] = useState(null)
 
+  // Estados para modais avançados
+  const [showAvatarEditor, setShowAvatarEditor] = useState(false)
+  const [showCoverEditor, setShowCoverEditor] = useState(false)
+  const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     friendsCount: 0,
