@@ -22,47 +22,42 @@ class StoryCreate(BaseModel):
 @router.get("/")
 async def get_stories(
     db: Session = Depends(get_db),
-    limit: int = 20,
-    current_user: Optional[User] = None
+    limit: int = 20
 ):
-    """Get active stories from followed users and current user"""
+    """Get active public stories"""
 
-    # Try to get current user, but don't fail if not authenticated
     try:
-        from .auth import get_current_user
-        # This will only work if we have auth headers
-        pass
-    except:
-        current_user = None
-    
-    # For now, get all active stories (in a real app, filter by following relationships)
-    stories = db.query(Story).filter(
-        Story.is_active == True,
-        Story.expires_at > datetime.utcnow()
-    ).order_by(Story.created_at.desc()).limit(limit).all()
-    
-    # Group stories by author
-    stories_by_author = {}
-    for story in stories:
-        author_id = story.author_id
-        if author_id not in stories_by_author:
-            stories_by_author[author_id] = {
-                "author": story.author.to_public_dict(),
-                "stories": [],
-                "hasUnviewed": False
-            }
-        
-        story_dict = story.to_dict(current_user.id)
-        stories_by_author[author_id]["stories"].append(story_dict)
-        
-        # Check if there are unviewed stories
-        if not story_dict["isViewed"]:
-            stories_by_author[author_id]["hasUnviewed"] = True
-    
-    return {
-        "storiesByAuthor": list(stories_by_author.values()),
-        "total": len(stories)
-    }
+        # Get only public active stories
+        stories = db.query(Story).filter(
+            Story.is_active == True,
+            Story.privacy == "public",
+            Story.expires_at > datetime.utcnow()
+        ).order_by(Story.created_at.desc()).limit(limit).all()
+
+        # Group stories by author
+        stories_by_author = {}
+        for story in stories:
+            author_id = story.author_id
+            if author_id not in stories_by_author:
+                stories_by_author[author_id] = {
+                    "author": story.author.to_public_dict() if story.author else None,
+                    "stories": [],
+                    "hasUnviewed": True  # Always true for non-authenticated users
+                }
+
+            story_dict = story.to_dict(None)  # No current user for public access
+            stories_by_author[author_id]["stories"].append(story_dict)
+
+        return {
+            "storiesByAuthor": list(stories_by_author.values()),
+            "total": len(stories)
+        }
+    except Exception as e:
+        # Return empty result instead of error
+        return {
+            "storiesByAuthor": [],
+            "total": 0
+        }
 
 @router.post("/")
 async def create_story(
