@@ -52,6 +52,7 @@ class Post(Base):
             "videoUrl": self.video_url,
             "type": self.post_type,
             "backgroundColor": self.background_color,
+            "profileUpdateType": self.profile_update_type,
             "likesCount": self.likes_count,
             "commentsCount": self.comments_count,
             "sharesCount": self.shares_count,
