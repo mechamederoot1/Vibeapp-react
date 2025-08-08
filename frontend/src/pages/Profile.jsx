@@ -24,16 +24,21 @@ const Profile = () => {
     profileVisibility: 'public'
   })
 
+  // Use real user data from auth context, fallback to defaults
   const profileData = {
-    username: 'maria.silva',
-    name: 'Maria Silva',
-    bio: 'Fotógrafa & Designer ✨\n📍 São Paulo, Brasil\n🎨 Criando memórias através das lentes\n📧 contato@mariasilva.com',
-    isVerified: true,
-    followers: '2.847',
-    following: '892',
-    posts: '156',
-    profileViews: '127',
-    friends: '42'
+    username: user?.username || user?.email?.split('@')[0] || 'usuario',
+    name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
+    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
+    isVerified: user?.isVerified || false,
+    followers: '0', // These would come from API calls
+    following: '0',
+    posts: '0',
+    profileViews: '0',
+    friends: '0',
+    avatar: user?.avatar,
+    coverPhoto: user?.coverPhoto,
+    location: user?.location,
+    website: user?.website
   }
 
   const recentVisitors = [
