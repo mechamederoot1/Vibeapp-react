@@ -1,10 +1,13 @@
 import axios from 'axios'
 
 // Configuração base da API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  // Se estamos em desenvolvimento e o proxy está configurado, use caminho relativo
+  import.meta.env.DEV ? '/api' : 'http://localhost:8000/api'
+)
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
