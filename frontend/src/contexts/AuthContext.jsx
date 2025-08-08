@@ -81,13 +81,14 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     try {
-      const response = await api.put('/users/profile', profileData)
+      const { usersAPI } = await import('../services/api')
+      const response = await usersAPI.updateProfile(profileData)
       setUser(response.data)
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Erro ao atualizar perfil' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Erro ao atualizar perfil'
       }
     }
   }
