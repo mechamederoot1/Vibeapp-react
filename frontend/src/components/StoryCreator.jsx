@@ -679,6 +679,24 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
           </div>
         )}
       </div>
+
+      {/* Photo Editor */}
+      <StoryPhotoEditor
+        imageUrl={mediaPreview}
+        isOpen={showPhotoEditor}
+        onClose={() => {
+          setShowPhotoEditor(false)
+          setCurrentStep('select')
+          setMediaFile(null)
+          setMediaPreview(null)
+        }}
+        onPublish={() => {
+          setShowPhotoEditor(false)
+          setCurrentStep('privacy')
+        }}
+        textElements={textElements}
+        onUpdateTextElements={setTextElements}
+      />
     </div>
   )
 }
