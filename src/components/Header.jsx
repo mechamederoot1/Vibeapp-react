@@ -1,17 +1,24 @@
 import React from 'react'
-import { Search, MessageCircle, Heart } from 'lucide-react'
+import { Search, MessageCircle, Heart, Camera } from 'lucide-react'
 
 const Header = () => {
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
+    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <h1 className="text-2xl font-bold text-vibe-blue">Vibe</h1>
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">V</span>
+            </div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent">
+              Vibe
+            </h1>
+          </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <Search size={24} className="text-gray-600" />
+            <Camera size={24} className="text-gray-600" />
           </button>
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
             <Heart size={24} className="text-gray-600" />
