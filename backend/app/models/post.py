@@ -50,6 +50,7 @@ class Post(Base):
             "imageUrl": self.image_url,
             "videoUrl": self.video_url,
             "type": self.post_type,
+            "backgroundColor": self.background_color,
             "likesCount": self.likes_count,
             "commentsCount": self.comments_count,
             "sharesCount": self.shares_count,
