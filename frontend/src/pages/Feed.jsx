@@ -383,6 +383,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [page, setPage] = useState(1)
   const [showStoryCreator, setShowStoryCreator] = useState(false)
 
+  // Story viewer states
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [currentUserStories, setCurrentUserStories] = useState([])
+  const [stories, setStories] = useState([])
+  const [initialStoryIndex, setInitialStoryIndex] = useState(0)
+
   const loadFeed = async () => {
     try {
       setLoading(true)
