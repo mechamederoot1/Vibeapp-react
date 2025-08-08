@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import VibeLogo from '../components/VibeLogo'
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1)
@@ -344,7 +345,7 @@ const Register = () => {
                 <section>
                   <h3 className="font-semibold text-lg mb-2">3. Conteúdo do Usuário</h3>
                   <p>
-                    Você é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
+                    Você �� responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
                   </p>
                 </section>
 
