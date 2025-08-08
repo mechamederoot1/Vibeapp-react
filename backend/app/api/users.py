@@ -1,236 +1,243 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, or_
-from typing import List
-
-from app.database.database import get_db
-from app.models.user import User
-from app.models.friendship import Friendship
-from app.models.profile_view import ProfileView
-from app.schemas.user import UserResponse, UserProfile, UserUpdate
-from app.api.auth import get_current_user
+from typing import Optional
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from ..database.database import get_db
+from ..models.user import User
+from ..models.friendship import Friendship
+from ..models.profile_view import ProfileView
+from .auth import get_current_user
 
 router = APIRouter()
 
-@router.get("/me/profile", response_model=UserProfile)
-async def get_my_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Contar posts
-    posts_count = db.query(func.count()).select_from(current_user.posts).scalar()
-    
-    # Contar seguidores (pessoas que seguem o usuário atual)
-    followers_count = db.query(func.count(Friendship.id)).filter(
-        and_(
-            Friendship.friend_id == current_user.id,
-            Friendship.status == "accepted"
-        )
-    ).scalar()
-    
-    # Contar seguindo (pessoas que o usuário atual segue)
-    following_count = db.query(func.count(Friendship.id)).filter(
-        and_(
-            Friendship.user_id == current_user.id,
-            Friendship.status == "accepted"
-        )
-    ).scalar()
-    
-    # Contar amigos (seguindo mutuamente)
-    friends_count = db.query(func.count(Friendship.id)).filter(
-        and_(
-            Friendship.user_id == current_user.id,
-            Friendship.status == "accepted",
-            # Verificar se existe amizade mútua
-            db.query(Friendship).filter(
-                and_(
-                    Friendship.user_id == current_user.id,
-                    Friendship.friend_id == Friendship.friend_id,
-                    Friendship.status == "accepted"
-                )
-            ).exists()
-        )
-    ).scalar()
-    
-    profile_data = {
-        **current_user.__dict__,
-        "posts_count": posts_count,
-        "followers_count": followers_count, 
-        "following_count": following_count,
-        "friends_count": friends_count
-    }
-    
-    return UserProfile(**profile_data)
+class UserUpdate(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    bio: Optional[str] = None
+    avatar: Optional[str] = None
+    coverPhoto: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
+    birthDate: Optional[str] = None
+    gender: Optional[str] = None
 
-@router.put("/me", response_model=UserResponse)
-async def update_my_profile(
-    user_update: UserUpdate,
+@router.get("/profile")
+async def get_user_profile(current_user: User = Depends(get_current_user)):
+    """Get current user's profile"""
+    return current_user.to_dict()
+
+@router.put("/profile")
+async def update_user_profile(
+    user_data: UserUpdate, 
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    # Atualizar campos fornecidos
-    for field, value in user_update.dict(exclude_unset=True).items():
-        setattr(current_user, field, value)
+    """Update current user's profile"""
     
+    # Check if username is taken (if being updated)
+    if user_data.username and user_data.username != current_user.username:
+        existing_user = db.query(User).filter(
+            User.username == user_data.username,
+            User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+    
+    # Check if email is taken (if being updated)
+    if user_data.email and user_data.email != current_user.email:
+        existing_user = db.query(User).filter(
+            User.email == user_data.email,
+            User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+    
+    # Update fields
+    update_data = user_data.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        if field == "firstName":
+            current_user.first_name = value
+        elif field == "lastName":
+            current_user.last_name = value
+        elif field == "username":
+            current_user.username = value
+        elif field == "email":
+            current_user.email = value
+        elif field == "bio":
+            current_user.bio = value
+        elif field == "avatar":
+            current_user.avatar = value
+        elif field == "coverPhoto":
+            current_user.cover_photo = value
+        elif field == "location":
+            current_user.location = value
+        elif field == "website":
+            current_user.website = value
+        elif field == "phone":
+            current_user.phone = value
+        elif field == "birthDate" and value:
+            current_user.birth_date = datetime.strptime(value, "%Y-%m-%d").date()
+        elif field == "gender":
+            current_user.gender = value
+    
+    current_user.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(current_user)
-    return current_user
+    
+    return current_user.to_dict()
 
-@router.get("/{user_id}", response_model=UserProfile)
-async def get_user_profile(
+@router.get("/{user_id}")
+async def get_user_by_id(
     user_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """Get user profile by ID"""
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
     
-    # Registrar visualização do perfil
+    # Record profile view if it's not the current user
     if user_id != current_user.id:
+        # Check if view already exists today
+        today = datetime.utcnow().date()
         existing_view = db.query(ProfileView).filter(
-            and_(
-                ProfileView.viewer_id == current_user.id,
-                ProfileView.profile_owner_id == user_id,
-                func.date(ProfileView.created_at) == func.date(func.now())
-            )
+            ProfileView.viewer_id == current_user.id,
+            ProfileView.profile_owner_id == user_id,
+            ProfileView.viewed_at >= today
         ).first()
         
         if not existing_view:
+            # Create new profile view
             profile_view = ProfileView(
                 viewer_id=current_user.id,
-                profile_owner_id=user_id,
-                source="profile"
+                profile_owner_id=user_id
             )
             db.add(profile_view)
             db.commit()
     
-    # Contar estatísticas do usuário
-    posts_count = len(user.posts)
-    followers_count = db.query(func.count(Friendship.id)).filter(
-        and_(Friendship.friend_id == user_id, Friendship.status == "accepted")
-    ).scalar()
-    following_count = db.query(func.count(Friendship.id)).filter(
-        and_(Friendship.user_id == user_id, Friendship.status == "accepted")
-    ).scalar()
-    
-    # Calcular amigos (seguindo mutuamente)
-    friends_count = 0  # Implementar lógica de amigos mútuos
-    
-    profile_data = {
-        **user.__dict__,
-        "posts_count": posts_count,
-        "followers_count": followers_count,
-        "following_count": following_count,
-        "friends_count": friends_count
-    }
-    
-    return UserProfile(**profile_data)
+    return user.to_public_dict()
 
-@router.get("/{user_id}/visitors", response_model=List[dict])
+@router.get("/{user_id}/stats")
+async def get_user_stats(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user statistics"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Count friends (accepted friendships)
+    friends_count = db.query(Friendship).filter(
+        ((Friendship.user_id == user_id) | (Friendship.friend_id == user_id)) &
+        (Friendship.status == "accepted")
+    ).count()
+    
+    # Count followers (people who added this user as friend)
+    followers_count = db.query(Friendship).filter(
+        Friendship.friend_id == user_id,
+        Friendship.status == "accepted"
+    ).count()
+    
+    # Count following (people this user added as friend)
+    following_count = db.query(Friendship).filter(
+        Friendship.user_id == user_id,
+        Friendship.status == "accepted"
+    ).count()
+    
+    # Count posts
+    from ..models.post import Post
+    posts_count = db.query(Post).filter(
+        Post.author_id == user_id,
+        Post.is_active == True
+    ).count()
+    
+    # Count profile views (last 30 days)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    profile_views_count = db.query(ProfileView).filter(
+        ProfileView.profile_owner_id == user_id,
+        ProfileView.viewed_at >= thirty_days_ago
+    ).count()
+    
+    return {
+        "userId": user_id,
+        "friendsCount": friends_count,
+        "followersCount": followers_count,
+        "followingCount": following_count,
+        "postsCount": posts_count,
+        "profileViewsCount": profile_views_count
+    }
+
+@router.get("/{user_id}/visitors")
 async def get_profile_visitors(
     user_id: int,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    limit: int = 10
 ):
-    # Verificar se é o próprio usuário ou se tem permissão
+    """Get recent profile visitors"""
+    
+    # Only allow users to see their own visitors
     if user_id != current_user.id:
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user or not user.show_profile_visitors:
-            raise HTTPException(status_code=403, detail="Acesso negado")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
     
-    # Buscar visitantes recentes
-    visitors = db.query(ProfileView, User).join(
-        User, ProfileView.viewer_id == User.id
-    ).filter(
+    # Get recent visitors
+    visitors = db.query(ProfileView).filter(
         ProfileView.profile_owner_id == user_id
-    ).order_by(ProfileView.created_at.desc()).limit(20).all()
+    ).order_by(ProfileView.viewed_at.desc()).limit(limit).all()
     
-    result = []
-    for view, visitor in visitors:
-        result.append({
-            "id": visitor.id,
-            "username": visitor.username,
-            "full_name": visitor.full_name,
-            "avatar_url": visitor.avatar_url,
-            "visit_time": view.created_at,
-            "location": visitor.location
-        })
+    visitor_data = []
+    for view in visitors:
+        visitor = db.query(User).filter(User.id == view.viewer_id).first()
+        if visitor:
+            visitor_data.append({
+                "user": visitor.to_public_dict(),
+                "viewedAt": view.viewed_at.isoformat()
+            })
     
-    return result
+    return visitor_data
 
-@router.get("/{user_id}/friends", response_model=List[UserResponse])
-async def get_user_friends(
-    user_id: int,
+@router.get("/search")
+async def search_users(
+    q: str,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    limit: int = 20
 ):
-    # Buscar amigos (seguindo mutuamente)
-    friends_query = db.query(User).join(
-        Friendship, 
-        or_(
-            and_(Friendship.user_id == user_id, Friendship.friend_id == User.id),
-            and_(Friendship.friend_id == user_id, Friendship.user_id == User.id)
+    """Search users by name or username"""
+    
+    if len(q) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Search query must be at least 2 characters"
         )
-    ).filter(
-        Friendship.status == "accepted",
-        User.id != user_id
-    )
     
-    friends = friends_query.all()
-    return friends
-
-@router.post("/{user_id}/follow")
-async def follow_user(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    if user_id == current_user.id:
-        raise HTTPException(status_code=400, detail="Você não pode seguir a si mesmo")
+    # Search by first name, last name, or username
+    users = db.query(User).filter(
+        (User.first_name.ilike(f"%{q}%")) |
+        (User.last_name.ilike(f"%{q}%")) |
+        (User.username.ilike(f"%{q}%"))
+    ).filter(User.is_active == True).limit(limit).all()
     
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    
-    # Verificar se já segue
-    existing_friendship = db.query(Friendship).filter(
-        and_(
-            Friendship.user_id == current_user.id,
-            Friendship.friend_id == user_id
-        )
-    ).first()
-    
-    if existing_friendship:
-        if existing_friendship.status == "accepted":
-            raise HTTPException(status_code=400, detail="Você já segue este usuário")
-        else:
-            existing_friendship.status = "accepted"
-    else:
-        friendship = Friendship(
-            user_id=current_user.id,
-            friend_id=user_id,
-            initiated_by=current_user.id,
-            status="accepted"
-        )
-        db.add(friendship)
-    
-    db.commit()
-    return {"message": "Usuário seguido com sucesso"}
-
-@router.delete("/{user_id}/follow")
-async def unfollow_user(
-    user_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    friendship = db.query(Friendship).filter(
-        and_(
-            Friendship.user_id == current_user.id,
-            Friendship.friend_id == user_id
-        )
-    ).first()
-    
-    if not friendship:
-        raise HTTPException(status_code=404, detail="Você não segue este usuário")
-    
-    db.delete(friendship)
-    db.commit()
-    return {"message": "Usuário deixou de ser seguido"}
+    return [user.to_public_dict() for user in users]
