@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import CreateTestUsers from '../components/CreateTestUsers'
-import StoryCreator from '../components/StoryCreator'
+import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import DatabaseMigration from '../components/DatabaseMigration'
 import ApiTester from '../components/ApiTester'
 
