@@ -125,7 +125,6 @@ async def upload_avatar(
 
 @router.post("/cover")
 async def upload_cover_photo(
-    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
