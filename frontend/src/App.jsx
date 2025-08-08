@@ -63,9 +63,11 @@ const PublicRoute = ({ children }) => {
 
 const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [showSplash, setShowSplash] = useState(true)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
+  const handleSplashComplete = () => setShowSplash(false)
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
