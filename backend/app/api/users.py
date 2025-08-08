@@ -117,7 +117,7 @@ async def get_user_by_id(
         existing_view = db.query(ProfileView).filter(
             ProfileView.viewer_id == current_user.id,
             ProfileView.profile_owner_id == user_id,
-            ProfileView.viewed_at >= today
+            ProfileView.created_at >= today
         ).first()
         
         if not existing_view:
