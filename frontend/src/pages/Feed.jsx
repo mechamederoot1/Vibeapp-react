@@ -282,20 +282,56 @@ const Story = ({ user, isOwn = false }) => (
   </div>
 )
 
-const Stories = () => {
+const Stories = ({ onOpenStoryCreator }) => {
   const { user } = useAuth()
-  
-  // For now, just show user's own story - in a real app, you'd fetch stories from API
-  const stories = [
-    { user: null, isOwn: true }
-  ]
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        const response = await storiesAPI.getStories()
+        setStories(response.data.storiesByAuthor || [])
+      } catch (error) {
+        console.error('Error loading stories:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStories()
+  }, [])
 
   return (
     <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
       <div className="p-4 w-full max-w-full overflow-hidden">
         <div className="flex space-x-3 stories-scroll pb-1 w-max max-w-none" style={{overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-          {stories.map((story, index) => (
-            <Story key={index} {...story} />
+          {/* Create story button */}
+          <div className="flex flex-col items-center space-y-1 flex-shrink-0">
+            <button
+              onClick={onOpenStoryCreator}
+              className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all"
+            >
+              <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
+                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">+</span>
+                </div>
+              </div>
+            </button>
+            <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+              Criar story
+            </span>
+          </div>
+
+          {/* User stories */}
+          {stories.map((storyGroup, index) => (
+            <Story
+              key={index}
+              user={storyGroup.author}
+              hasStory={true}
+              hasUnviewed={storyGroup.hasUnviewed}
+              storiesCount={storyGroup.stories.length}
+            />
           ))}
         </div>
       </div>
