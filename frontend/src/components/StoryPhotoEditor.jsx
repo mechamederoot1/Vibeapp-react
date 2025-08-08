@@ -304,7 +304,7 @@ const StoryPhotoEditor = ({
         </div>
 
         {/* Tool-specific controls */}
-        {activeTools === 'draw' && (
+        {activeTool === 'draw' && (
           <div className="flex items-center justify-center space-x-4">
             {/* Color palette */}
             <div className="flex space-x-2">
