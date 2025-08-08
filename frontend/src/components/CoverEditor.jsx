@@ -178,7 +178,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 bg-white">
           <h2 className="text-lg font-semibold">Editar foto de capa</h2>
           <button
             onClick={handleClose}
