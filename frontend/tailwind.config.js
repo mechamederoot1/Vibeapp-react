@@ -36,6 +36,13 @@ export default {
       },
       minHeight: {
         screen: ['100vh', '100dvh'],
+      },
+      maxWidth: {
+        'screen': '100vw',
+        'full': '100%',
+      },
+      width: {
+        'screen': '100vw',
       }
     },
   },
