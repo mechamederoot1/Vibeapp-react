@@ -62,7 +62,7 @@ const Header = ({ onOpenPostModal }) => {
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-vibe-blue flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
                   <span className="text-white text-sm font-bold">
                     {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
