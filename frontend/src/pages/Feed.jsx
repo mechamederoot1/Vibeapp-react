@@ -320,27 +320,8 @@ const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0, 
   </div>
 )
 
-const Stories = ({ onOpenStoryCreator }) => {
+const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
   const { user } = useAuth()
-  const [stories, setStories] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadStories = async () => {
-      try {
-        const response = await storiesAPI.getStories()
-        setStories(response.data.storiesByAuthor || [])
-      } catch (error) {
-        console.error('Error loading stories:', error)
-        // Falhar silenciosamente e continuar sem stories
-        setStories([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadStories()
-  }, [])
 
   return (
     <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
