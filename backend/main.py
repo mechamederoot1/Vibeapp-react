@@ -28,10 +28,13 @@ from app.models.notification import Notification
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create database tables
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created")
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"❌ Error creating database tables: {e}")
     yield
-    print("Application shutdown")
+    print("👋 Application shutdown")
 
 # Create FastAPI app
 app = FastAPI(
