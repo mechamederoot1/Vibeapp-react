@@ -278,18 +278,12 @@ const Profile = () => {
         {/* Seção de Visitantes do Perfil */}
         <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
-            <button 
-              onClick={() => setVisitorsExpanded(!visitorsExpanded)}
-              className="w-full p-3 flex items-center justify-between hover:bg-gray-100 rounded-lg transition-colors"
-            >
+            <div className="w-full p-3 flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <Eye size={20} className="text-vibe-blue" />
                 <span className="font-medium">Quem visualizou meu perfil</span>
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    toggleVisitorsPrivacy()
-                  }}
+                  onClick={toggleVisitorsPrivacy}
                   className="p-1 hover:bg-white rounded-full"
                   title={privacySettings.showVisitors ? "Ocultar visitantes" : "Mostrar visitantes"}
                 >
@@ -300,11 +294,14 @@ const Profile = () => {
                   )}
                 </button>
               </div>
-              <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setVisitorsExpanded(!visitorsExpanded)}
+                className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-2 transition-colors"
+              >
                 <span className="text-vibe-blue font-semibold">{profileData.profileViews} pessoas</span>
                 {visitorsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </button>
+              </button>
+            </div>
             
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
