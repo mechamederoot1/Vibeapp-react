@@ -14,12 +14,14 @@ import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarViewer from '../components/AvatarViewer'
 import PostViewModal from '../components/PostViewModal'
+import ConnectionsModal from '../components/ConnectionsModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
+  const [showConnections, setShowConnections] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
@@ -236,7 +238,7 @@ const Profile = () => {
     }
   }
 
-  // Funç��es para controlar os novos modais
+  // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     setShowAvatarViewer(true)
   }
@@ -410,14 +412,14 @@ const Profile = () => {
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
           <button
-            onClick={() => setShowFriends(true)}
+            onClick={() => setShowConnections(true)}
             className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
           <button
-            onClick={() => setShowFriends(true)}
+            onClick={() => setShowConnections(true)}
             className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
@@ -467,7 +469,7 @@ const Profile = () => {
             Editar Perfil
           </button>
           <button
-            onClick={() => setShowFriends(true)}
+            onClick={() => setShowConnections(true)}
             className="btn-secondary px-4 flex items-center space-x-2"
           >
             <Users size={20} />
@@ -858,6 +860,13 @@ const Profile = () => {
       {showFriends && (
         <FriendsList
           onClose={() => setShowFriends(false)}
+        />
+      )}
+
+      {showConnections && (
+        <ConnectionsModal
+          isOpen={showConnections}
+          onClose={() => setShowConnections(false)}
         />
       )}
 
