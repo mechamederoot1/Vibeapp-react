@@ -349,7 +349,7 @@ const Profile = () => {
               setShowCoverEditor(true)
             }}
             disabled={uploading.cover}
-            title={uploading.cover ? "Fazendo upload..." : "Editar foto de capa"}
+            title={uploading.cover ? "Fazendo upload..." : "Alterar foto de capa"}
           >
             <Camera size={20} />
           </button>
