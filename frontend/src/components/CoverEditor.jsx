@@ -207,7 +207,10 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                 style={{ touchAction: 'none' }}
               />
               {!image && (
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-50 hover:bg-opacity-50 rounded-lg transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <div className="text-center text-gray-500">
                     <Upload size={48} className="mx-auto mb-2" />
                     <p className="text-sm">Selecione uma foto</p>
