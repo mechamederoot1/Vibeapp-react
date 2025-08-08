@@ -455,6 +455,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   if (error) {
     // Verificar se é erro de coluna não encontrada (precisa migração)
     const needsMigration = error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')
+    // Verificar se é erro de rede/conectividade
+    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS')
 
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
@@ -471,6 +473,18 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                   </p>
                 </div>
                 <DatabaseMigration />
+              </>
+            ) : isNetworkError ? (
+              <>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Problema de Conectividade
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Não foi possível conectar com o servidor backend.
+                  </p>
+                </div>
+                <ApiTester />
               </>
             ) : (
               <div className="text-center">
