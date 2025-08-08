@@ -73,7 +73,8 @@ async def create_post(
         content=post_data.content,
         image_url=post_data.imageUrl,
         video_url=post_data.videoUrl,
-        post_type=post_data.type
+        post_type=post_data.type,
+        background_color=post_data.backgroundColor
     )
     
     db.add(new_post)
