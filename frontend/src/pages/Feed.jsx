@@ -214,13 +214,13 @@ const Story = ({ user, isOwn = false }) => (
             <span className="text-white font-bold text-lg">+</span>
           </div>
         ) : user?.avatar ? (
-          <img 
-            src={user.avatar} 
+          <img
+            src={user.avatar}
             alt={user.fullName}
             className="w-full h-full rounded-full object-cover"
           />
         ) : (
-          <div className="w-full h-full rounded-full bg-vibe-blue flex items-center justify-center">
+          <div className="w-full h-full rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
             <span className="text-white text-sm font-bold">
               {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
             </span>
