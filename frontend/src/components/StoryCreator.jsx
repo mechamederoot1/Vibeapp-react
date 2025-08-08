@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
+import StoryPhotoEditor from './StoryPhotoEditor'
 
 const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
