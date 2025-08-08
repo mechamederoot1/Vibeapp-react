@@ -20,7 +20,7 @@ const Header = ({ onOpenPostModal }) => {
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <div className="flex items-center space-x-3">
             <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-2 flex-shrink-0">
-              <VibeLogo size="md" className="text-white" />
+              <VibeLogoSound size="md" className="text-white" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent whitespace-nowrap">
               Vibe
