@@ -2,7 +2,7 @@ import React from 'react'
 import { Search, MessageCircle, Heart, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const Header = () => {
+const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
 
   return (
@@ -20,8 +20,8 @@ const Header = () => {
         </div>
         
         <div className="flex items-center space-x-3 flex-shrink-0">
-          <button 
-            onClick={() => navigate('/create')}
+          <button
+            onClick={onOpenPostModal}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             title="Criar post"
           >
