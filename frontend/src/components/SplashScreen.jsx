@@ -122,6 +122,10 @@ const SplashScreen = ({ onComplete, duration = 5000 }) => {
         .animate-fade-in-delay {
           animation: fade-in-delay 2s ease-out forwards;
         }
+
+        .animate-fade-in-delay-2 {
+          animation: fade-in-delay-2 3s ease-out forwards;
+        }
         
         .animate-loading-bar {
           animation: loading-bar ${duration}ms linear forwards;
