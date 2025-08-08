@@ -5,6 +5,7 @@ import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import CreateTestUsers from '../components/CreateTestUsers'
 import StoryCreator from '../components/StoryCreator'
+import DatabaseMigration from '../components/DatabaseMigration'
 
 const Post = ({ post, onLike, onShare, onRepost }) => {
   const { user } = useAuth()
