@@ -592,15 +592,15 @@ const Profile = () => {
                       post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
                     }`}>
                       <Heart size={18} className={post.isLiked ? 'fill-current' : ''} />
-                      <span className="text-sm font-medium">{post.likes}</span>
+                      <span className="text-sm font-medium">{post.likesCount}</span>
                     </button>
                     <button className="flex items-center space-x-2 text-gray-500 hover:text-vibe-blue transition-colors">
                       <MessageCircleIcon size={18} />
-                      <span className="text-sm font-medium">{post.comments}</span>
+                      <span className="text-sm font-medium">{post.commentsCount}</span>
                     </button>
                     <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors">
                       <Repeat2 size={18} />
-                      <span className="text-sm font-medium">{post.shares}</span>
+                      <span className="text-sm font-medium">{post.repostsCount}</span>
                     </button>
                   </div>
                   <button className="text-gray-500 hover:text-vibe-blue transition-colors">
