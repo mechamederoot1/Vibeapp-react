@@ -66,7 +66,10 @@ async def create_story(
     db: Session = Depends(get_db)
 ):
     """Create a new story"""
-    
+
+    print(f"🎬 Creating story for user {current_user.id} ({current_user.email})")
+    print(f"📄 Story data: {story_data}")
+
     # Validate story type
     if story_data.type not in ["text", "image", "video"]:
         raise HTTPException(
