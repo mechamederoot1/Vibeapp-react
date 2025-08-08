@@ -281,9 +281,6 @@ const Profile = () => {
     setShowCoverModal(true)
   }
 
-  const handleCoverClick = () => {
-    setShowCoverViewer(true)
-  }
 
   const handleEditCoverFromViewer = () => {
     setShowCoverViewer(false)
