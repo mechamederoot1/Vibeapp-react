@@ -253,15 +253,17 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
   )
 }
 
-const Story = ({ user, isOwn = false }) => (
-  <div className="flex flex-col items-center space-y-1 flex-shrink-0">
-    <div className="w-16 h-16 rounded-full p-0.5 bg-gray-300">
+const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0 }) => (
+  <div className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+    <div className={`w-16 h-16 rounded-full p-0.5 ${
+      hasUnviewed
+        ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+        : hasStory
+        ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
+        : 'bg-gray-300'
+    }`}>
       <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
-        {isOwn ? (
-          <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark rounded-full flex items-center justify-center relative">
-            <span className="text-white font-bold text-lg">+</span>
-          </div>
-        ) : user?.avatar ? (
+        {user?.avatar ? (
           <img
             src={user.avatar}
             alt={user.fullName}
@@ -277,8 +279,13 @@ const Story = ({ user, isOwn = false }) => (
       </div>
     </div>
     <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
-      {isOwn ? 'Seu story' : user?.firstName || 'Usuário'}
+      {user?.firstName || 'Usuário'}
     </span>
+    {storiesCount > 1 && (
+      <span className="text-xs text-gray-400">
+        {storiesCount} stories
+      </span>
+    )}
   </div>
 )
 
