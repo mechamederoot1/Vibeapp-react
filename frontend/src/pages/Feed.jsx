@@ -439,7 +439,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
+        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="flex justify-center py-8">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
@@ -453,13 +453,13 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   if (error) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
+        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="flex justify-center py-8">
           <div className="text-center">
             <p className="text-red-600 mb-4">{error}</p>
-            <button 
+            <button
               onClick={loadFeed}
-              className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+              className="bg-vite-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
             >
               Tentar novamente
             </button>
@@ -472,7 +472,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   return (
     <>
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
+        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="pb-safe w-full max-w-full">
           {posts.length === 0 ? (
             <div className="space-y-8 p-4">
