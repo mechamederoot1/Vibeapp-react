@@ -13,6 +13,7 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
   const [currentStep, setCurrentStep] = useState('select') // select, camera, edit, privacy
   const [showCamera, setShowCamera] = useState(false)
+  const [showPhotoEditor, setShowPhotoEditor] = useState(false)
   const [storyType, setStoryType] = useState('text') // text, image, video
   const [loading, setLoading] = useState(false)
   
