@@ -402,6 +402,15 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const loadStories = async () => {
+    try {
+      const response = await storiesAPI.getStories()
+      setStories(response.data.storiesByAuthor || [])
+    } catch (error) {
+      console.error('Error loading stories:', error)
+    }
+  }
+
   const handleLikePost = async (postId) => {
     try {
       const response = await postsAPI.likePost(postId)
