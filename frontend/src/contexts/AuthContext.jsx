@@ -36,38 +36,38 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password })
-      const { user: userData, token: authToken } = response.data
-      
+      const response = await authAPI.login(email, password)
+      const { user: userData, access_token: authToken } = response.data
+
       setUser(userData)
       setToken(authToken)
       localStorage.setItem('token', authToken)
       api.defaults.headers.Authorization = `Bearer ${authToken}`
-      
+
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Erro ao fazer login' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Erro ao fazer login'
       }
     }
   }
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/auth/register', userData)
-      const { user: newUser, token: authToken } = response.data
-      
+      const response = await authAPI.register(userData)
+      const { user: newUser, access_token: authToken } = response.data
+
       setUser(newUser)
       setToken(authToken)
       localStorage.setItem('token', authToken)
       api.defaults.headers.Authorization = `Bearer ${authToken}`
-      
+
       return { success: true }
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Erro ao criar conta' 
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Erro ao criar conta'
       }
     }
   }
