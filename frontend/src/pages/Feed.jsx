@@ -125,7 +125,7 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                 post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
                 post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
                 post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
-                'bg-gray-50'}
+                ''}
             `}>
               <p className={`text-xl font-medium text-center leading-relaxed break-words ${
                 post.backgroundColor ? 'text-white' : 'text-gray-800'
