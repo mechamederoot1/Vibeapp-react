@@ -179,7 +179,16 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
       <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 bg-white">
-          <h2 className="text-lg font-semibold">Editar foto de capa</h2>
+          <div className="flex items-center space-x-3">
+            <h2 className="text-lg font-semibold">Editar foto de capa</h2>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-vibe-blue text-white text-sm rounded-lg hover:bg-vibe-blue-dark"
+            >
+              <Upload size={16} />
+              <span>{image ? 'Trocar foto' : 'Selecionar foto'}</span>
+            </button>
+          </div>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-full"
