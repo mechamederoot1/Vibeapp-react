@@ -455,40 +455,63 @@ const Profile = () => {
       </div>
 
       {/* Posts Content */}
-      {viewMode === 'grid' ? (
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-gray-600">Carregando posts...</p>
+          </div>
+        </div>
+      ) : userPosts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Grid size={32} className="text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
+          <p className="text-gray-500">
+            Compartilhe seus primeiros momentos no Vibe Social!
+          </p>
+        </div>
+      ) : viewMode === 'grid' ? (
         /* Grid de Posts */
         <div className="grid grid-cols-3 gap-1">
-          {posts.map((post) => (
+          {userPosts.map((post) => (
             <div key={post.id} className="relative aspect-square">
               {post.type === 'text' ? (
                 <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center p-4">
                   <p className="text-white text-sm text-center font-medium line-clamp-4">
-                    {post.text}
+                    {post.content}
                   </p>
                 </div>
-              ) : (
+              ) : post.type === 'image' && post.imageUrl ? (
                 <img
-                  src={post.thumbnail}
+                  src={post.imageUrl}
                   alt={`Post ${post.id}`}
                   className="w-full h-full object-cover"
                 />
-              )}
-              {post.type === 'video' && (
-                <div className="absolute top-2 right-2">
-                  <div className="bg-black bg-opacity-60 rounded px-1.5 py-0.5">
-                    <span className="text-white text-xs">▶</span>
+              ) : post.type === 'video' && post.videoUrl ? (
+                <div className="w-full h-full bg-black flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white text-xl">▶</span>
+                    </div>
+                    <span className="text-xs">Vídeo</span>
                   </div>
+                </div>
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400">Post</span>
                 </div>
               )}
               <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
                 <div className="flex items-center space-x-4 text-white">
                   <div className="flex items-center space-x-1">
                     <span className="text-sm">❤️</span>
-                    <span className="text-sm font-semibold">{post.likes}</span>
+                    <span className="text-sm font-semibold">{post.likesCount}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <span className="text-sm">💬</span>
-                    <span className="text-sm font-semibold">{post.comments}</span>
+                    <span className="text-sm font-semibold">{post.commentsCount}</span>
                   </div>
                 </div>
               </div>
