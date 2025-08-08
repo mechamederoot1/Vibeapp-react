@@ -51,7 +51,12 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
+app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
 app.include_router(dev_tools_router, prefix="/api/dev", tags=["development"])
+
+# Mount static files (uploads)
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 async def root():
