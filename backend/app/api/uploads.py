@@ -20,6 +20,7 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 os.makedirs(f"{UPLOAD_DIRECTORY}/avatars", exist_ok=True)
 os.makedirs(f"{UPLOAD_DIRECTORY}/covers", exist_ok=True)
+os.makedirs(f"{UPLOAD_DIRECTORY}/stories", exist_ok=True)
 
 def validate_image_file(file: UploadFile) -> bool:
     """Validar se o arquivo é uma imagem válida"""
