@@ -6,8 +6,8 @@ const Header = () => {
   const navigate = useNavigate()
 
   return (
-    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full overflow-hidden">
-      <div className="flex items-center justify-between max-w-full">
+    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
+      <div className="flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg flex items-center justify-center flex-shrink-0">

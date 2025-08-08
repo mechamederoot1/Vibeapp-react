@@ -2,7 +2,7 @@ import React from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal } from 'lucide-react'
 
 const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false, type = 'image' }) => (
-  <div className="bg-white mb-3 w-full overflow-hidden">
+  <div className="bg-white mb-3 w-full max-w-full overflow-hidden relative">
     {/* Header do Post */}
     <div className="flex items-center justify-between p-3">
       <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -116,9 +116,9 @@ const Stories = () => {
   ]
 
   return (
-    <div className="bg-white border-b border-gray-100 w-full overflow-hidden">
-      <div className="p-4">
-        <div className="flex space-x-3 overflow-x-auto stories-scroll pb-1">
+    <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
+      <div className="p-4 w-full max-w-full">
+        <div className="flex space-x-3 overflow-x-auto stories-scroll pb-1 max-w-full">
           {stories.map((story, index) => (
             <Story key={index} {...story} />
           ))}
@@ -207,9 +207,9 @@ const Feed = () => {
   ]
 
   return (
-    <div className="bg-gray-50 min-h-full w-full overflow-x-hidden">
+    <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
       <Stories />
-      <div className="pb-safe w-full">
+      <div className="pb-safe w-full max-w-full">
         {posts.map((post, index) => (
           <Post key={index} {...post} />
         ))}
