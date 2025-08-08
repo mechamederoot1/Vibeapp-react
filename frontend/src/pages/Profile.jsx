@@ -789,6 +789,29 @@ const Profile = () => {
           onClose={() => setShowEditModal(false)}
         />
       )}
+
+      {/* Novos modais avançados */}
+      <AvatarEditor
+        isOpen={showAvatarEditor}
+        onClose={() => setShowAvatarEditor(false)}
+        onSave={handleAvatarUpload}
+        currentImage={profileData.avatar}
+      />
+
+      <CoverEditor
+        isOpen={showCoverEditor}
+        onClose={() => setShowCoverEditor(false)}
+        onSave={handleCoverUpload}
+        currentImage={profileData.coverPhoto}
+      />
+
+      <AvatarViewer
+        isOpen={showAvatarViewer}
+        onClose={() => setShowAvatarViewer(false)}
+        onEditPhoto={handleEditAvatarFromViewer}
+        user={user}
+        hasRecentStory={false} // TODO: implementar lógica de stories
+      />
     </div>
   )
 }
