@@ -1,75 +1,111 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Date
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.database.database import Base
+from datetime import datetime
+import bcrypt
+
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(30), unique=True, index=True, nullable=False)
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    full_name = Column(String(100), nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    username = Column(String, unique=True, index=True, nullable=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    
+    # Profile information
     bio = Column(Text, nullable=True)
+    avatar = Column(String, nullable=True)
+    cover_photo = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
     
-    # Autenticação
-    hashed_password = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True)
-    is_verified = Column(Boolean, default=False)
+    # Personal information
+    birth_date = Column(Date, nullable=True)
+    gender = Column(String, nullable=True)  # male, female, other, prefer_not_to_say
     
-    # Imagens de perfil
-    avatar_url = Column(String(500), nullable=True)
-    cover_url = Column(String(500), nullable=True)
-    
-    # Configurações de privacidade
+    # Privacy settings
     is_private = Column(Boolean, default=False)
-    show_profile_visitors = Column(Boolean, default=False)
+    show_visitors = Column(Boolean, default=True)
     
-    # Localização
-    location = Column(String(100), nullable=True)
+    # Verification
+    is_verified = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     
     # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    last_active = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
     
-    # Relacionamentos
-    posts = relationship("Post", back_populates="author", cascade="all, delete-orphan")
-    likes = relationship("PostLike", back_populates="user", cascade="all, delete-orphan")
-    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
-    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
-    
-    # Amizades onde este usuário iniciou
-    friendships_initiated = relationship(
-        "Friendship", 
-        foreign_keys="Friendship.user_id",
-        back_populates="user",
-        cascade="all, delete-orphan"
-    )
-    
-    # Amizades onde este usuário foi convidado
-    friendships_received = relationship(
-        "Friendship", 
-        foreign_keys="Friendship.friend_id",
-        back_populates="friend",
-        cascade="all, delete-orphan"
-    )
-    
-    # Visualizações de perfil feitas por este usuário
-    profile_views_made = relationship(
-        "ProfileView",
-        foreign_keys="ProfileView.viewer_id",
-        back_populates="viewer",
-        cascade="all, delete-orphan"
-    )
-    
-    # Visualizações recebidas no perfil deste usuário
-    profile_views_received = relationship(
-        "ProfileView",
-        foreign_keys="ProfileView.profile_owner_id", 
-        back_populates="profile_owner",
-        cascade="all, delete-orphan"
-    )
+    # Relationships
+    posts = relationship("Post", back_populates="author")
+    sent_friendships = relationship("Friendship", foreign_keys="Friendship.user_id", back_populates="user")
+    received_friendships = relationship("Friendship", foreign_keys="Friendship.friend_id", back_populates="friend")
+    profile_views = relationship("ProfileView", back_populates="profile_owner")
+    notifications = relationship("Notification", back_populates="user")
 
-    def __repr__(self):
-        return f"<User(id={self.id}, username={self.username})>"
+    def set_password(self, password: str):
+        """Hash and set the password"""
+        salt = bcrypt.gensalt()
+        self.hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+    def verify_password(self, password: str) -> bool:
+        """Verify the password"""
+        return bcrypt.checkpw(password.encode('utf-8'), self.hashed_password.encode('utf-8'))
+
+    @property
+    def full_name(self):
+        """Return full name"""
+        return f"{self.first_name} {self.last_name}"
+
+    @property
+    def display_name(self):
+        """Return display name (username or full name)"""
+        return self.username or self.full_name
+
+    def to_dict(self):
+        """Convert user to dictionary for API responses"""
+        return {
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "firstName": self.first_name,
+            "lastName": self.last_name,
+            "fullName": self.full_name,
+            "bio": self.bio,
+            "avatar": self.avatar,
+            "coverPhoto": self.cover_photo,
+            "location": self.location,
+            "website": self.website,
+            "phone": self.phone,
+            "birthDate": self.birth_date.isoformat() if self.birth_date else None,
+            "gender": self.gender,
+            "isPrivate": self.is_private,
+            "showVisitors": self.show_visitors,
+            "isVerified": self.is_verified,
+            "isActive": self.is_active,
+            "createdAt": self.created_at.isoformat(),
+            "updatedAt": self.updated_at.isoformat(),
+            "lastLogin": self.last_login.isoformat() if self.last_login else None
+        }
+
+    def to_public_dict(self):
+        """Convert user to public dictionary (limited info)"""
+        return {
+            "id": self.id,
+            "username": self.username,
+            "firstName": self.first_name,
+            "lastName": self.last_name,
+            "fullName": self.full_name,
+            "bio": self.bio,
+            "avatar": self.avatar,
+            "coverPhoto": self.cover_photo,
+            "location": self.location,
+            "website": self.website,
+            "isVerified": self.is_verified,
+            "createdAt": self.created_at.isoformat()
+        }
