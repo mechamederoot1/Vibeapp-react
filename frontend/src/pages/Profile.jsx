@@ -236,7 +236,7 @@ const Profile = () => {
     }
   }
 
-  // Funções para controlar os novos modais
+  // Funç��es para controlar os novos modais
   const handleAvatarClick = () => {
     setShowAvatarViewer(true)
   }
@@ -465,6 +465,13 @@ const Profile = () => {
             className="btn-primary flex-1"
           >
             Editar Perfil
+          </button>
+          <button
+            onClick={() => setShowFriends(true)}
+            className="btn-secondary px-4 flex items-center space-x-2"
+          >
+            <Users size={20} />
+            <span className="hidden sm:inline">Conexões</span>
           </button>
           <button className="btn-secondary px-4">
             <MessageCircle size={20} />
@@ -758,22 +765,63 @@ const Profile = () => {
 
               {/* Mídia do Post */}
               {post.type === 'image' && post.imageUrl && (
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <img
                     src={post.imageUrl}
                     alt={`Post ${post.id}`}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-64 object-cover hover:opacity-95 transition-opacity"
                   />
                 </div>
               )}
 
               {post.type === 'video' && post.videoUrl && (
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <video
                     src={post.videoUrl}
                     controls
                     className="w-full h-64 object-cover"
+                    onClick={(e) => e.stopPropagation()}
                   />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity pointer-events-none" />
+                </div>
+              )}
+
+              {/* Posts com fotos de perfil/capa */}
+              {post.type === 'profile_update' && post.imageUrl && (
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
+                  <img
+                    src={post.imageUrl}
+                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                    className={`w-full object-cover hover:opacity-95 transition-opacity ${
+                      post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
+                    }`}
+                  />
+                </div>
+              )}
+
+              {/* Posts de texto com fundo colorido */}
+              {post.type === 'text' && !post.imageUrl && (
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
+                  <div className={`
+                    w-full h-64 flex items-center justify-center p-6
+                    ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                      post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                      post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                      post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                      post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                      post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                      post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                      post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                      'bg-gray-100'}
+                    hover:opacity-95 transition-opacity
+                  `}>
+                    <p className={`
+                      text-lg text-center font-medium leading-relaxed
+                      ${post.backgroundColor ? 'text-white' : 'text-gray-800'}
+                    `}>
+                      {post.content}
+                    </p>
+                  </div>
                 </div>
               )}
 
