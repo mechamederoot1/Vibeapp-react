@@ -105,7 +105,14 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
       {/* Conteúdo do Post */}
       {post.type === 'profile_update' ? (
         <div className="w-full overflow-hidden">
-          {post.profileUpdateType === 'avatar' && post.author?.avatar ? (
+          {/* Priorizar imageUrl do post, depois avatar/cover do autor */}
+          {post.imageUrl ? (
+            <img
+              src={post.imageUrl}
+              alt={post.profileUpdateType === 'avatar' ? "Foto de perfil atualizada" : "Foto de capa atualizada"}
+              className="w-full h-96 object-cover"
+            />
+          ) : post.profileUpdateType === 'avatar' && post.author?.avatar ? (
             <img
               src={post.author.avatar}
               alt="Foto de perfil atualizada"
