@@ -185,38 +185,38 @@ const Profile = () => {
       {/* Capa do Perfil */}
       <div className="relative">
         <div className="w-full h-48 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 relative">
-          <img 
-            src="https://picsum.photos/400/200?random=cover" 
+          <img
+            src="https://picsum.photos/400/200?random=cover"
             alt="Capa do perfil"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-          
+
           {/* Botão de trocar capa */}
           <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all">
             <Camera size={20} />
           </button>
         </div>
-        
-        {/* Avatar centralizado sobrepondo a capa */}
-        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
-              <img
-                src="https://picsum.photos/200/200?random=avatar"
-                alt="Avatar"
-                className="w-full h-full rounded-full object-cover"
-              />
-            </div>
-            <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
-              <Camera size={14} className="text-white" />
-            </button>
+      </div>
+
+      {/* Avatar Section */}
+      <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
+            <img
+              src="https://picsum.photos/200/200?random=avatar"
+              alt="Avatar"
+              className="w-full h-full rounded-full object-cover"
+            />
           </div>
+          <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
+            <Camera size={14} className="text-white" />
+          </button>
         </div>
       </div>
 
       {/* Informações do Perfil */}
-      <div className="pt-16 px-4 relative z-0">
+      <div className="px-4">
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
