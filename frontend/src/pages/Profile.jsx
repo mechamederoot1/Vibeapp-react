@@ -267,7 +267,10 @@ const Profile = () => {
 
         {/* Botões de Ação */}
         <div className="flex space-x-2 mb-6">
-          <button className="btn-primary flex-1">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="btn-primary flex-1"
+          >
             Editar Perfil
           </button>
           <button 
