@@ -242,10 +242,10 @@ const Register = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-vibe-blue rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">V</span>
+          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-3 mx-auto mb-4 w-16 h-16 flex items-center justify-center">
+            <VibeLogo size="md" className="text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Vibe Social</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent">Vibe</h1>
         </div>
 
         {/* Progress bar */}
@@ -345,7 +345,7 @@ const Register = () => {
                 <section>
                   <h3 className="font-semibold text-lg mb-2">3. Conteúdo do Usuário</h3>
                   <p>
-                    Você �� responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
+                    Você é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
                   </p>
                 </section>
 
