@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } f
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
+import CreateTestUsers from '../components/CreateTestUsers'
 
 const Post = ({ post, onLike, onShare, onRepost }) => {
   const { user } = useAuth()
