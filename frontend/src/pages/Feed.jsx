@@ -586,12 +586,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
             </div>
           ) : (
             posts.map((post) => (
-              <Post 
-                key={post.id} 
+              <Post
+                key={post.id}
                 post={post}
                 onLike={handleLikePost}
                 onShare={handleSharePost}
-                onRepost={handleRepostPost}
+                onStoryShare={handleStoryShare}
               />
             ))
           )}
