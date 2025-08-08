@@ -846,6 +846,14 @@ const Profile = () => {
         user={user}
         hasRecentStory={false} // TODO: implementar lógica de stories
       />
+
+      {/* Post View Modal */}
+      <PostViewModal
+        isOpen={showPostModal}
+        onClose={handleClosePostModal}
+        post={selectedPost}
+        onPostUpdate={handlePostUpdate}
+      />
     </div>
   )
 }
