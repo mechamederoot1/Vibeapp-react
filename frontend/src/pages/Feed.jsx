@@ -82,7 +82,34 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
       </div>
       
       {/* Conteúdo do Post */}
-      {post.type === 'text' ? (
+      {post.type === 'profile_update' ? (
+        <div className="mx-3 mb-3">
+          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center space-x-3 mb-3">
+              {post.author?.avatar ? (
+                <img
+                  src={post.author.avatar}
+                  alt="Avatar"
+                  className={`object-cover border-2 border-white ${
+                    post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
+                  }`}
+                />
+              ) : (
+                <div className={`bg-white bg-opacity-20 flex items-center justify-center border-2 border-white ${
+                  post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
+                }`}>
+                  <span className="text-white font-bold">
+                    {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-white font-medium">
+              {post.author?.fullName} {post.content}
+            </p>
+          </div>
+        </div>
+      ) : post.type === 'text' ? (
         <div className="mx-3 mb-3">
           {post.backgroundColor ? (
             <div className={`
