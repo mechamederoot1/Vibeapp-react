@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { 
-  Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal, 
-  Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock 
+import {
+  Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
+  Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
+  MessageCircle as MessageCircleIcon, Share, Repeat2
 } from 'lucide-react'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts')
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
@@ -118,10 +120,14 @@ const Profile = () => {
 
   const posts = Array(12).fill(null).map((_, index) => ({
     id: index,
-    type: index % 5 === 0 ? 'video' : 'image',
+    type: index % 5 === 0 ? 'video' : index % 4 === 0 ? 'text' : 'image',
     likes: Math.floor(Math.random() * 500) + 50,
     comments: Math.floor(Math.random() * 50) + 5,
-    thumbnail: `https://picsum.photos/400/400?random=${index}`
+    shares: Math.floor(Math.random() * 20) + 1,
+    thumbnail: `https://picsum.photos/400/400?random=${index}`,
+    text: index % 4 === 0 ? `Este é um post de texto interessante #${index}. Compartilhando alguns pensamentos sobre fotografia e design! ✨📸` : '',
+    timestamp: `${Math.floor(Math.random() * 24)}h`,
+    isLiked: Math.random() > 0.7
   }))
 
   const stories = [
