@@ -350,7 +350,7 @@ const Profile = () => {
       </div>
 
       {/* Capa do Perfil */}
-      <div className="relative cursor-pointer" onClick={handleCoverClick}>
+      <div className="relative">
         <div className="w-full h-48 relative">
           {profileData.coverPhoto ? (
             <img
@@ -363,18 +363,28 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Botão de trocar capa */}
-          <button
-            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowCoverEditor(true)
-            }}
-            disabled={uploading.cover}
-            title={uploading.cover ? "Fazendo upload..." : "Alterar foto de capa"}
-          >
-            <Camera size={20} />
-          </button>
+          {/* Botão de opções da capa */}
+          <div className="absolute top-4 right-4">
+            <button
+              className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCoverClick()
+              }}
+              disabled={uploading.cover}
+              title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
+            >
+              <Camera size={20} />
+            </button>
+
+            <CoverDropdown
+              isOpen={showCoverDropdown}
+              onClose={() => setShowCoverDropdown(false)}
+              user={profileData}
+              onEditCover={handleEditCoverFromDropdown}
+              onViewCover={handleViewCover}
+            />
+          </div>
 
           {uploading.cover && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
