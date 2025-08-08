@@ -205,15 +205,15 @@ async def get_profile_visitors(
     # Get recent visitors
     visitors = db.query(ProfileView).filter(
         ProfileView.profile_owner_id == user_id
-    ).order_by(ProfileView.viewed_at.desc()).limit(limit).all()
-    
+    ).order_by(ProfileView.created_at.desc()).limit(limit).all()
+
     visitor_data = []
     for view in visitors:
         visitor = db.query(User).filter(User.id == view.viewer_id).first()
         if visitor:
             visitor_data.append({
                 "user": visitor.to_public_dict(),
-                "viewedAt": view.viewed_at.isoformat()
+                "viewedAt": view.created_at.isoformat()
             })
     
     return visitor_data
