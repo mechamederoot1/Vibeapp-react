@@ -1,9 +1,17 @@
-import React from 'react'
-import { Search, MessageCircle, Heart, Plus } from 'lucide-react'
+import React, { useState } from 'react'
+import { Search, MessageCircle, Heart, Plus, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
