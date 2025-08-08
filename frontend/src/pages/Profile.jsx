@@ -10,6 +10,9 @@ import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
 import ImageUpload from '../components/ImageUpload'
+import AvatarEditor from '../components/AvatarEditor'
+import CoverEditor from '../components/CoverEditor'
+import AvatarViewer from '../components/AvatarViewer'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
