@@ -227,23 +227,21 @@ const Profile = () => {
 
       {/* Capa do Perfil */}
       <div className="relative">
-        <div className="w-full h-48 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 relative">
-          {profileData.coverPhoto ? (
-            <img
-              src={profileData.coverPhoto}
-              alt="Capa do perfil"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300"></div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-
-          {/* Botão de trocar capa */}
-          <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all">
-            <Camera size={20} />
-          </button>
-        </div>
+        <ImageUpload
+          type="cover"
+          currentImage={profileData.coverPhoto}
+          onImageSelect={handleCoverUpload}
+          onImageRemove={handleCoverRemove}
+          disabled={uploading.cover}
+        />
+        {uploading.cover && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="text-white text-center">
+              <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+              <p className="text-sm">Fazendo upload...</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Avatar Section */}
