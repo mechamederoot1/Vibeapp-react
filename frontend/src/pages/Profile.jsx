@@ -463,12 +463,12 @@ const Profile = () => {
               <div className="flex items-center space-x-3">
                 <Eye size={20} className="text-vibe-blue" />
                 <span className="font-medium">Quem visualizou meu perfil</span>
-                <button
+                <div
                   onClick={(e) => {
                     e.stopPropagation()
                     toggleVisitorsPrivacy()
                   }}
-                  className="p-1 hover:bg-white rounded-full"
+                  className="p-1 hover:bg-white rounded-full cursor-pointer"
                   title={privacySettings.showVisitors ? "Ocultar visitantes" : "Mostrar visitantes"}
                 >
                   {privacySettings.showVisitors ? (
@@ -476,7 +476,7 @@ const Profile = () => {
                   ) : (
                     <EyeOff size={16} className="text-gray-400" />
                   )}
-                </button>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-vibe-blue font-semibold">{profileData.profileViews} pessoas</span>
