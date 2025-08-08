@@ -545,7 +545,11 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   return (
     <>
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
+        <Stories
+          onOpenStoryCreator={() => setShowStoryCreator(true)}
+          stories={stories}
+          onStoryClick={handleOpenStories}
+        />
         <div className="pb-safe w-full max-w-full">
           {posts.length === 0 ? (
             <div className="space-y-8 p-4">
