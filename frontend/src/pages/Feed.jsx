@@ -281,8 +281,11 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
   )
 }
 
-const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0 }) => (
-  <div className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0, onClick }) => (
+  <div
+    className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+    onClick={onClick}
+  >
     <div className={`w-16 h-16 rounded-full p-0.5 ${
       hasUnviewed
         ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
