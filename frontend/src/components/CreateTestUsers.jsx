@@ -97,12 +97,25 @@ const CreateTestUsers = () => {
       )}
 
       {error && (
-        <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center space-x-2 mb-2">
-            <XCircle size={20} className="text-red-600" />
-            <h3 className="font-medium text-red-800">Erro</h3>
+        <div className="mt-6 space-y-4">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-2 mb-2">
+              <XCircle size={20} className="text-red-600" />
+              <h3 className="font-medium text-red-800">Erro</h3>
+            </div>
+            <p className="text-red-700 text-sm">{error}</p>
           </div>
-          <p className="text-red-700 text-sm">{error}</p>
+
+          {/* Mostrar migração se for erro de coluna */}
+          {(error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')) && (
+            <div>
+              <div className="text-center mb-4">
+                <h4 className="font-medium text-gray-900 mb-2">Solução:</h4>
+                <p className="text-sm text-gray-600">Execute a migração do banco de dados abaixo</p>
+              </div>
+              <DatabaseMigration />
+            </div>
+          )}
         </div>
       )}
 
