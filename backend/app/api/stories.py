@@ -103,8 +103,7 @@ async def create_story(
         background_gradient=story_data.backgroundGradient,
         text_elements=story_data.textElements,
         privacy=story_data.privacy,
-        duration_hours=story_data.duration,
-        expires_at=datetime.utcnow() + timedelta(hours=story_data.duration)
+        duration_hours=story_data.duration
     )
     
     db.add(new_story)
