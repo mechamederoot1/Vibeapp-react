@@ -122,6 +122,7 @@ const Profile = () => {
   const handleAvatarUpload = async (file) => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
+    setUploadSuccess(null)
 
     try {
       const response = await uploadsAPI.uploadAvatar(file)
@@ -130,10 +131,13 @@ const Profile = () => {
       const updatedUser = response.data.user
       setUser(updatedUser)
 
-      // Forçar atualização da interface
+      // Mostrar mensagem de sucesso
+      setUploadSuccess('Foto de perfil atualizada com sucesso!')
+
+      // Forçar atualização da interface após um delay
       setTimeout(() => {
         window.location.reload()
-      }, 500)
+      }, 1000)
 
       console.log('Avatar uploaded successfully:', response.data.message)
 
