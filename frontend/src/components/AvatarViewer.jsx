@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { X, Eye, Play, User, Camera } from 'lucide-react'
 
-const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPhoto }) => {
+const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPhoto, onViewStory }) => {
   const [currentView, setCurrentView] = useState('options') // 'options', 'photo', 'story'
 
   const handleClose = () => {
