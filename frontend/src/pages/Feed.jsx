@@ -452,18 +452,36 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   if (error) {
+    // Verificar se é erro de coluna não encontrada (precisa migração)
+    const needsMigration = error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')
+
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="flex justify-center py-8">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={loadFeed}
-              className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
-            >
-              Tentar novamente
-            </button>
+          <div className="space-y-6 max-w-md w-full px-4">
+            {needsMigration ? (
+              <>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Atualização do Banco Necessária
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    O banco de dados precisa ser atualizado com as novas funcionalidades.
+                  </p>
+                </div>
+                <DatabaseMigration />
+              </>
+            ) : (
+              <div className="text-center">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={loadFeed}
+                  className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
