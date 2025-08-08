@@ -157,6 +157,18 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
 
           {/* Content */}
           <div className="p-4">
+            {/* Preview do post com cor de fundo */}
+            {postType === 'text' && backgroundColor && content.trim() && (
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                <div className={`p-6 rounded-lg ${colorOptions.find(c => c.value === backgroundColor)?.gradient} min-h-[120px] flex items-center justify-center`}>
+                  <p className="text-white text-center font-medium text-lg leading-relaxed">
+                    {content}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -170,6 +182,50 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 {content.length}/500 caracteres
               </span>
             </div>
+
+            {/* Seletor de cores para posts de texto */}
+            {postType === 'text' && !imageFile && !videoFile && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">Cor de fundo (opcional):</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                    className="flex items-center space-x-2 text-sm text-vibe-blue hover:text-vibe-blue-dark"
+                  >
+                    <Palette size={16} />
+                    <span>{showColorPicker ? 'Ocultar' : 'Mostrar'} cores</span>
+                  </button>
+                </div>
+
+                {showColorPicker && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {colorOptions.map((color) => (
+                      <button
+                        key={color.value || 'none'}
+                        type="button"
+                        onClick={() => setBackgroundColor(color.value)}
+                        className={`
+                          w-12 h-12 rounded-lg border-2 transition-all
+                          ${color.gradient}
+                          ${backgroundColor === color.value
+                            ? 'border-gray-900 scale-110'
+                            : 'border-gray-200 hover:border-gray-400'
+                          }
+                        `}
+                        title={color.name}
+                      >
+                        {color.value === null && (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <X size={16} className="text-gray-400" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Media preview */}
             {imageFile && (
