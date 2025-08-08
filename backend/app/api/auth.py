@@ -156,28 +156,7 @@ async def logout():
     # In a real app, you might want to blacklist the token
     return {"message": "Successfully logged out"}
 
-# Demo user endpoint for testing
-@router.post("/create-demo-user")
-async def create_demo_user(db: Session = Depends(get_db)):
-    # Check if demo user already exists
-    existing_user = db.query(User).filter(User.email == "demo@vibe.social").first()
-    if existing_user:
-        return {"message": "Demo user already exists"}
-    
-    # Create demo user
-    demo_user = User(
-        email="demo@vibe.social",
-        username="demo_user",
-        first_name="Demo",
-        last_name="User",
-        bio="Usuário de demonstração do Vibe Social! 🎉",
-        location="São Paulo, Brasil",
-        is_verified=True
-    )
-    demo_user.set_password("demo123")
-    
-    db.add(demo_user)
-    db.commit()
-    db.refresh(demo_user)
-    
-    return {"message": "Demo user created successfully", "user": demo_user.to_dict()}
+# Health check endpoint
+@router.get("/health")
+async def auth_health():
+    return {"status": "healthy", "service": "authentication"}
