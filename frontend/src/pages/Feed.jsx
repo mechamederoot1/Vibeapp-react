@@ -476,7 +476,11 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
+        <Stories
+          onOpenStoryCreator={() => setShowStoryCreator(true)}
+          stories={stories}
+          onStoryClick={handleOpenStories}
+        />
         <div className="flex justify-center py-8">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
