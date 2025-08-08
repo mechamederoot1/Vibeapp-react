@@ -33,7 +33,7 @@ class Notification(Base):
     
     # Relacionamentos
     user = relationship("User", foreign_keys=[user_id], back_populates="notifications")
-    related_user = relationship("User", foreign_keys=[related_user_id])
+    related_user = relationship("User", foreign_keys=[related_user_id], post_update=True)
 
     def __repr__(self):
         return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type})>"
