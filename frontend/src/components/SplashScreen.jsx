@@ -109,6 +109,11 @@ const SplashScreen = ({ onComplete, duration = 5000 }) => {
           0%, 30% { opacity: 0; transform: translateY(20px); }
           100% { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes fade-in-delay-2 {
+          0%, 60% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
         
         .animate-fade-in {
           animation: fade-in 1s ease-out forwards;
