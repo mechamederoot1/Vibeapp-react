@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           api.defaults.headers.Authorization = `Bearer ${token}`
-          const response = await api.get('/auth/me')
+          const response = await authAPI.me()
           setUser(response.data)
         } catch (error) {
           console.error('Auth init error:', error)
