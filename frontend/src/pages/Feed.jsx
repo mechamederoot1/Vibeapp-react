@@ -104,37 +104,49 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
       
       {/* Conteúdo do Post */}
       {post.type === 'profile_update' ? (
-        <div className="w-full overflow-hidden">
-          {/* Priorizar imageUrl do post, depois avatar/cover do autor */}
-          {post.imageUrl ? (
-            <img
-              src={post.imageUrl}
-              alt={post.profileUpdateType === 'avatar' ? "Foto de perfil atualizada" : "Foto de capa atualizada"}
-              className={`w-full object-cover ${
-                post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
-              }`}
-            />
-          ) : post.profileUpdateType === 'avatar' && post.author?.avatar ? (
-            <img
-              src={post.author.avatar}
-              alt="Foto de perfil atualizada"
-              className="w-full h-96 md:h-[500px] object-cover"
-            />
-          ) : post.profileUpdateType === 'cover' && post.author?.coverPhoto ? (
-            <img
-              src={post.author.coverPhoto}
-              alt="Foto de capa atualizada"
-              className="w-full h-48 md:h-64 object-cover"
-            />
-          ) : post.author?.avatar ? (
-            <img
-              src={post.author.avatar}
-              alt="Foto de perfil"
-              className="w-full h-96 md:h-[500px] object-cover"
-            />
+        <div className="w-full bg-white py-8 flex justify-center">
+          {/* Renderizar foto de perfil como círculo ou foto de capa retangular */}
+          {post.profileUpdateType === 'avatar' ? (
+            // Foto de perfil - mostrar como círculo
+            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
+              {post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de perfil atualizada"
+                  className="w-full h-full object-cover"
+                />
+              ) : post.author?.avatar ? (
+                <img
+                  src={post.author.avatar}
+                  alt="Foto de perfil atualizada"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">Sem foto</span>
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
-              <span className="text-gray-500">Foto não disponível</span>
+            // Foto de capa - mostrar retangular
+            <div className="w-full max-w-md rounded-lg overflow-hidden shadow-lg">
+              {post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de capa atualizada"
+                  className="w-full h-48 object-cover"
+                />
+              ) : post.author?.coverPhoto ? (
+                <img
+                  src={post.author.coverPhoto}
+                  alt="Foto de capa atualizada"
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500">Foto de capa não disponível</span>
+                </div>
+              )}
             </div>
           )}
         </div>
