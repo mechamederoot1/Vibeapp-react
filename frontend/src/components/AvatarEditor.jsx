@@ -196,7 +196,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="flex-1 p-6 space-y-6 overflow-y-auto">
           {/* Canvas de edição */}
           <div className="flex justify-center">
             <div 
