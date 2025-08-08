@@ -5,10 +5,11 @@ import {
   MessageCircle as MessageCircleIcon, Share, Repeat2
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
+import ImageUpload from '../components/ImageUpload'
 
 const Profile = () => {
   const { user } = useAuth()
