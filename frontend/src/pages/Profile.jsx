@@ -293,23 +293,38 @@ const Profile = () => {
             
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
-                {/* Avatares dos visitantes lado a lado */}
-                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                  {recentVisitors.map((visitor) => (
-                    <AvatarWithStory 
-                      key={visitor.id} 
-                      user={visitor} 
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
-                  ))}
-                </div>
-                <button 
-                  onClick={() => setShowVisitors(true)}
-                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                >
-                  Ver todos os visitantes
-                </button>
+                {profileVisitors.length > 0 ? (
+                  <>
+                    {/* Avatares dos visitantes lado a lado */}
+                    <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
+                      {profileVisitors.slice(0, 5).map((visitorData, index) => (
+                        <AvatarWithStory
+                          key={index}
+                          user={{
+                            id: visitorData.user.id,
+                            name: visitorData.user.fullName,
+                            username: visitorData.user.username,
+                            avatar: visitorData.user.avatar,
+                            hasStory: false // Real stories would come from another API
+                          }}
+                          size="sm"
+                          className="flex-shrink-0"
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setShowVisitors(true)}
+                      className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
+                    >
+                      Ver todos os visitantes
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <Eye size={24} className="text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Nenhum visitante ainda</p>
+                  </div>
+                )}
               </div>
             )}
             
