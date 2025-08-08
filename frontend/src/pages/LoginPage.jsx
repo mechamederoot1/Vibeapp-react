@@ -131,14 +131,6 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Demo credentials */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 text-center mb-2">Para demonstração:</p>
-          <div className="text-xs text-gray-500 space-y-1">
-            <p><strong>Email:</strong> demo@vibe.social</p>
-            <p><strong>Senha:</strong> demo123</p>
-          </div>
-        </div>
       </div>
     </div>
   )
