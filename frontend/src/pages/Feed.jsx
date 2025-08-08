@@ -118,7 +118,7 @@ const Stories = () => {
   return (
     <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
       <div className="p-4 w-full max-w-full">
-        <div className="flex space-x-3 overflow-x-auto stories-scroll pb-1 max-w-full">
+        <div className="flex space-x-3 overflow-x-hidden stories-scroll pb-1 max-w-full">
           {stories.map((story, index) => (
             <Story key={index} {...story} />
           ))}
@@ -165,7 +165,7 @@ const Feed = () => {
     {
       user: 'sofia_lima',
       avatar: 'https://picsum.photos/100/100?random=user5',
-      caption: 'Às vezes a felicidade está nos detalhes mais simples. Um café quente, um livro bom e a companhia certa fazem toda a diferença! ☕📚',
+      caption: 'Às vezes a felicidade está nos detalhes mais simples. Um café quente, um livro bom e a companhia certa fazem toda a diferença! ☕����',
       likes: 2156,
       comments: 203,
       time: '5 horas',
