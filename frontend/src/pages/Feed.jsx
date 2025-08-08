@@ -6,6 +6,7 @@ import PostModal from '../components/PostModal'
 import CreateTestUsers from '../components/CreateTestUsers'
 import StoryCreator from '../components/StoryCreator'
 import DatabaseMigration from '../components/DatabaseMigration'
+import ApiTester from '../components/ApiTester'
 
 const Post = ({ post, onLike, onShare, onRepost }) => {
   const { user } = useAuth()
