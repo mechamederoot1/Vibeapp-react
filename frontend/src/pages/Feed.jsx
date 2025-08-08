@@ -462,7 +462,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const handleStoryCreate = async (storyData) => {
     try {
       await storiesAPI.createStory(storyData)
-      // Refresh stories would happen here
+      // Reload stories after creating
+      await loadStories()
       console.log('Story created successfully')
     } catch (error) {
       console.error('Error creating story:', error)
