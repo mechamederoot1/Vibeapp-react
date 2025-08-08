@@ -268,6 +268,20 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
+    setShowCoverDropdown(!showCoverDropdown)
+  }
+
+  const handleEditCoverFromDropdown = () => {
+    setShowCoverDropdown(false)
+    setShowCoverEditor(true)
+  }
+
+  const handleViewCover = () => {
+    setShowCoverDropdown(false)
+    setShowCoverModal(true)
+  }
+
+  const handleCoverClick = () => {
     setShowCoverViewer(true)
   }
 
