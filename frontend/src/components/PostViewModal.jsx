@@ -124,9 +124,9 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
   if (!isOpen || !currentPost) return null
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex">
+    <div className="fixed inset-0 bg-black bg-opacity-90 z-50 w-screen h-screen">
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-white border-b border-gray-200">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-white border-b border-gray-200">
         <div className="flex items-center justify-between p-4">
           <button
             onClick={onClose}
@@ -141,50 +141,65 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex w-full pt-16">
+      {/* Main Content - Mobile First Layout */}
+      <div className="flex flex-col lg:flex-row w-full h-full pt-16">
         {/* Post Content Area */}
-        <div className="flex-1 bg-black flex items-center justify-center">
+        <div className="flex-1 bg-white lg:bg-black flex items-center justify-center p-4 overflow-hidden">
           {currentPost.type === 'text' ? (
-            <div className={`
-              max-w-md w-full mx-4 p-8 rounded-2xl flex items-center justify-center min-h-[400px]
-              ${currentPost.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
-                currentPost.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
-                currentPost.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
-                currentPost.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
-                currentPost.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
-                currentPost.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
-                currentPost.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
-                currentPost.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
-                'bg-white'}
-            `}>
-              <p className={`text-xl font-medium text-center leading-relaxed break-words ${
-                currentPost.backgroundColor ? 'text-white' : 'text-gray-800'
-              }`}>
-                {currentPost.content}
-              </p>
+            <div className="w-full max-w-2xl">
+              {currentPost.backgroundColor ? (
+                <div className={`
+                  w-full p-8 rounded-2xl flex items-center justify-center min-h-[300px] lg:min-h-[400px]
+                  ${currentPost.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    currentPost.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                    currentPost.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                    currentPost.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                    currentPost.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                    currentPost.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                    currentPost.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                    currentPost.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                    'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark'}
+                `}>
+                  <p className="text-xl lg:text-3xl font-medium text-center leading-relaxed break-words text-white">
+                    {currentPost.content}
+                  </p>
+                </div>
+              ) : (
+                <div className="w-full p-8 bg-gray-50 rounded-2xl flex items-center justify-center min-h-[300px] lg:min-h-[400px]">
+                  <p className="text-xl lg:text-3xl font-medium text-center leading-relaxed break-words text-gray-800">
+                    {currentPost.content}
+                  </p>
+                </div>
+              )}
             </div>
           ) : currentPost.type === 'image' && currentPost.imageUrl ? (
-            <img
-              src={currentPost.imageUrl}
-              alt="Post"
-              className="max-w-full max-h-full object-contain"
-            />
+            <div className="w-full h-full flex items-center justify-center">
+              <img
+                src={currentPost.imageUrl}
+                alt="Post"
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
           ) : currentPost.type === 'video' && currentPost.videoUrl ? (
-            <video
-              src={currentPost.videoUrl}
-              controls
-              className="max-w-full max-h-full object-contain"
-            />
+            <div className="w-full h-full flex items-center justify-center">
+              <video
+                src={currentPost.videoUrl}
+                controls
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
           ) : (
-            <div className="text-white text-center">
-              <p>Conteúdo não disponível</p>
+            <div className="text-gray-500 text-center">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MoreHorizontal size={32} />
+              </div>
+              <p className="text-lg">Conteúdo não disponível</p>
             </div>
           )}
         </div>
 
         {/* Sidebar - Post Info and Comments */}
-        <div className="w-80 bg-white flex flex-col">
+        <div className="w-full lg:w-96 bg-white flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200 max-h-[50vh] lg:max-h-full">
           {/* Post Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
@@ -197,14 +212,15 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
               ) : (
                 <div className="w-10 h-10 rounded-full bg-vibe-blue flex items-center justify-center">
                   <span className="text-white font-bold">
-                    {currentPost.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                    {currentPost.author?.firstName?.charAt(0)?.toUpperCase() ||
+                     currentPost.author?.fullName?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
                 </div>
               )}
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
                   <h4 className="font-semibold text-gray-900">
-                    {currentPost.author?.fullName || 'Usuário'}
+                    {currentPost.author?.fullName || currentPost.author?.firstName || 'Usuário'}
                   </h4>
                   {currentPost.author?.isVerified && (
                     <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
@@ -213,15 +229,15 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
                   )}
                 </div>
                 <p className="text-gray-500 text-sm">
-                  @{currentPost.author?.username} • {formatDateTime(currentPost.createdAt)}
+                  @{currentPost.author?.username || 'usuario'} • {formatDateTime(currentPost.createdAt)}
                 </p>
               </div>
             </div>
-            
+
             {/* Post caption for media posts */}
             {currentPost.content && (currentPost.type === 'image' || currentPost.type === 'video') && (
               <div className="mt-3">
-                <p className="text-gray-800">{currentPost.content}</p>
+                <p className="text-gray-800 leading-relaxed">{currentPost.content}</p>
               </div>
             )}
           </div>
@@ -232,7 +248,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
               <h3 className="font-semibold text-gray-900 mb-4">
                 Comentários ({currentPost.commentsCount || 0})
               </h3>
-              
+
               {comments.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
@@ -303,7 +319,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
                       <Repeat2 size={20} />
                       <span className="text-sm font-medium">{currentPost.repostsCount || 0}</span>
                     </button>
-                    
+
                     {showShareMenu && (
                       <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
                         <button
