@@ -150,8 +150,17 @@ async def upload_cover_photo(
         await save_and_resize_image(file, filepath, (800, 300))
         
         # Remover capa anterior se existir
-        if current_user.cover_photo and current_user.cover_photo.startswith("/uploads/"):
-            old_filepath = current_user.cover_photo[1:]  # Remove a barra inicial
+        if current_user.cover_photo:
+            if current_user.cover_photo.startswith("http"):
+                # URL completa, extrair apenas o path
+                from urllib.parse import urlparse
+                parsed = urlparse(current_user.cover_photo)
+                old_filepath = parsed.path[1:]  # Remove a barra inicial
+            elif current_user.cover_photo.startswith("/uploads/"):
+                old_filepath = current_user.cover_photo[1:]  # Remove a barra inicial
+            else:
+                old_filepath = current_user.cover_photo
+
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
         
