@@ -64,7 +64,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     try {
       let postData = {
         content: content.trim(),
-        type: postType
+        type: postType,
+        backgroundColor: backgroundColor
       }
 
       // Convert files to base64 for simple upload (in production, use proper file upload service)
