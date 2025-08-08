@@ -14,7 +14,11 @@ const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPho
   }
 
   const handleViewStory = () => {
-    setCurrentView('story')
+    if (onViewStory) {
+      onViewStory()
+    } else {
+      setCurrentView('story')
+    }
   }
 
   const handleBackToOptions = () => {
