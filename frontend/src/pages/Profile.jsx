@@ -962,6 +962,12 @@ const Profile = () => {
         user={profileData}
       />
 
+      <CoverModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        user={profileData}
+      />
+
       <CoverViewer
         isOpen={showCoverViewer}
         onClose={() => setShowCoverViewer(false)}
