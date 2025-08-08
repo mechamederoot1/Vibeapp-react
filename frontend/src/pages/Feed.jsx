@@ -303,6 +303,8 @@ const Stories = ({ onOpenStoryCreator }) => {
         setStories(response.data.storiesByAuthor || [])
       } catch (error) {
         console.error('Error loading stories:', error)
+        // Falhar silenciosamente e continuar sem stories
+        setStories([])
       } finally {
         setLoading(false)
       }
