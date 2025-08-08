@@ -242,10 +242,7 @@ const Register = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-3 mx-auto mb-4 w-16 h-16 flex items-center justify-center">
-            <VibeLogoSound size="md" className="text-white" />
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent">Vibe</h1>
+          <VibeLogoSimple size="lg" />
         </div>
 
         {/* Progress bar */}
