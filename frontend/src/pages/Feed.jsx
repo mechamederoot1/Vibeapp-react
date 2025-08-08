@@ -278,11 +278,19 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
       
       {/* Overlay para fechar menu de compartilhamento */}
       {showShareMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowShareMenu(false)}
         />
       )}
+
+      {/* Share as Story Modal */}
+      <ShareAsStoryModal
+        isOpen={showShareAsStory}
+        onClose={() => setShowShareAsStory(false)}
+        post={post}
+        onStoryCreate={onStoryShare}
+      />
     </div>
   )
 }
