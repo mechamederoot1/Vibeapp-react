@@ -102,13 +102,6 @@ const Profile = () => {
 
   // Real data is now loaded from backend via useEffect
 
-  const stories = [
-    { id: 1, title: 'Highlights', image: 'https://picsum.photos/100/100?random=story1' },
-    { id: 2, title: 'Viagem', image: 'https://picsum.photos/100/100?random=story2' },
-    { id: 3, title: 'Trabalho', image: 'https://picsum.photos/100/100?random=story3' },
-    { id: 4, title: 'Casa', image: 'https://picsum.photos/100/100?random=story4' },
-  ]
-
   const toggleVisitorsPrivacy = () => {
     setPrivacySettings(prev => ({
       ...prev,
