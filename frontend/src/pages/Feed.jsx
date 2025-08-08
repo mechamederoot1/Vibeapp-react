@@ -485,6 +485,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
 
   useEffect(() => {
     loadFeed()
+    loadStories()
   }, [page])
 
   if (loading) {
