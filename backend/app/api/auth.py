@@ -61,7 +61,10 @@ def verify_token(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-def get_current_user(token: str = Depends(), db: Session = Depends(get_db)):
+security = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
     user_id = verify_token(token)
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
