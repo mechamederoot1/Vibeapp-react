@@ -351,6 +351,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
+  const [showStoryCreator, setShowStoryCreator] = useState(false)
 
   const loadFeed = async () => {
     try {
