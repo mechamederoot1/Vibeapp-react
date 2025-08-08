@@ -248,6 +248,24 @@ const Profile = () => {
     setShowCoverEditor(true)
   }
 
+  const handlePostClick = (post) => {
+    setSelectedPost(post)
+    setShowPostModal(true)
+  }
+
+  const handleClosePostModal = () => {
+    setShowPostModal(false)
+    setSelectedPost(null)
+  }
+
+  const handlePostUpdate = (updatedPost) => {
+    setUserPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    )
+  }
+
   const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
     const sizeClasses = {
       sm: 'w-12 h-12',
