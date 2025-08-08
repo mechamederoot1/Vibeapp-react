@@ -32,14 +32,6 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
     }
   }
 
-  const handleRepost = async () => {
-    try {
-      await onRepost(post.id)
-      setShowShareMenu(false)
-    } catch (error) {
-      console.error('Error reposting post:', error)
-    }
-  }
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString)
