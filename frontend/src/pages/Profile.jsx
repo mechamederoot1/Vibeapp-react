@@ -13,6 +13,7 @@ import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarViewer from '../components/AvatarViewer'
+import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 
@@ -39,6 +40,7 @@ const Profile = () => {
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
   const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
 
@@ -249,6 +251,11 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
+    setShowCoverViewer(true)
+  }
+
+  const handleEditCoverFromViewer = () => {
+    setShowCoverViewer(false)
     setShowCoverEditor(true)
   }
 
@@ -795,7 +802,7 @@ const Profile = () => {
                     src={post.imageUrl}
                     alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
                     className={`w-full object-cover hover:opacity-95 transition-opacity ${
-                      post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
+                      post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
                     }`}
                   />
                 </div>
