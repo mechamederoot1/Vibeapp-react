@@ -442,7 +442,7 @@ const Profile = () => {
           >
             Editar Perfil
           </button>
-          <button 
+          <button
             onClick={() => setShowFriends(true)}
             className="btn-secondary px-4"
           >
@@ -451,6 +451,35 @@ const Profile = () => {
           <button className="btn-secondary px-4">
             <MessageCircle size={20} />
           </button>
+        </div>
+
+        {/* Seção de Amigos */}
+        <div className="mb-6">
+          <div className="bg-gray-50 rounded-lg">
+            <button
+              onClick={() => setFriendsExpanded(!friendsExpanded)}
+              className="w-full p-3 flex items-center justify-between hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <div className="flex items-center space-x-3">
+                <Users size={20} className="text-vibe-blue" />
+                <span className="font-medium">Amigos</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-vibe-blue font-semibold">{profileData.friends} amigos</span>
+                {friendsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+
+            {friendsExpanded && (
+              <div className="px-3 pb-3">
+                <div className="text-center py-4">
+                  <Users size={24} className="text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">Sistema de amizades em desenvolvimento</p>
+                  <p className="text-gray-400 text-xs">Em breve você poderá conectar-se com outros usuários!</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Seção de Visitantes do Perfil */}
