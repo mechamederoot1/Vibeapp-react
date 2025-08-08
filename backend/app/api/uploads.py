@@ -68,6 +68,7 @@ async def save_and_resize_image(file: UploadFile, filepath: str, max_size: tuple
 
 @router.post("/avatar")
 async def upload_avatar(
+    request: Request,
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
