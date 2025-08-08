@@ -19,6 +19,7 @@ from app.api.uploads import router as uploads_router
 # Import models to ensure they're registered
 from app.models.user import User
 from app.models.post import Post, PostLike, Comment, Share
+from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
 from app.models.notification import Notification
