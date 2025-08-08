@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
@@ -10,7 +10,8 @@ import CreatePost from './pages/CreatePost'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
-import { VibeLogoSound } from './components/VibeLogoGeometric'
+import SplashScreen from './components/SplashScreen'
+import VibeLogoSimple from './components/VibeLogoSimple'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
