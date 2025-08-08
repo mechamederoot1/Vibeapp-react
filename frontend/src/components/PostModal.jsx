@@ -131,13 +131,13 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* User info */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-center space-x-3">
               {user?.avatar ? (
-                <img 
-                  src={user.avatar} 
+                <img
+                  src={user.avatar}
                   alt="Avatar"
                   className="w-10 h-10 rounded-full object-cover"
                 />
@@ -156,7 +156,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           </div>
 
           {/* Content */}
-          <div className="p-4">
+          <div className="flex-1 p-4 overflow-y-auto">
             {/* Preview do post com cor de fundo */}
             {postType === 'text' && backgroundColor && content.trim() && (
               <div className="mb-4">
