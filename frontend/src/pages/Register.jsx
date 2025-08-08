@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { VibeLogoSound } from '../components/VibeLogoGeometric'
+import VibeLogoSimple from '../components/VibeLogoSimple'
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1)
