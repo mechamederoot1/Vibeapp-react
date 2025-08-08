@@ -153,13 +153,23 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/create" 
+        <Route
+          path="/create"
           element={
             <ProtectedRoute>
               <CreatePost />
             </ProtectedRoute>
-          } 
+          }
+        />
+
+        {/* Debug route */}
+        <Route
+          path="/debug/database"
+          element={
+            <div className="min-h-screen bg-gray-50 py-8">
+              <DatabaseFixer />
+            </div>
+          }
         />
 
         {/* Catch all route */}
