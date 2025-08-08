@@ -10,10 +10,12 @@ import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
 
 const Profile = () => {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
   const [privacySettings, setPrivacySettings] = useState({
