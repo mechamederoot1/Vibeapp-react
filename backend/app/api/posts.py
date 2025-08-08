@@ -63,19 +63,20 @@ async def create_post(
         )
     
     # Validate post type
-    if post_data.type not in ["text", "image", "video"]:
+    if post_data.type not in ["text", "image", "video", "profile_update"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid post type"
         )
-    
+
     new_post = Post(
         author_id=current_user.id,
         content=post_data.content,
         image_url=post_data.imageUrl,
         video_url=post_data.videoUrl,
         post_type=post_data.type,
-        background_color=post_data.backgroundColor
+        background_color=post_data.backgroundColor,
+        profile_update_type=post_data.profileUpdateType
     )
     
     db.add(new_post)
