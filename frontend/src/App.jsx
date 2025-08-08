@@ -10,7 +10,7 @@ import CreatePost from './pages/CreatePost'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
-import VibeLogo from './components/VibeLogo'
+import { VibeLogoSound } from './components/VibeLogoGeometric'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
