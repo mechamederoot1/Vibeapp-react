@@ -10,6 +10,7 @@ from app.database.database import engine, Base
 from app.api.auth import router as auth_router
 from app.api.users import router as users_router
 from app.api.posts import router as posts_router
+from app.api.dev_tools import router as dev_tools_router
 
 # Import models to ensure they're registered
 from app.models.user import User
