@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Search, MessageCircle, Heart, Plus, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import VibeLogo from './VibeLogo'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
