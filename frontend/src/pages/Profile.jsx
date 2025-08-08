@@ -12,7 +12,7 @@ import ProfileEditModal from '../components/ProfileEditModal'
 import ImageUpload from '../components/ImageUpload'
 
 const Profile = () => {
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
@@ -20,6 +20,13 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
+
+  // Estados para upload
+  const [uploading, setUploading] = useState({
+    avatar: false,
+    cover: false
+  })
+  const [uploadError, setUploadError] = useState(null)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
