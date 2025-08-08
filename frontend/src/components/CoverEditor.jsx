@@ -16,14 +16,21 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
 
   // Carregar imagem quando o modal abrir
   useEffect(() => {
-    if (isOpen && currentImage) {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => {
-        setImage(img)
-        centerImage(img)
+    if (isOpen) {
+      if (currentImage) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          setImage(img)
+          centerImage(img)
+        }
+        img.src = currentImage
+      } else {
+        // Se não há imagem atual, abrir seletor automaticamente após um pequeno delay
+        setTimeout(() => {
+          fileInputRef.current?.click()
+        }, 300)
       }
-      img.src = currentImage
     }
   }, [isOpen, currentImage])
 
