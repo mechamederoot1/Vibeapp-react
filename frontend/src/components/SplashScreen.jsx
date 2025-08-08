@@ -45,30 +45,35 @@ const SplashScreen = ({ onComplete, duration = 5000 }) => {
 
       {/* Logo central */}
       <div className="relative z-10 text-center">
-        <div className="animate-pulse">
-          <VibeLogoSimple 
-            size="xl" 
-            className="text-white animate-fade-in" 
+        <div className="animate-fade-in">
+          <VibeLogoSimple
+            size="xl"
+            className="text-white scale-110"
             textColor="text-white"
           />
         </div>
-        
+
         {/* Tagline */}
-        <p className="text-white/80 text-lg mt-4 font-light tracking-wide animate-fade-in-delay">
+        <p className="text-white/90 text-xl mt-6 font-light tracking-wide animate-fade-in-delay">
           Conecte-se e compartilhe suas vibes
         </p>
 
         {/* Loading indicator */}
-        <div className="mt-8 flex items-center justify-center">
-          <div className="w-32 h-1 bg-white/20 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-white rounded-full animate-loading-bar"
-              style={{ 
-                animation: `loading-bar ${duration}ms linear forwards` 
+        <div className="mt-10 flex items-center justify-center">
+          <div className="w-40 h-1 bg-white/30 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-white rounded-full shadow-lg"
+              style={{
+                animation: `loading-bar ${duration}ms ease-out forwards`
               }}
             />
           </div>
         </div>
+
+        {/* Versão pequena */}
+        <p className="text-white/60 text-sm mt-4 font-light animate-fade-in-delay-2">
+          v1.0.0
+        </p>
       </div>
 
       {/* Ondas de fundo */}
