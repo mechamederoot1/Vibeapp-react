@@ -175,8 +175,17 @@ async def remove_avatar(
     
     try:
         # Remover arquivo se existir
-        if current_user.avatar and current_user.avatar.startswith("/uploads/"):
-            filepath = current_user.avatar[1:]  # Remove a barra inicial
+        if current_user.avatar:
+            if current_user.avatar.startswith("http"):
+                # URL completa, extrair apenas o path
+                from urllib.parse import urlparse
+                parsed = urlparse(current_user.avatar)
+                filepath = parsed.path[1:]  # Remove a barra inicial
+            elif current_user.avatar.startswith("/uploads/"):
+                filepath = current_user.avatar[1:]  # Remove a barra inicial
+            else:
+                filepath = current_user.avatar
+
             if os.path.exists(filepath):
                 os.remove(filepath)
         
