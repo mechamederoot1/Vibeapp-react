@@ -91,8 +91,17 @@ async def upload_avatar(
         await save_and_resize_image(file, filepath, (400, 400))
         
         # Remover avatar anterior se existir
-        if current_user.avatar and current_user.avatar.startswith("/uploads/"):
-            old_filepath = current_user.avatar[1:]  # Remove a barra inicial
+        if current_user.avatar:
+            if current_user.avatar.startswith("http"):
+                # URL completa, extrair apenas o path
+                from urllib.parse import urlparse
+                parsed = urlparse(current_user.avatar)
+                old_filepath = parsed.path[1:]  # Remove a barra inicial
+            elif current_user.avatar.startswith("/uploads/"):
+                old_filepath = current_user.avatar[1:]  # Remove a barra inicial
+            else:
+                old_filepath = current_user.avatar
+
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
         
