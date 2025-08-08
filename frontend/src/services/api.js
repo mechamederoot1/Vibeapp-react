@@ -94,7 +94,7 @@ export const uploadsAPI = {
   uploadAvatar: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/uploads/avatar', formData, {
+    return uploadApi.post('/uploads/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -103,7 +103,7 @@ export const uploadsAPI = {
   uploadCover: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/uploads/cover', formData, {
+    return uploadApi.post('/uploads/cover', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -114,7 +114,7 @@ export const uploadsAPI = {
   uploadStoryMedia: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/uploads/story-media', formData, {
+    return uploadApi.post('/uploads/story-media', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
