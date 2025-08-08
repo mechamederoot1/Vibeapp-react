@@ -13,6 +13,7 @@ import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarViewer from '../components/AvatarViewer'
+import PostViewModal from '../components/PostViewModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
