@@ -38,6 +38,43 @@ const Profile = () => {
     profileVisibility: 'public'
   })
 
+  // Load user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.id) return
+
+      try {
+        setLoading(true)
+
+        // Load user stats
+        const statsResponse = await usersAPI.getUserStats(user.id)
+        setUserStats(statsResponse.data)
+
+        // Load user posts
+        const postsResponse = await postsAPI.getUserPosts(user.id)
+        setUserPosts(postsResponse.data.posts || [])
+
+        // Load profile visitors (only if user wants to show them)
+        if (privacySettings.showVisitors) {
+          try {
+            const visitorsResponse = await usersAPI.getProfileVisitors(user.id)
+            setProfileVisitors(visitorsResponse.data || [])
+          } catch (error) {
+            // User might not have permission to see visitors
+            console.log('Could not load visitors:', error.response?.data?.detail)
+          }
+        }
+
+      } catch (error) {
+        console.error('Error loading user data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUserData()
+  }, [user?.id, privacySettings.showVisitors])
+
   // Use real user data from auth context, fallback to defaults
   const profileData = {
     username: user?.username || user?.email?.split('@')[0] || 'usuario',
