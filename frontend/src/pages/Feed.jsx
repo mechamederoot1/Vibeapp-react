@@ -352,6 +352,7 @@ const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
               hasStory={true}
               hasUnviewed={storyGroup.hasUnviewed}
               storiesCount={storyGroup.stories.length}
+              onClick={() => onStoryClick(storyGroup, 0)}
             />
           ))}
         </div>
