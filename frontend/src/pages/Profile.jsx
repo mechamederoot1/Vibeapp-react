@@ -124,7 +124,16 @@ const Profile = () => {
 
     try {
       const response = await uploadsAPI.uploadAvatar(file)
-      setUser(response.data.user)
+
+      // Atualizar usuário com dados mais recentes
+      const updatedUser = response.data.user
+      setUser(updatedUser)
+
+      // Forçar atualização da interface
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
+
       console.log('Avatar uploaded successfully:', response.data.message)
 
       // Criar post automático no feed
