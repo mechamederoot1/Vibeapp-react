@@ -1,10 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Date
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import bcrypt
-
-Base = declarative_base()
+from ..database.database import Base
 
 class User(Base):
     __tablename__ = "users"
