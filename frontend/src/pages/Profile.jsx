@@ -19,6 +19,19 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
+
+  // Real data from backend
+  const [userStats, setUserStats] = useState({
+    friendsCount: 0,
+    followersCount: 0,
+    followingCount: 0,
+    postsCount: 0,
+    profileViewsCount: 0
+  })
+  const [userPosts, setUserPosts] = useState([])
+  const [profileVisitors, setProfileVisitors] = useState([])
+  const [loading, setLoading] = useState(true)
+
   const [privacySettings, setPrivacySettings] = useState({
     showVisitors: false,
     showFriends: true,
