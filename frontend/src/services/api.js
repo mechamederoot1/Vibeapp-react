@@ -70,6 +70,36 @@ export const postsAPI = {
   getUserPosts: (userId, page = 1, limit = 20) => api.get(`/posts/user/${userId}?page=${page}&limit=${limit}`)
 }
 
+// Uploads endpoints
+export const uploadsAPI = {
+  uploadAvatar: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/uploads/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+  uploadCover: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/uploads/cover', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+  removeAvatar: () => api.delete('/uploads/avatar'),
+  removeCover: () => api.delete('/uploads/cover'),
+}
+
+// Development endpoints
+export const devAPI = {
+  createTestUsers: () => api.post('/dev/create-test-users'),
+  listTestUsers: () => api.get('/dev/test-users'),
+}
+
 // Legacy services for backward compatibility
 export const authService = {
   login: (credentials) => authAPI.login(credentials.email, credentials.password),
