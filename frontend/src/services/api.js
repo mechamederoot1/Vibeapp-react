@@ -108,6 +108,7 @@ export const storiesAPI = {
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),
   listTestUsers: () => api.get('/dev/test-users'),
+  migrateDatabase: () => api.post('/dev/migrate-database'),
 }
 
 // Legacy services for backward compatibility
