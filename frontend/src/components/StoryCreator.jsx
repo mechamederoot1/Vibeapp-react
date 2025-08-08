@@ -6,10 +6,12 @@ import {
   Send, Camera, Upload
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import axios from 'axios'
 
 const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
-  const [currentStep, setCurrentStep] = useState('select') // select, edit, privacy
+  const [currentStep, setCurrentStep] = useState('select') // select, camera, edit, privacy
+  const [showCamera, setShowCamera] = useState(false)
   const [storyType, setStoryType] = useState('text') // text, image, video
   const [loading, setLoading] = useState(false)
   
@@ -127,26 +129,40 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const handleCreateStory = async () => {
     setLoading(true)
     try {
+      // Upload media file if exists
+      let mediaUrl = null
+      if (mediaFile) {
+        const formData = new FormData()
+        formData.append('file', mediaFile)
+
+        const uploadResponse = await axios.post('/api/uploads/story-media', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        mediaUrl = uploadResponse.data.url
+      }
+
+      // Prepare story data for API
       const storyData = {
         type: storyType,
-        background: backgroundGradient,
-        textElements,
-        privacy,
-        duration: duration * 60 * 60 // converter para segundos
+        content: storyType === 'text' ? textContent : null,
+        mediaUrl: mediaUrl,
+        backgroundGradient: storyType === 'text' ? backgroundGradient : null,
+        textElements: textElements,
+        privacy: privacy,
+        duration: duration
       }
 
-      if (mediaFile) {
-        // Em uma implementação real, você faria upload do arquivo
-        storyData.mediaUrl = mediaPreview
-      }
+      // Create story via API
+      const response = await axios.post('/api/stories/', storyData)
 
-      // Simular criação
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      onStoryCreate?.(storyData)
+      console.log('Story created successfully:', response.data)
+      onStoryCreate?.(response.data)
       handleClose()
     } catch (error) {
       console.error('Erro ao criar story:', error)
+      alert('Erro ao publicar story. Verifique sua conexão e tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -208,22 +224,22 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
 
               {/* Foto */}
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setCurrentStep('camera')}
                 className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-8 text-white text-center hover:scale-105 transition-transform"
               >
-                <Image size={48} className="mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Foto</h3>
-                <p className="text-sm opacity-90">Compartilhe uma imagem</p>
+                <Camera size={48} className="mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Câmera</h3>
+                <p className="text-sm opacity-90">Tirar foto ou escolher da galeria</p>
               </button>
 
               {/* Vídeo */}
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => setCurrentStep('camera')}
                 className="bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl p-8 text-white text-center hover:scale-105 transition-transform"
               >
                 <Video size={48} className="mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Vídeo</h3>
-                <p className="text-sm opacity-90">Grave ou selecione um vídeo</p>
+                <p className="text-sm opacity-90">Gravar ou selecionar vídeo</p>
               </button>
             </div>
 
@@ -234,6 +250,45 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
               onChange={handleFileSelect}
               className="hidden"
             />
+          </div>
+        )}
+
+        {currentStep === 'camera' && (
+          <div className="w-full h-full bg-black flex flex-col">
+            {/* Camera Controls */}
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center space-y-8">
+                <h2 className="text-2xl font-bold text-white">Escolha uma opção</h2>
+
+                <div className="flex flex-col space-y-4">
+                  <button
+                    onClick={() => {
+                      // For now, simulate camera by opening file picker
+                      fileInputRef.current?.click()
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg flex items-center justify-center space-x-2"
+                  >
+                    <Camera size={24} />
+                    <span>Abrir Câmera</span>
+                  </button>
+
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-4 rounded-lg flex items-center justify-center space-x-2"
+                  >
+                    <Upload size={24} />
+                    <span>Escolher da Galeria</span>
+                  </button>
+
+                  <button
+                    onClick={() => setCurrentStep('select')}
+                    className="text-white hover:text-gray-300 px-8 py-2"
+                  >
+                    Voltar
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
