@@ -57,7 +57,7 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
               className="w-8 h-8 rounded-full object-cover flex-shrink-0"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-vibe-blue flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-bold">
                 {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
               </span>
