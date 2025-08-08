@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { X, Send, Type, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import axios from 'axios'
+import { uploadsAPI, storiesAPI } from '../services/api'
 
 const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
