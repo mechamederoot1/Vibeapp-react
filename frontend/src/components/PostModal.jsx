@@ -73,7 +73,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
+        <div className="flex-1 p-4 space-y-4 overflow-y-auto">
           {/* Post Type Selector */}
           <div className="flex space-x-2">
             <button
@@ -224,7 +224,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 flex-shrink-0">
           <button
             onClick={handleSubmit}
             disabled={!content.trim() && !image}
