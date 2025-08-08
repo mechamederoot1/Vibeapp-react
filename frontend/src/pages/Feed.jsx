@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal } from 'lucide-react'
+import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, UserPlus, Eye } from 'lucide-react'
 import PostModal from '../components/PostModal'
 
 const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false, type = 'image' }) => (
