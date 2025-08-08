@@ -525,21 +525,31 @@ const Profile = () => {
             <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {/* Header do Post */}
               <div className="flex items-center p-4 pb-3">
-                <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
-                  <img
-                    src="https://picsum.photos/200/200?random=avatar"
-                    alt="Avatar"
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
+                {profileData.avatar ? (
+                  <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
+                    <img
+                      src={profileData.avatar}
+                      alt="Avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full border-2 border-vibe-blue bg-vibe-blue flex items-center justify-center">
+                    <span className="text-white font-bold">
+                      {profileData.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <div className="ml-3 flex-1">
                   <div className="flex items-center space-x-2">
-                    <h4 className="font-semibold text-gray-900">Maria Silva</h4>
-                    <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
+                    <h4 className="font-semibold text-gray-900">{profileData.name}</h4>
+                    {profileData.isVerified && (
+                      <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-gray-500 text-sm">@maria.silva • {post.timestamp}</p>
+                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleDateString()}</p>
                 </div>
                 <button className="p-1 hover:bg-gray-100 rounded-full">
                   <MoreHorizontal size={16} className="text-gray-500" />
@@ -547,27 +557,30 @@ const Profile = () => {
               </div>
 
               {/* Conteúdo do Post */}
-              {post.text && (
+              {post.content && (
                 <div className="px-4 pb-3">
-                  <p className="text-gray-800">{post.text}</p>
+                  <p className="text-gray-800">{post.content}</p>
                 </div>
               )}
 
               {/* Mídia do Post */}
-              {post.type !== 'text' && (
+              {post.type === 'image' && post.imageUrl && (
                 <div className="relative">
                   <img
-                    src={post.thumbnail}
+                    src={post.imageUrl}
                     alt={`Post ${post.id}`}
                     className="w-full h-64 object-cover"
                   />
-                  {post.type === 'video' && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
-                        <span className="text-white text-2xl ml-1">▶</span>
-                      </div>
-                    </div>
-                  )}
+                </div>
+              )}
+
+              {post.type === 'video' && post.videoUrl && (
+                <div className="relative">
+                  <video
+                    src={post.videoUrl}
+                    controls
+                    className="w-full h-64 object-cover"
+                  />
                 </div>
               )}
 
