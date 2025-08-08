@@ -99,7 +99,7 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                 </div>
               )}
             </div>
-            <p className="text-gray-500 text-xs">@{post.author?.username} • {timeAgo(post.createdAt)}</p>
+            <p className="text-gray-500 text-xs">@{post.author?.username} • {formatDateTime(post.createdAt)}</p>
           </div>
         </div>
         <button className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full">
