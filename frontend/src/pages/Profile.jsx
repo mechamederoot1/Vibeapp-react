@@ -116,6 +116,71 @@ const Profile = () => {
     }))
   }
 
+  // Funções de upload
+  const handleAvatarUpload = async (file) => {
+    setUploading(prev => ({ ...prev, avatar: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.uploadAvatar(file)
+      setUser(response.data.user)
+      console.log('Avatar uploaded successfully:', response.data.message)
+    } catch (error) {
+      console.error('Erro ao fazer upload do avatar:', error)
+      setUploadError('Erro ao fazer upload do avatar. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, avatar: false }))
+    }
+  }
+
+  const handleCoverUpload = async (file) => {
+    setUploading(prev => ({ ...prev, cover: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.uploadCover(file)
+      setUser(response.data.user)
+      console.log('Cover uploaded successfully:', response.data.message)
+    } catch (error) {
+      console.error('Erro ao fazer upload da capa:', error)
+      setUploadError('Erro ao fazer upload da capa. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, cover: false }))
+    }
+  }
+
+  const handleAvatarRemove = async () => {
+    setUploading(prev => ({ ...prev, avatar: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.removeAvatar()
+      setUser(response.data.user)
+      console.log('Avatar removed successfully')
+    } catch (error) {
+      console.error('Erro ao remover avatar:', error)
+      setUploadError('Erro ao remover avatar. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, avatar: false }))
+    }
+  }
+
+  const handleCoverRemove = async () => {
+    setUploading(prev => ({ ...prev, cover: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.removeCover()
+      setUser(response.data.user)
+      console.log('Cover removed successfully')
+    } catch (error) {
+      console.error('Erro ao remover capa:', error)
+      setUploadError('Erro ao remover capa. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, cover: false }))
+    }
+  }
+
   const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
     const sizeClasses = {
       sm: 'w-12 h-12',
