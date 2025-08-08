@@ -467,6 +467,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setPosts([newPost, ...posts])
   }
 
+  const handleOpenStories = (storyGroup, startIndex = 0) => {
+    setCurrentUserStories(storyGroup.stories || [])
+    setInitialStoryIndex(startIndex)
+    setShowStoryViewer(true)
+  }
+
   const handleStoryCreate = async (storyData) => {
     try {
       await storiesAPI.createStory(storyData)
