@@ -14,8 +14,9 @@ class PostCreate(BaseModel):
     content: Optional[str] = None
     imageUrl: Optional[str] = None
     videoUrl: Optional[str] = None
-    type: str = "text"  # text, image, video
+    type: str = "text"  # text, image, video, profile_update
     backgroundColor: Optional[str] = None  # Background color for text posts
+    profileUpdateType: Optional[str] = None  # avatar, cover (for profile update posts)
 
 class CommentCreate(BaseModel):
     content: str
