@@ -147,7 +147,8 @@ async def upload_cover_photo(
                 os.remove(old_filepath)
         
         # Atualizar URL da capa no banco
-        cover_url = f"/uploads/covers/{filename}"
+        base_url = f"{request.url.scheme}://{request.url.netloc}"
+        cover_url = f"{base_url}/uploads/covers/{filename}"
         current_user.cover_photo = cover_url
         db.commit()
         db.refresh(current_user)
