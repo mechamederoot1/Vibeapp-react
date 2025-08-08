@@ -459,7 +459,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
             <p className="text-red-600 mb-4">{error}</p>
             <button
               onClick={loadFeed}
-              className="bg-vite-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+              className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
             >
               Tentar novamente
             </button>
