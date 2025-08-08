@@ -47,6 +47,62 @@ const Header = ({ onOpenPostModal }) => {
               2
             </span>
           </button>
+
+          {/* User Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-vibe-blue flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">
+                    {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+              )}
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[180px]">
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <p className="font-medium text-gray-900">{user?.fullName || 'Usuário'}</p>
+                  <p className="text-sm text-gray-500">@{user?.username || user?.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    navigate('/profile')
+                    setShowUserMenu(false)
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                >
+                  <User size={16} />
+                  <span>Meu Perfil</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-red-600"
+                >
+                  <LogOut size={16} />
+                  <span>Sair</span>
+                </button>
+              </div>
+            )}
+
+            {/* Overlay to close menu */}
+            {showUserMenu && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowUserMenu(false)}
+              />
+            )}
+          </div>
         </div>
       </div>
     </header>
