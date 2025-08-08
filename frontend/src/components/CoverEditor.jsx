@@ -273,7 +273,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-200">
+        <div className="flex items-center justify-between p-4 border-t border-gray-200 flex-shrink-0 bg-white">
           <button
             onClick={handleReset}
             disabled={!image}
