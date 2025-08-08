@@ -107,8 +107,8 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
         <div className="w-full bg-white py-8 flex justify-center">
           {/* Renderizar foto de perfil como círculo ou foto de capa retangular */}
           {post.profileUpdateType === 'avatar' ? (
-            // Foto de perfil - mostrar como círculo
-            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
+            // Foto de perfil - mostrar como círculo maior
+            <div className="w-48 h-48 rounded-full border-4 border-white shadow-lg overflow-hidden">
               {post.imageUrl ? (
                 <img
                   src={post.imageUrl}
@@ -128,22 +128,22 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
               )}
             </div>
           ) : (
-            // Foto de capa - mostrar retangular
-            <div className="w-full max-w-md rounded-lg overflow-hidden shadow-lg">
+            // Foto de capa - mostrar retangular maior
+            <div className="w-full max-w-lg rounded-lg overflow-hidden shadow-lg">
               {post.imageUrl ? (
                 <img
                   src={post.imageUrl}
                   alt="Foto de capa atualizada"
-                  className="w-full h-48 object-cover"
+                  className="w-full h-64 object-cover"
                 />
               ) : post.author?.coverPhoto ? (
                 <img
                   src={post.author.coverPhoto}
                   alt="Foto de capa atualizada"
-                  className="w-full h-48 object-cover"
+                  className="w-full h-64 object-cover"
                 />
               ) : (
-                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
                   <span className="text-gray-500">Foto de capa não disponível</span>
                 </div>
               )}
