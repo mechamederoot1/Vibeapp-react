@@ -58,15 +58,9 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      />
-      
+    <div className="fixed inset-0 z-50 w-screen h-screen">
       {/* Modal */}
-      <div className="relative bg-white rounded-lg w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white w-full h-full overflow-y-auto flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <h2 className="text-lg font-semibold text-gray-900">Criar post</h2>
