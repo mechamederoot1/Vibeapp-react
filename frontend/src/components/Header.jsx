@@ -1,7 +1,10 @@
 import React from 'react'
-import { Search, MessageCircle, Heart, Camera } from 'lucide-react'
+import { Search, MessageCircle, Heart, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const Header = () => {
+  const navigate = useNavigate()
+
   return (
     <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10">
       <div className="flex items-center justify-between">
@@ -17,8 +20,12 @@ const Header = () => {
         </div>
         
         <div className="flex items-center space-x-3">
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <Camera size={24} className="text-gray-600" />
+          <button 
+            onClick={() => navigate('/create')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            title="Criar post"
+          >
+            <Plus size={24} className="text-gray-600" />
           </button>
           <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
             <Heart size={24} className="text-gray-600" />

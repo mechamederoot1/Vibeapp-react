@@ -13,7 +13,7 @@ const Profile = () => {
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
   const [privacySettings, setPrivacySettings] = useState({
-    showVisitors: false, // Por padrão oculto
+    showVisitors: false,
     showFriends: true,
     profileVisibility: 'public'
   })
@@ -31,15 +31,89 @@ const Profile = () => {
   }
 
   const recentVisitors = [
-    { id: 1, username: 'ana_costa', name: 'Ana Costa', avatar: 'https://picsum.photos/50/50?random=visitor1', time: '2h' },
-    { id: 2, username: 'joao_silva', name: 'João Silva', avatar: 'https://picsum.photos/50/50?random=visitor2', time: '4h' },
-    { id: 3, username: 'pedro_oliveira', name: 'Pedro Oliveira', avatar: 'https://picsum.photos/50/50?random=visitor3', time: '1d' },
+    { 
+      id: 1, 
+      username: 'ana_costa', 
+      name: 'Ana Costa', 
+      avatar: 'https://picsum.photos/50/50?random=visitor1', 
+      time: '2h',
+      hasStory: true 
+    },
+    { 
+      id: 2, 
+      username: 'joao_silva', 
+      name: 'João Silva', 
+      avatar: 'https://picsum.photos/50/50?random=visitor2', 
+      time: '4h',
+      hasStory: false 
+    },
+    { 
+      id: 3, 
+      username: 'pedro_oliveira', 
+      name: 'Pedro Oliveira', 
+      avatar: 'https://picsum.photos/50/50?random=visitor3', 
+      time: '1d',
+      hasStory: true 
+    },
+    { 
+      id: 4, 
+      username: 'sofia_lima', 
+      name: 'Sofia Lima', 
+      avatar: 'https://picsum.photos/50/50?random=visitor4', 
+      time: '2h',
+      hasStory: false 
+    },
+    { 
+      id: 5, 
+      username: 'carlos_pereira', 
+      name: 'Carlos Pereira', 
+      avatar: 'https://picsum.photos/50/50?random=visitor5', 
+      time: '5h',
+      hasStory: true 
+    },
   ]
 
   const recentFriends = [
-    { id: 1, username: 'sofia_lima', name: 'Sofia Lima', avatar: 'https://picsum.photos/50/50?random=friend1', mutualFriends: 8 },
-    { id: 2, username: 'carlos_pereira', name: 'Carlos Pereira', avatar: 'https://picsum.photos/50/50?random=friend2', mutualFriends: 12 },
-    { id: 3, username: 'lucia_martins', name: 'Lucia Martins', avatar: 'https://picsum.photos/50/50?random=friend3', mutualFriends: 5 },
+    { 
+      id: 1, 
+      username: 'sofia_lima', 
+      name: 'Sofia Lima', 
+      avatar: 'https://picsum.photos/50/50?random=friend1', 
+      mutualFriends: 8,
+      hasStory: true 
+    },
+    { 
+      id: 2, 
+      username: 'carlos_pereira', 
+      name: 'Carlos Pereira', 
+      avatar: 'https://picsum.photos/50/50?random=friend2', 
+      mutualFriends: 12,
+      hasStory: false 
+    },
+    { 
+      id: 3, 
+      username: 'lucia_martins', 
+      name: 'Lucia Martins', 
+      avatar: 'https://picsum.photos/50/50?random=friend3', 
+      mutualFriends: 5,
+      hasStory: true 
+    },
+    { 
+      id: 4, 
+      username: 'ana_costa', 
+      name: 'Ana Costa', 
+      avatar: 'https://picsum.photos/50/50?random=friend4', 
+      mutualFriends: 15,
+      hasStory: true 
+    },
+    { 
+      id: 5, 
+      username: 'joao_silva', 
+      name: 'João Silva', 
+      avatar: 'https://picsum.photos/50/50?random=friend5', 
+      mutualFriends: 3,
+      hasStory: false 
+    },
   ]
 
   const posts = Array(12).fill(null).map((_, index) => ({
@@ -62,6 +136,35 @@ const Profile = () => {
       ...prev,
       showVisitors: !prev.showVisitors
     }))
+  }
+
+  const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
+    const sizeClasses = {
+      sm: 'w-12 h-12',
+      md: 'w-14 h-14',
+      lg: 'w-16 h-16'
+    }
+    
+    return (
+      <div className={`flex flex-col items-center space-y-1 ${className}`}>
+        <div className={`${sizeClasses[size]} rounded-full p-0.5 ${
+          user.hasStory 
+            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
+            : 'bg-gray-300'
+        }`}>
+          <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
+            <img 
+              src={user.avatar} 
+              alt={user.name}
+              className="w-full h-full rounded-full object-cover"
+            />
+          </div>
+        </div>
+        <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+          {user.name.split(' ')[0]}
+        </span>
+      </div>
+    )
   }
 
   return (
@@ -88,6 +191,11 @@ const Profile = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          
+          {/* Botão de trocar capa */}
+          <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all">
+            <Camera size={20} />
+          </button>
         </div>
         
         {/* Avatar centralizado sobrepondo a capa */}
@@ -100,7 +208,7 @@ const Profile = () => {
                 className="w-full h-full rounded-full object-cover"
               />
             </div>
-            <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white">
+            <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
               <Camera size={14} className="text-white" />
             </button>
           </div>
@@ -200,30 +308,23 @@ const Profile = () => {
             
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
-                <div className="space-y-2">
+                {/* Avatares dos visitantes lado a lado */}
+                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
                   {recentVisitors.map((visitor) => (
-                    <div key={visitor.id} className="flex items-center justify-between p-2 hover:bg-white rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={visitor.avatar}
-                          alt={visitor.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-sm">{visitor.name}</p>
-                          <p className="text-gray-500 text-xs">@{visitor.username}</p>
-                        </div>
-                      </div>
-                      <span className="text-gray-500 text-xs">{visitor.time}</span>
-                    </div>
+                    <AvatarWithStory 
+                      key={visitor.id} 
+                      user={visitor} 
+                      size="sm"
+                      className="flex-shrink-0"
+                    />
                   ))}
-                  <button 
-                    onClick={() => setShowVisitors(true)}
-                    className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                  >
-                    Ver todos
-                  </button>
                 </div>
+                <button 
+                  onClick={() => setShowVisitors(true)}
+                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
+                >
+                  Ver todos os visitantes
+                </button>
               </div>
             )}
             
@@ -258,32 +359,23 @@ const Profile = () => {
             
             {friendsExpanded && (
               <div className="px-3 pb-3">
-                <div className="space-y-2">
+                {/* Avatares dos amigos lado a lado */}
+                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
                   {recentFriends.map((friend) => (
-                    <div key={friend.id} className="flex items-center justify-between p-2 hover:bg-white rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={friend.avatar}
-                          alt={friend.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-medium text-sm">{friend.name}</p>
-                          <p className="text-gray-500 text-xs">{friend.mutualFriends} amigos em comum</p>
-                        </div>
-                      </div>
-                      <button className="text-vibe-blue text-sm">
-                        <MessageCircle size={16} />
-                      </button>
-                    </div>
+                    <AvatarWithStory 
+                      key={friend.id} 
+                      user={friend} 
+                      size="sm"
+                      className="flex-shrink-0"
+                    />
                   ))}
-                  <button 
-                    onClick={() => setShowFriends(true)}
-                    className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                  >
-                    Ver todos os amigos
-                  </button>
                 </div>
+                <button 
+                  onClick={() => setShowFriends(true)}
+                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
+                >
+                  Ver todos os amigos
+                </button>
               </div>
             )}
           </div>
