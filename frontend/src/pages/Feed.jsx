@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal } from 'lucide-react'
+import PostModal from '../components/PostModal'
 
 const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false, type = 'image' }) => (
   <div className="bg-white mb-3 w-full max-w-full overflow-hidden relative">
@@ -128,8 +129,8 @@ const Stories = () => {
   )
 }
 
-const Feed = () => {
-  const posts = [
+const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
+  const [posts, setPosts] = useState([
     {
       user: 'ana_costa',
       avatar: 'https://picsum.photos/100/100?random=user1',
@@ -204,17 +205,29 @@ const Feed = () => {
       isLiked: true,
       type: 'image'
     }
-  ]
+  ])
+
+  const handleAddPost = (newPost) => {
+    setPosts([newPost, ...posts])
+  }
 
   return (
-    <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-      <Stories />
-      <div className="pb-safe w-full max-w-full">
-        {posts.map((post, index) => (
-          <Post key={index} {...post} />
-        ))}
+    <>
+      <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
+        <Stories />
+        <div className="pb-safe w-full max-w-full">
+          {posts.map((post, index) => (
+            <Post key={index} {...post} />
+          ))}
+        </div>
       </div>
-    </div>
+
+      <PostModal
+        isOpen={isPostModalOpen}
+        onClose={onClosePostModal}
+        onPost={handleAddPost}
+      />
+    </>
   )
 }
 
