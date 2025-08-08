@@ -30,6 +30,7 @@ const Profile = () => {
     cover: false
   })
   const [uploadError, setUploadError] = useState(null)
+  const [uploadSuccess, setUploadSuccess] = useState(null)
 
   // Estados para modais avançados
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
