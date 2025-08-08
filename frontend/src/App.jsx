@@ -20,10 +20,9 @@ const ProtectedRoute = ({ children }) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-4 mx-auto mb-4 w-16 h-16 flex items-center justify-center animate-pulse">
-            <VibeLogoSound size="lg" className="text-white" />
+          <div className="animate-pulse mb-4">
+            <VibeLogoSimple size="lg" />
           </div>
-          <h2 className="text-xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent mb-2">Vibe</h2>
           <p className="text-gray-600">Carregando...</p>
         </div>
       </div>
@@ -44,10 +43,9 @@ const PublicRoute = ({ children }) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-4 mx-auto mb-4 w-16 h-16 flex items-center justify-center animate-pulse">
-            <VibeLogoSound size="lg" className="text-white" />
+          <div className="animate-pulse mb-4">
+            <VibeLogoSimple size="lg" />
           </div>
-          <h2 className="text-xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent mb-2">Vibe</h2>
           <p className="text-gray-600">Carregando...</p>
         </div>
       </div>
