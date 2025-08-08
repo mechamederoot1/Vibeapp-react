@@ -41,10 +41,10 @@ const LoginPage = () => {
       <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="mb-6">
+          <div className="mb-6 flex justify-center">
             <VibeLogoSimple size="xl" />
           </div>
-          <p className="text-gray-600">Entre na sua conta</p>
+          <p className="text-gray-600 text-center">Entre na sua conta</p>
         </div>
 
         {/* Form */}
@@ -102,7 +102,7 @@ const LoginPage = () => {
         </form>
 
         {/* Forgot password */}
-        <div className="text-center mt-4">
+        <div className="text-center mt-6">
           <button className="text-vibe-blue hover:underline text-sm">
             Esqueceu sua senha?
           </button>
@@ -120,7 +120,7 @@ const LoginPage = () => {
 
         {/* Sign up link */}
         <div className="text-center">
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-center">
             Não tem uma conta?{' '}
             <button
               onClick={() => navigate('/register')}

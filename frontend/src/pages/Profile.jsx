@@ -12,7 +12,10 @@ import ProfileEditModal from '../components/ProfileEditModal'
 import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
-import AvatarViewer from '../components/AvatarViewer'
+import AvatarDropdown from '../components/AvatarDropdown'
+import PhotoModal from '../components/PhotoModal'
+import CoverDropdown from '../components/CoverDropdown'
+import CoverModal from '../components/CoverModal'
 import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
@@ -39,7 +42,10 @@ const Profile = () => {
   // Estados para modais avançados
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
-  const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
+  const [showCoverDropdown, setShowCoverDropdown] = useState(false)
+  const [showCoverModal, setShowCoverModal] = useState(false)
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
@@ -242,23 +248,39 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    setShowAvatarViewer(true)
+    setShowAvatarDropdown(!showAvatarDropdown)
   }
 
-  const handleEditAvatarFromViewer = () => {
-    setShowAvatarViewer(false)
+  const handleEditAvatarFromDropdown = () => {
+    setShowAvatarDropdown(false)
     setShowAvatarEditor(true)
+  }
+
+  const handleViewPhoto = () => {
+    setShowAvatarDropdown(false)
+    setShowPhotoModal(true)
   }
 
   const handleViewStory = () => {
     // TODO: implementar visualização de story
     console.log('Visualizar story do usuário')
-    setShowAvatarViewer(false)
+    setShowAvatarDropdown(false)
   }
 
   const handleCoverClick = () => {
-    setShowCoverViewer(true)
+    setShowCoverDropdown(!showCoverDropdown)
   }
+
+  const handleEditCoverFromDropdown = () => {
+    setShowCoverDropdown(false)
+    setShowCoverEditor(true)
+  }
+
+  const handleViewCover = () => {
+    setShowCoverDropdown(false)
+    setShowCoverModal(true)
+  }
+
 
   const handleEditCoverFromViewer = () => {
     setShowCoverViewer(false)
@@ -328,7 +350,7 @@ const Profile = () => {
       </div>
 
       {/* Capa do Perfil */}
-      <div className="relative cursor-pointer" onClick={handleCoverClick}>
+      <div className="relative">
         <div className="w-full h-48 relative">
           {profileData.coverPhoto ? (
             <img
@@ -341,18 +363,28 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Botão de trocar capa */}
-          <button
-            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowCoverEditor(true)
-            }}
-            disabled={uploading.cover}
-            title={uploading.cover ? "Fazendo upload..." : "Alterar foto de capa"}
-          >
-            <Camera size={20} />
-          </button>
+          {/* Botão de opções da capa */}
+          <div className="absolute top-4 right-4">
+            <button
+              className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCoverClick()
+              }}
+              disabled={uploading.cover}
+              title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
+            >
+              <Camera size={20} />
+            </button>
+
+            <CoverDropdown
+              isOpen={showCoverDropdown}
+              onClose={() => setShowCoverDropdown(false)}
+              user={profileData}
+              onEditCover={handleEditCoverFromDropdown}
+              onViewCover={handleViewCover}
+            />
+          </div>
 
           {uploading.cover && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -387,14 +419,26 @@ const Profile = () => {
             )}
           </div>
 
-          <button
-            className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
-            onClick={() => setShowAvatarEditor(true)}
-            disabled={uploading.avatar}
-            title={uploading.avatar ? "Fazendo upload..." : "Alterar foto de perfil"}
-          >
-            <Camera size={14} className="text-white" />
-          </button>
+          <div className="absolute bottom-0 right-0">
+            <button
+              className="w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
+              onClick={handleAvatarClick}
+              disabled={uploading.avatar}
+              title={uploading.avatar ? "Fazendo upload..." : "Opções do perfil"}
+            >
+              <Camera size={14} className="text-white" />
+            </button>
+
+            <AvatarDropdown
+              isOpen={showAvatarDropdown}
+              onClose={() => setShowAvatarDropdown(false)}
+              user={profileData}
+              hasRecentStory={false}
+              onEditPhoto={handleEditAvatarFromDropdown}
+              onViewStory={handleViewStory}
+              onViewPhoto={handleViewPhoto}
+            />
+          </div>
 
           {uploading.avatar && (
             <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
@@ -912,13 +956,16 @@ const Profile = () => {
         currentImage={profileData.coverPhoto}
       />
 
-      <AvatarViewer
-        isOpen={showAvatarViewer}
-        onClose={() => setShowAvatarViewer(false)}
-        onEditPhoto={handleEditAvatarFromViewer}
-        onViewStory={handleViewStory}
-        user={user}
-        hasRecentStory={false} // TODO: implementar lógica de stories
+      <PhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        user={profileData}
+      />
+
+      <CoverModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        user={profileData}
       />
 
       <CoverViewer
