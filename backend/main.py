@@ -80,8 +80,13 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "message": "Vibe Social API is running"
+        "message": "Vibe Social API is running",
+        "timestamp": datetime.utcnow().isoformat()
     }
+
+@app.get("/health")
+async def health_check_simple():
+    return {"status": "ok"}
 
 # Error handlers
 @app.exception_handler(404)
