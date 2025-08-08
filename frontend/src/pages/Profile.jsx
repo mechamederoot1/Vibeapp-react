@@ -190,7 +190,8 @@ const Profile = () => {
         await postsAPI.createPost({
           content: 'atualizou a foto de capa',
           type: 'profile_update',
-          profileUpdateType: 'cover'
+          profileUpdateType: 'cover',
+          imageUrl: updatedUser.coverPhoto
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
