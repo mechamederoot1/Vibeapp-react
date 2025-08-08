@@ -126,6 +126,17 @@ const Profile = () => {
       const response = await uploadsAPI.uploadAvatar(file)
       setUser(response.data.user)
       console.log('Avatar uploaded successfully:', response.data.message)
+
+      // Criar post automático no feed
+      try {
+        await postsAPI.createPost({
+          content: 'atualizou a foto do perfil',
+          type: 'profile_update',
+          profileUpdateType: 'avatar'
+        })
+      } catch (postError) {
+        console.log('Erro ao criar post de atualização:', postError)
+      }
     } catch (error) {
       console.error('Erro ao fazer upload do avatar:', error)
       setUploadError('Erro ao fazer upload do avatar. Tente novamente.')
@@ -142,6 +153,17 @@ const Profile = () => {
       const response = await uploadsAPI.uploadCover(file)
       setUser(response.data.user)
       console.log('Cover uploaded successfully:', response.data.message)
+
+      // Criar post automático no feed
+      try {
+        await postsAPI.createPost({
+          content: 'atualizou a foto de capa',
+          type: 'profile_update',
+          profileUpdateType: 'cover'
+        })
+      } catch (postError) {
+        console.log('Erro ao criar post de atualização:', postError)
+      }
     } catch (error) {
       console.error('Erro ao fazer upload da capa:', error)
       setUploadError('Erro ao fazer upload da capa. Tente novamente.')
