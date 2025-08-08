@@ -75,9 +75,6 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
-      {/* Debug component - only show in development */}
-      {import.meta.env.DEV && <AuthDebug />}
-
       <Routes>
         {/* Public Routes */}
         <Route 
