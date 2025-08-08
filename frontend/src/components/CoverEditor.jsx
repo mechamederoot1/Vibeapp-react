@@ -223,7 +223,20 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   <div className="text-center text-gray-500">
                     <Upload size={48} className="mx-auto mb-2" />
                     <p className="text-sm">Selecione uma foto</p>
+                    <p className="text-xs mt-1">Clique aqui ou use o botão acima</p>
                   </div>
+                </div>
+              )}
+
+              {image && (
+                <div className="absolute top-2 right-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-black bg-opacity-50 text-white p-1.5 rounded-full hover:bg-opacity-70 transition-all text-xs"
+                    title="Trocar foto"
+                  >
+                    <Upload size={14} />
+                  </button>
                 </div>
               )}
             </div>
