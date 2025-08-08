@@ -95,22 +95,30 @@ async def create_story(
             detail="Story must have content, media, or text elements"
         )
     
-    new_story = Story(
-        author_id=current_user.id,
-        story_type=story_data.type,
-        content=story_data.content,
-        media_url=story_data.mediaUrl,
-        background_gradient=story_data.backgroundGradient,
-        text_elements=story_data.textElements,
-        privacy=story_data.privacy,
-        duration_hours=story_data.duration
-    )
-    
-    db.add(new_story)
-    db.commit()
-    db.refresh(new_story)
-    
-    return new_story.to_dict(current_user.id)
+    try:
+        new_story = Story(
+            author_id=current_user.id,
+            story_type=story_data.type,
+            content=story_data.content,
+            media_url=story_data.mediaUrl,
+            background_gradient=story_data.backgroundGradient,
+            text_elements=story_data.textElements,
+            privacy=story_data.privacy,
+            duration_hours=story_data.duration
+        )
+
+        db.add(new_story)
+        db.commit()
+        db.refresh(new_story)
+
+        return new_story.to_dict(current_user.id)
+    except Exception as e:
+        db.rollback()
+        print(f"Error creating story: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating story: {str(e)}"
+        )
 
 @router.get("/{story_id}")
 async def get_story(
