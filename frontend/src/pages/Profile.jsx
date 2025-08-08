@@ -250,6 +250,12 @@ const Profile = () => {
     setShowAvatarEditor(true)
   }
 
+  const handleViewStory = () => {
+    // TODO: implementar visualização de story
+    console.log('Visualizar story do usuário')
+    setShowAvatarViewer(false)
+  }
+
   const handleCoverClick = () => {
     setShowCoverViewer(true)
   }
