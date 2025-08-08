@@ -300,6 +300,15 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             </button>
           </div>
         </div>
+
+        {/* Input file hidden */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
     </div>
   )
