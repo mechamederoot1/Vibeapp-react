@@ -1,7 +1,9 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, Float
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from app.database.database import Base
+from datetime import datetime
+
+Base = declarative_base()
 
 class Post(Base):
     __tablename__ = "posts"
@@ -9,34 +11,56 @@ class Post(Base):
     id = Column(Integer, primary_key=True, index=True)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
-    # Conteúdo
-    caption = Column(Text, nullable=True)
-    image_url = Column(String(500), nullable=True)
-    video_url = Column(String(500), nullable=True)
+    # Content
+    content = Column(Text, nullable=True)  # Text content
+    image_url = Column(String, nullable=True)  # Image URL
+    video_url = Column(String, nullable=True)  # Video URL
+    post_type = Column(String, nullable=False, default="text")  # text, image, video
     
-    # Localização
-    location_name = Column(String(100), nullable=True)
-    latitude = Column(Float, nullable=True)
-    longitude = Column(Float, nullable=True)
+    # Engagement
+    likes_count = Column(Integer, default=0)
+    comments_count = Column(Integer, default=0)
+    shares_count = Column(Integer, default=0)
+    reposts_count = Column(Integer, default=0)
     
-    # Configurações
+    # Status
     is_active = Column(Boolean, default=True)
-    allow_comments = Column(Boolean, default=True)
-    
-    # Privacidade
-    visibility = Column(String(20), default="public")  # public, friends, private
+    is_pinned = Column(Boolean, default=False)
     
     # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relacionamentos
+    # Relationships
     author = relationship("User", back_populates="posts")
-    likes = relationship("PostLike", back_populates="post", cascade="all, delete-orphan")
-    comments = relationship("Comment", back_populates="post", cascade="all, delete-orphan")
+    likes = relationship("PostLike", back_populates="post")
+    comments = relationship("Comment", back_populates="post")
 
-    def __repr__(self):
-        return f"<Post(id={self.id}, author_id={self.author_id})>"
+    def to_dict(self, current_user_id=None):
+        """Convert post to dictionary for API responses"""
+        # Check if current user liked this post
+        is_liked = False
+        if current_user_id:
+            is_liked = any(like.user_id == current_user_id for like in self.likes)
+        
+        return {
+            "id": self.id,
+            "authorId": self.author_id,
+            "author": self.author.to_public_dict() if self.author else None,
+            "content": self.content,
+            "imageUrl": self.image_url,
+            "videoUrl": self.video_url,
+            "type": self.post_type,
+            "likesCount": self.likes_count,
+            "commentsCount": self.comments_count,
+            "sharesCount": self.shares_count,
+            "repostsCount": self.reposts_count,
+            "isLiked": is_liked,
+            "isPinned": self.is_pinned,
+            "createdAt": self.created_at.isoformat(),
+            "updatedAt": self.updated_at.isoformat()
+        }
+
 
 class PostLike(Base):
     __tablename__ = "post_likes"
@@ -44,14 +68,12 @@ class PostLike(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
     
-    # Relacionamentos
-    user = relationship("User", back_populates="likes")
+    # Relationships
+    user = relationship("User")
     post = relationship("Post", back_populates="likes")
 
-    def __repr__(self):
-        return f"<PostLike(user_id={self.user_id}, post_id={self.post_id})>"
 
 class Comment(Base):
     __tablename__ = "comments"
@@ -59,23 +81,49 @@ class Comment(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    
-    # Comentário aninhado (resposta a outro comentário)
-    parent_comment_id = Column(Integer, ForeignKey("comments.id"), nullable=True)
-    
     content = Column(Text, nullable=False)
-    is_active = Column(Boolean, default=True)
     
     # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relacionamentos
-    user = relationship("User", back_populates="comments")
+    # Relationships
+    user = relationship("User")
     post = relationship("Post", back_populates="comments")
-    
-    # Auto-relacionamento para comentários aninhados
-    parent_comment = relationship("Comment", remote_side=[id], backref="replies")
 
-    def __repr__(self):
-        return f"<Comment(id={self.id}, user_id={self.user_id}, post_id={self.post_id})>"
+    def to_dict(self):
+        """Convert comment to dictionary for API responses"""
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "user": self.user.to_public_dict() if self.user else None,
+            "postId": self.post_id,
+            "content": self.content,
+            "createdAt": self.created_at.isoformat(),
+            "updatedAt": self.updated_at.isoformat()
+        }
+
+
+class Share(Base):
+    __tablename__ = "shares"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    share_type = Column(String, nullable=False)  # share, repost
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User")
+    post = relationship("Post")
+
+    def to_dict(self):
+        """Convert share to dictionary for API responses"""
+        return {
+            "id": self.id,
+            "userId": self.user_id,
+            "user": self.user.to_public_dict() if self.user else None,
+            "postId": self.post_id,
+            "shareType": self.share_type,
+            "createdAt": self.created_at.isoformat()
+        }
