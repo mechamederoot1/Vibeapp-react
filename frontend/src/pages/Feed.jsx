@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI } from '../services/api'
+import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
+import CreateTestUsers from '../components/CreateTestUsers'
+import SimpleStoryCreator from '../components/SimpleStoryCreator'
+import DatabaseMigration from '../components/DatabaseMigration'
+import ApiTester from '../components/ApiTester'
 
 const Post = ({ post, onLike, onShare, onRepost }) => {
   const { user } = useAuth()
@@ -81,13 +85,59 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
       </div>
       
       {/* Conteúdo do Post */}
-      {post.type === 'text' ? (
+      {post.type === 'profile_update' ? (
         <div className="mx-3 mb-3">
-          <div className="bg-gradient-to-br from-vibe-blue-light to-vibe-blue rounded-lg p-6 min-h-[200px] flex items-center justify-center">
-            <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
-              {post.content}
+          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg p-4 text-center">
+            <div className="flex items-center justify-center space-x-3 mb-3">
+              {post.author?.avatar ? (
+                <img
+                  src={post.author.avatar}
+                  alt="Avatar"
+                  className={`object-cover border-2 border-white ${
+                    post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
+                  }`}
+                />
+              ) : (
+                <div className={`bg-white bg-opacity-20 flex items-center justify-center border-2 border-white ${
+                  post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
+                }`}>
+                  <span className="text-white font-bold">
+                    {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                  </span>
+                </div>
+              )}
+            </div>
+            <p className="text-white font-medium">
+              {post.author?.fullName} {post.content}
             </p>
           </div>
+        </div>
+      ) : post.type === 'text' ? (
+        <div className="mx-3 mb-3">
+          {post.backgroundColor ? (
+            <div className={`
+              rounded-lg p-6 min-h-[200px] flex items-center justify-center
+              ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                'bg-gradient-to-br from-vibe-blue-light to-vibe-blue'}
+            `}>
+              <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
+                {post.content}
+              </p>
+            </div>
+          ) : (
+            <div className="p-4">
+              <p className="text-gray-800 text-lg leading-relaxed break-words">
+                {post.content}
+              </p>
+            </div>
+          )}
         </div>
       ) : post.type === 'image' && post.imageUrl ? (
         <div className="w-full overflow-hidden">
@@ -205,15 +255,17 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
   )
 }
 
-const Story = ({ user, isOwn = false }) => (
-  <div className="flex flex-col items-center space-y-1 flex-shrink-0">
-    <div className="w-16 h-16 rounded-full p-0.5 bg-gray-300">
+const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0 }) => (
+  <div className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+    <div className={`w-16 h-16 rounded-full p-0.5 ${
+      hasUnviewed
+        ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+        : hasStory
+        ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
+        : 'bg-gray-300'
+    }`}>
       <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
-        {isOwn ? (
-          <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark rounded-full flex items-center justify-center relative">
-            <span className="text-white font-bold text-lg">+</span>
-          </div>
-        ) : user?.avatar ? (
+        {user?.avatar ? (
           <img
             src={user.avatar}
             alt={user.fullName}
@@ -229,25 +281,68 @@ const Story = ({ user, isOwn = false }) => (
       </div>
     </div>
     <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
-      {isOwn ? 'Seu story' : user?.firstName || 'Usuário'}
+      {user?.firstName || 'Usuário'}
     </span>
+    {storiesCount > 1 && (
+      <span className="text-xs text-gray-400">
+        {storiesCount} stories
+      </span>
+    )}
   </div>
 )
 
-const Stories = () => {
+const Stories = ({ onOpenStoryCreator }) => {
   const { user } = useAuth()
-  
-  // For now, just show user's own story - in a real app, you'd fetch stories from API
-  const stories = [
-    { user: null, isOwn: true }
-  ]
+  const [stories, setStories] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        const response = await storiesAPI.getStories()
+        setStories(response.data.storiesByAuthor || [])
+      } catch (error) {
+        console.error('Error loading stories:', error)
+        // Falhar silenciosamente e continuar sem stories
+        setStories([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadStories()
+  }, [])
 
   return (
     <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
       <div className="p-4 w-full max-w-full overflow-hidden">
         <div className="flex space-x-3 stories-scroll pb-1 w-max max-w-none" style={{overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
-          {stories.map((story, index) => (
-            <Story key={index} {...story} />
+          {/* Create story button */}
+          <div className="flex flex-col items-center space-y-1 flex-shrink-0">
+            <button
+              onClick={onOpenStoryCreator}
+              className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 transition-all"
+            >
+              <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
+                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">+</span>
+                </div>
+              </div>
+            </button>
+            <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+              Criar story
+            </span>
+          </div>
+
+          {/* User stories */}
+          {stories.map((storyGroup, index) => (
+            <Story
+              key={index}
+              user={storyGroup.author}
+              hasStory={true}
+              hasUnviewed={storyGroup.hasUnviewed}
+              storiesCount={storyGroup.stories.length}
+            />
           ))}
         </div>
       </div>
@@ -260,6 +355,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
+  const [showStoryCreator, setShowStoryCreator] = useState(false)
 
   const loadFeed = async () => {
     try {
@@ -330,6 +426,16 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setPosts([newPost, ...posts])
   }
 
+  const handleStoryCreate = async (storyData) => {
+    try {
+      await storiesAPI.createStory(storyData)
+      // Refresh stories would happen here
+      console.log('Story created successfully')
+    } catch (error) {
+      console.error('Error creating story:', error)
+    }
+  }
+
   useEffect(() => {
     loadFeed()
   }, [page])
@@ -337,7 +443,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
+        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="flex justify-center py-8">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
@@ -349,18 +455,50 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   if (error) {
+    // Verificar se é erro de coluna não encontrada (precisa migração)
+    const needsMigration = error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')
+    // Verificar se é erro de rede/conectividade
+    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS')
+
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
         <div className="flex justify-center py-8">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button 
-              onClick={loadFeed}
-              className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
-            >
-              Tentar novamente
-            </button>
+          <div className="space-y-6 max-w-md w-full px-4">
+            {needsMigration ? (
+              <>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Atualização do Banco Necessária
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    O banco de dados precisa ser atualizado com as novas funcionalidades.
+                  </p>
+                </div>
+                <DatabaseMigration />
+              </>
+            ) : isNetworkError ? (
+              <>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Problema de Conectividade
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    Não foi possível conectar com o servidor backend.
+                  </p>
+                </div>
+                <ApiTester />
+              </>
+            ) : (
+              <div className="text-center">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={loadFeed}
+                  className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -370,23 +508,30 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   return (
     <>
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories />
+        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
         <div className="pb-safe w-full max-w-full">
           {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Eye size={32} className="text-gray-400" />
+            <div className="space-y-8 p-4">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Eye size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
+                <p className="text-gray-500 mb-4">
+                  Seja o primeiro a compartilhar algo! Clique no botão + para criar seu primeiro post.
+                </p>
+                <button
+                  onClick={onOpenPostModal}
+                  className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Criar primeiro post
+                </button>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
-              <p className="text-gray-500 mb-4">
-                Seja o primeiro a compartilhar algo! Clique no botão + para criar seu primeiro post.
-              </p>
-              <button 
-                onClick={onOpenPostModal}
-                className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
-              >
-                Criar primeiro post
-              </button>
+
+              {/* Componente para criar usuários teste */}
+              <div className="border-t border-gray-200 pt-8">
+                <CreateTestUsers />
+              </div>
             </div>
           ) : (
             posts.map((post) => (
@@ -406,6 +551,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         isOpen={isPostModalOpen}
         onClose={onClosePostModal}
         onPost={handleAddPost}
+      />
+
+      <SimpleStoryCreator
+        isOpen={showStoryCreator}
+        onClose={() => setShowStoryCreator(false)}
+        onStoryCreate={handleStoryCreate}
       />
     </>
   )

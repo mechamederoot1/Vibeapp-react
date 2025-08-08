@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Image, Video, Type, Send } from 'lucide-react'
+import { X, Image, Video, Type, Send, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
 
@@ -11,6 +11,23 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [videoFile, setVideoFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Estados para cor de fundo
+  const [backgroundColor, setBackgroundColor] = useState(null)
+  const [showColorPicker, setShowColorPicker] = useState(false)
+
+  // Opções de cores predefinidas
+  const colorOptions = [
+    { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
+    { name: 'Azul', value: 'blue', gradient: 'bg-gradient-to-br from-blue-400 to-blue-600' },
+    { name: 'Verde', value: 'green', gradient: 'bg-gradient-to-br from-green-400 to-green-600' },
+    { name: 'Roxo', value: 'purple', gradient: 'bg-gradient-to-br from-purple-400 to-purple-600' },
+    { name: 'Rosa', value: 'pink', gradient: 'bg-gradient-to-br from-pink-400 to-pink-600' },
+    { name: 'Laranja', value: 'orange', gradient: 'bg-gradient-to-br from-orange-400 to-orange-600' },
+    { name: 'Vermelho', value: 'red', gradient: 'bg-gradient-to-br from-red-400 to-red-600' },
+    { name: 'Vibe', value: 'vibe', gradient: 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' },
+    { name: 'Sunset', value: 'sunset', gradient: 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' }
+  ]
 
   const handleFileUpload = (file, type) => {
     if (type === 'image') {
@@ -47,7 +64,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     try {
       let postData = {
         content: content.trim(),
-        type: postType
+        type: postType,
+        backgroundColor: backgroundColor
       }
 
       // Convert files to base64 for simple upload (in production, use proper file upload service)
@@ -74,6 +92,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
       setImageFile(null)
       setVideoFile(null)
       setPostType('text')
+      setBackgroundColor(null)
+      setShowColorPicker(false)
       onClose()
 
     } catch (error) {
@@ -89,6 +109,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setImageFile(null)
     setVideoFile(null)
     setPostType('text')
+    setBackgroundColor(null)
+    setShowColorPicker(false)
     setError('')
     onClose()
   }
@@ -96,8 +118,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-white z-50 flex flex-col">
+      <div className="h-full w-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Criar post</h2>
@@ -109,13 +131,13 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
           {/* User info */}
-          <div className="p-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-center space-x-3">
               {user?.avatar ? (
-                <img 
-                  src={user.avatar} 
+                <img
+                  src={user.avatar}
                   alt="Avatar"
                   className="w-10 h-10 rounded-full object-cover"
                 />
@@ -134,13 +156,25 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           </div>
 
           {/* Content */}
-          <div className="p-4">
+          <div className="flex-1 p-4 overflow-y-auto">
+            {/* Preview do post com cor de fundo */}
+            {postType === 'text' && backgroundColor && content.trim() && (
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                <div className={`p-6 rounded-lg ${colorOptions.find(c => c.value === backgroundColor)?.gradient} min-h-[120px] flex items-center justify-center`}>
+                  <p className="text-white text-center font-medium text-lg leading-relaxed">
+                    {content}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="O que está acontecendo?"
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none resize-none"
-              rows={4}
+              rows={8}
               maxLength={500}
             />
             <div className="flex justify-between items-center mt-2">
@@ -148,6 +182,50 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 {content.length}/500 caracteres
               </span>
             </div>
+
+            {/* Seletor de cores para posts de texto */}
+            {postType === 'text' && !imageFile && !videoFile && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-gray-700">Cor de fundo (opcional):</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowColorPicker(!showColorPicker)}
+                    className="flex items-center space-x-2 text-sm text-vibe-blue hover:text-vibe-blue-dark"
+                  >
+                    <Palette size={16} />
+                    <span>{showColorPicker ? 'Ocultar' : 'Mostrar'} cores</span>
+                  </button>
+                </div>
+
+                {showColorPicker && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {colorOptions.map((color) => (
+                      <button
+                        key={color.value || 'none'}
+                        type="button"
+                        onClick={() => setBackgroundColor(color.value)}
+                        className={`
+                          w-12 h-12 rounded-lg border-2 transition-all
+                          ${color.gradient}
+                          ${backgroundColor === color.value
+                            ? 'border-gray-900 scale-110'
+                            : 'border-gray-200 hover:border-gray-400'
+                          }
+                        `}
+                        title={color.name}
+                      >
+                        {color.value === null && (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <X size={16} className="text-gray-400" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Media preview */}
             {imageFile && (
@@ -193,7 +271,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between p-4 border-t border-gray-200">
+          <div className="flex items-center justify-between p-4 border-t border-gray-200 flex-shrink-0 bg-white">
             <div className="flex items-center space-x-2">
               {/* Image upload */}
               <label className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">

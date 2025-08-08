@@ -5,13 +5,17 @@ import {
   MessageCircle as MessageCircleIcon, Share, Repeat2
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
+import ImageUpload from '../components/ImageUpload'
+import AvatarEditor from '../components/AvatarEditor'
+import CoverEditor from '../components/CoverEditor'
+import AvatarViewer from '../components/AvatarViewer'
 
 const Profile = () => {
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
@@ -19,6 +23,19 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
+
+  // Estados para upload
+  const [uploading, setUploading] = useState({
+    avatar: false,
+    cover: false
+  })
+  const [uploadError, setUploadError] = useState(null)
+  const [uploadSuccess, setUploadSuccess] = useState(null)
+
+  // Estados para modais avançados
+  const [showAvatarEditor, setShowAvatarEditor] = useState(false)
+  const [showCoverEditor, setShowCoverEditor] = useState(false)
+  const [showAvatarViewer, setShowAvatarViewer] = useState(false)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -94,18 +111,138 @@ const Profile = () => {
 
   // Real data is now loaded from backend via useEffect
 
-  const stories = [
-    { id: 1, title: 'Highlights', image: 'https://picsum.photos/100/100?random=story1' },
-    { id: 2, title: 'Viagem', image: 'https://picsum.photos/100/100?random=story2' },
-    { id: 3, title: 'Trabalho', image: 'https://picsum.photos/100/100?random=story3' },
-    { id: 4, title: 'Casa', image: 'https://picsum.photos/100/100?random=story4' },
-  ]
-
   const toggleVisitorsPrivacy = () => {
     setPrivacySettings(prev => ({
       ...prev,
       showVisitors: !prev.showVisitors
     }))
+  }
+
+  // Funções de upload
+  const handleAvatarUpload = async (file) => {
+    setUploading(prev => ({ ...prev, avatar: true }))
+    setUploadError(null)
+    setUploadSuccess(null)
+
+    try {
+      const response = await uploadsAPI.uploadAvatar(file)
+
+      // Atualizar usuário com dados mais recentes
+      const updatedUser = response.data.user
+      setUser(updatedUser)
+
+      // Mostrar mensagem de sucesso
+      setUploadSuccess('Foto de perfil atualizada com sucesso!')
+
+      // Forçar atualização da interface após um delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+
+      console.log('Avatar uploaded successfully:', response.data.message)
+
+      // Criar post automático no feed
+      try {
+        await postsAPI.createPost({
+          content: 'atualizou a foto do perfil',
+          type: 'profile_update',
+          profileUpdateType: 'avatar'
+        })
+      } catch (postError) {
+        console.log('Erro ao criar post de atualização:', postError)
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload do avatar:', error)
+      setUploadError('Erro ao fazer upload do avatar. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, avatar: false }))
+    }
+  }
+
+  const handleCoverUpload = async (file) => {
+    setUploading(prev => ({ ...prev, cover: true }))
+    setUploadError(null)
+    setUploadSuccess(null)
+
+    try {
+      const response = await uploadsAPI.uploadCover(file)
+
+      // Atualizar usuário com dados mais recentes
+      const updatedUser = response.data.user
+      setUser(updatedUser)
+
+      // Mostrar mensagem de sucesso
+      setUploadSuccess('Foto de capa atualizada com sucesso!')
+
+      // Forçar atualização da interface após um delay
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+
+      console.log('Cover uploaded successfully:', response.data.message)
+
+      // Criar post automático no feed
+      try {
+        await postsAPI.createPost({
+          content: 'atualizou a foto de capa',
+          type: 'profile_update',
+          profileUpdateType: 'cover'
+        })
+      } catch (postError) {
+        console.log('Erro ao criar post de atualização:', postError)
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload da capa:', error)
+      setUploadError('Erro ao fazer upload da capa. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, cover: false }))
+    }
+  }
+
+  const handleAvatarRemove = async () => {
+    setUploading(prev => ({ ...prev, avatar: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.removeAvatar()
+      setUser(response.data.user)
+      console.log('Avatar removed successfully')
+    } catch (error) {
+      console.error('Erro ao remover avatar:', error)
+      setUploadError('Erro ao remover avatar. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, avatar: false }))
+    }
+  }
+
+  const handleCoverRemove = async () => {
+    setUploading(prev => ({ ...prev, cover: true }))
+    setUploadError(null)
+
+    try {
+      const response = await uploadsAPI.removeCover()
+      setUser(response.data.user)
+      console.log('Cover removed successfully')
+    } catch (error) {
+      console.error('Erro ao remover capa:', error)
+      setUploadError('Erro ao remover capa. Tente novamente.')
+    } finally {
+      setUploading(prev => ({ ...prev, cover: false }))
+    }
+  }
+
+  // Funções para controlar os novos modais
+  const handleAvatarClick = () => {
+    setShowAvatarViewer(true)
+  }
+
+  const handleEditAvatarFromViewer = () => {
+    setShowAvatarViewer(false)
+    setShowAvatarEditor(true)
+  }
+
+  const handleCoverClick = () => {
+    setShowCoverEditor(true)
   }
 
   const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
@@ -153,8 +290,8 @@ const Profile = () => {
       </div>
 
       {/* Capa do Perfil */}
-      <div className="relative">
-        <div className="w-full h-48 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 relative">
+      <div className="relative cursor-pointer" onClick={handleCoverClick}>
+        <div className="w-full h-48 relative">
           {profileData.coverPhoto ? (
             <img
               src={profileData.coverPhoto}
@@ -167,16 +304,35 @@ const Profile = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
           {/* Botão de trocar capa */}
-          <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all">
+          <button
+            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowCoverEditor(true)
+            }}
+            disabled={uploading.cover}
+          >
             <Camera size={20} />
           </button>
+
+          {uploading.cover && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="text-white text-center">
+                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-sm">Fazendo upload...</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Avatar Section */}
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
         <div className="relative">
-          <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
+          <div
+            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105"
+            onClick={handleAvatarClick}
+          >
             {profileData.avatar ? (
               <img
                 src={profileData.avatar}
@@ -191,9 +347,20 @@ const Profile = () => {
               </div>
             )}
           </div>
-          <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
+
+          <button
+            className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
+            onClick={() => setShowAvatarEditor(true)}
+            disabled={uploading.avatar}
+          >
             <Camera size={14} className="text-white" />
           </button>
+
+          {uploading.avatar && (
+            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -240,6 +407,32 @@ const Profile = () => {
             {profileData.bio}
           </p>
         </div>
+
+        {/* Erro de upload */}
+        {uploadError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-red-600 text-sm text-center">{uploadError}</p>
+            <button
+              onClick={() => setUploadError(null)}
+              className="text-red-500 text-xs underline block mx-auto mt-1"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
+
+        {/* Sucesso de upload */}
+        {uploadSuccess && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <p className="text-green-600 text-sm text-center">{uploadSuccess}</p>
+            <button
+              onClick={() => setUploadSuccess(null)}
+              className="text-green-500 text-xs underline block mx-auto mt-1"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
 
         {/* Botões de Ação */}
         <div className="flex space-x-2 mb-6">
@@ -375,29 +568,18 @@ const Profile = () => {
         {/* Stories/Highlights */}
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2">
-            {/* Adicionar novo story */}
+            {/* Adicionar novo destaque */}
             <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer">
                 <span className="text-gray-400 text-2xl">+</span>
               </div>
               <span className="text-xs text-gray-600">Novo</span>
             </div>
-            
-            {/* Stories salvos */}
-            {stories.map((story) => (
-              <div key={story.id} className="flex flex-col items-center space-y-2 flex-shrink-0">
-                <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5">
-                  <img 
-                    src={story.image} 
-                    alt={story.title}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-                <span className="text-xs text-gray-600 max-w-[60px] truncate">
-                  {story.title}
-                </span>
-              </div>
-            ))}
+
+            {/* Mensagem quando não há destaques */}
+            <div className="flex-1 flex items-center justify-center py-4">
+              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+            </div>
           </div>
         </div>
       </div>
@@ -478,8 +660,23 @@ const Profile = () => {
           {userPosts.map((post) => (
             <div key={post.id} className="relative aspect-square">
               {post.type === 'text' ? (
-                <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center p-4">
-                  <p className="text-white text-sm text-center font-medium line-clamp-4">
+                <div className={`
+                  w-full h-full flex items-center justify-center p-4
+                  ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                    post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                    post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                    post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                    post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                    post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                    post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                    post.backgroundColor ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                    'bg-gray-100 border-2 border-gray-200'}
+                `}>
+                  <p className={`
+                    text-sm text-center font-medium line-clamp-4
+                    ${post.backgroundColor ? 'text-white' : 'text-gray-800'}
+                  `}>
                     {post.content}
                   </p>
                 </div>
@@ -632,6 +829,29 @@ const Profile = () => {
           onClose={() => setShowEditModal(false)}
         />
       )}
+
+      {/* Novos modais avançados */}
+      <AvatarEditor
+        isOpen={showAvatarEditor}
+        onClose={() => setShowAvatarEditor(false)}
+        onSave={handleAvatarUpload}
+        currentImage={profileData.avatar}
+      />
+
+      <CoverEditor
+        isOpen={showCoverEditor}
+        onClose={() => setShowCoverEditor(false)}
+        onSave={handleCoverUpload}
+        currentImage={profileData.coverPhoto}
+      />
+
+      <AvatarViewer
+        isOpen={showAvatarViewer}
+        onClose={() => setShowAvatarViewer(false)}
+        onEditPhoto={handleEditAvatarFromViewer}
+        user={user}
+        hasRecentStory={false} // TODO: implementar lógica de stories
+      />
     </div>
   )
 }

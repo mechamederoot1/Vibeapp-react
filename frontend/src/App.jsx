@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
+import DatabaseFixer from './components/DatabaseFixer'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
@@ -152,13 +153,23 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/create" 
+        <Route
+          path="/create"
           element={
             <ProtectedRoute>
               <CreatePost />
             </ProtectedRoute>
-          } 
+          }
+        />
+
+        {/* Debug route */}
+        <Route
+          path="/debug/database"
+          element={
+            <div className="min-h-screen bg-gray-50 py-8">
+              <DatabaseFixer />
+            </div>
+          }
         />
 
         {/* Catch all route */}

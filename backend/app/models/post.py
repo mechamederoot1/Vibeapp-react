@@ -13,7 +13,9 @@ class Post(Base):
     content = Column(Text, nullable=True)  # Text content
     image_url = Column(String, nullable=True)  # Image URL
     video_url = Column(String, nullable=True)  # Video URL
-    post_type = Column(String, nullable=False, default="text")  # text, image, video
+    post_type = Column(String, nullable=False, default="text")  # text, image, video, profile_update
+    background_color = Column(String, nullable=True)  # Background color for text posts
+    profile_update_type = Column(String, nullable=True)  # avatar, cover (para posts de atualização de perfil)
     
     # Engagement
     likes_count = Column(Integer, default=0)
@@ -49,6 +51,8 @@ class Post(Base):
             "imageUrl": self.image_url,
             "videoUrl": self.video_url,
             "type": self.post_type,
+            "backgroundColor": self.background_color,
+            "profileUpdateType": self.profile_update_type,
             "likesCount": self.likes_count,
             "commentsCount": self.comments_count,
             "sharesCount": self.shares_count,

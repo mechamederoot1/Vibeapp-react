@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from datetime import datetime
 import uvicorn
+import os
 
 # Import database
 from app.database.database import engine, Base
@@ -10,10 +13,14 @@ from app.database.database import engine, Base
 from app.api.auth import router as auth_router
 from app.api.users import router as users_router
 from app.api.posts import router as posts_router
+from app.api.stories import router as stories_router
+from app.api.dev_tools import router as dev_tools_router
+from app.api.uploads import router as uploads_router
 
 # Import models to ensure they're registered
 from app.models.user import User
 from app.models.post import Post, PostLike, Comment, Share
+from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
 from app.models.notification import Notification
@@ -21,10 +28,13 @@ from app.models.notification import Notification
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create database tables
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created")
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"❌ Error creating database tables: {e}")
     yield
-    print("Application shutdown")
+    print("👋 Application shutdown")
 
 # Create FastAPI app
 app = FastAPI(
@@ -37,7 +47,14 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "*"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://192.168.1.109:3000",
+        "http://127.0.0.1:3000",
+        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
+        "*"
+    ],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,6 +64,13 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
+app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
+app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
+app.include_router(dev_tools_router, prefix="/api/dev", tags=["development"])
+
+# Mount static files (uploads)
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 async def root():
@@ -60,8 +84,13 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "message": "Vibe Social API is running"
+        "message": "Vibe Social API is running",
+        "timestamp": datetime.utcnow().isoformat()
     }
+
+@app.get("/health")
+async def health_check_simple():
+    return {"status": "ok"}
 
 # Error handlers
 @app.exception_handler(404)

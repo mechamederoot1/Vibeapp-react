@@ -1,10 +1,13 @@
 import axios from 'axios'
 
 // Configuração base da API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  // Se estamos em desenvolvimento e o proxy está configurado, use caminho relativo
+  import.meta.env.DEV ? '/api' : 'http://localhost:8000/api'
+)
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -68,6 +71,47 @@ export const postsAPI = {
   createComment: (postId, content) => api.post(`/posts/${postId}/comments`, { content }),
   deletePost: (postId) => api.delete(`/posts/${postId}`),
   getUserPosts: (userId, page = 1, limit = 20) => api.get(`/posts/user/${userId}?page=${page}&limit=${limit}`)
+}
+
+// Uploads endpoints
+export const uploadsAPI = {
+  uploadAvatar: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/uploads/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+  uploadCover: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/uploads/cover', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
+  removeAvatar: () => api.delete('/uploads/avatar'),
+  removeCover: () => api.delete('/uploads/cover'),
+}
+
+// Stories endpoints
+export const storiesAPI = {
+  getStories: (limit = 20) => api.get(`/stories?limit=${limit}`),
+  createStory: (storyData) => api.post('/stories', storyData),
+  getStory: (storyId) => api.get(`/stories/${storyId}`),
+  getStoryViews: (storyId, limit = 50) => api.get(`/stories/${storyId}/views?limit=${limit}`),
+  deleteStory: (storyId) => api.delete(`/stories/${storyId}`),
+  getUserStories: (userId, limit = 10) => api.get(`/stories/user/${userId}?limit=${limit}`),
+}
+
+// Development endpoints
+export const devAPI = {
+  createTestUsers: () => api.post('/dev/create-test-users'),
+  listTestUsers: () => api.get('/dev/test-users'),
+  migrateDatabase: () => api.post('/dev/migrate-database'),
 }
 
 // Legacy services for backward compatibility
