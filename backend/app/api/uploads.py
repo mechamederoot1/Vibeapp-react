@@ -215,8 +215,17 @@ async def remove_cover_photo(
     
     try:
         # Remover arquivo se existir
-        if current_user.cover_photo and current_user.cover_photo.startswith("/uploads/"):
-            filepath = current_user.cover_photo[1:]  # Remove a barra inicial
+        if current_user.cover_photo:
+            if current_user.cover_photo.startswith("http"):
+                # URL completa, extrair apenas o path
+                from urllib.parse import urlparse
+                parsed = urlparse(current_user.cover_photo)
+                filepath = parsed.path[1:]  # Remove a barra inicial
+            elif current_user.cover_photo.startswith("/uploads/"):
+                filepath = current_user.cover_photo[1:]  # Remove a barra inicial
+            else:
+                filepath = current_user.cover_photo
+
             if os.path.exists(filepath):
                 os.remove(filepath)
         
