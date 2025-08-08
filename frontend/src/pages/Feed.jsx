@@ -110,25 +110,27 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
             <img
               src={post.imageUrl}
               alt={post.profileUpdateType === 'avatar' ? "Foto de perfil atualizada" : "Foto de capa atualizada"}
-              className="w-full h-96 object-cover"
+              className={`w-full object-cover ${
+                post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
+              }`}
             />
           ) : post.profileUpdateType === 'avatar' && post.author?.avatar ? (
             <img
               src={post.author.avatar}
               alt="Foto de perfil atualizada"
-              className="w-full h-96 object-cover"
+              className="w-full h-96 md:h-[500px] object-cover"
             />
           ) : post.profileUpdateType === 'cover' && post.author?.coverPhoto ? (
             <img
               src={post.author.coverPhoto}
               alt="Foto de capa atualizada"
-              className="w-full h-96 object-cover"
+              className="w-full h-48 md:h-64 object-cover"
             />
           ) : post.author?.avatar ? (
             <img
               src={post.author.avatar}
               alt="Foto de perfil"
-              className="w-full h-96 object-cover"
+              className="w-full h-96 md:h-[500px] object-cover"
             />
           ) : (
             <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
