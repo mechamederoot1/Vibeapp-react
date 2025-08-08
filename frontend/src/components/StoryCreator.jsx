@@ -83,7 +83,11 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
     const reader = new FileReader()
     reader.onload = (event) => {
       setMediaPreview(event.target.result)
-      setCurrentStep('edit')
+      if (isImage) {
+        setShowPhotoEditor(true)
+      } else {
+        setCurrentStep('edit')
+      }
     }
     reader.readAsDataURL(file)
   }
