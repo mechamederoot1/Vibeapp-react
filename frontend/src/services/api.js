@@ -124,8 +124,8 @@ export const uploadsAPI = {
 
 // Stories endpoints
 export const storiesAPI = {
-  getStories: (limit = 20) => api.get(`/stories?limit=${limit}`),
-  createStory: (storyData) => api.post('/stories', storyData),
+  getStories: (limit = 20) => api.get(`/stories/?limit=${limit}`),
+  createStory: (storyData) => api.post('/stories/', storyData),
   getStory: (storyId) => api.get(`/stories/${storyId}`),
   getStoryViews: (storyId, limit = 50) => api.get(`/stories/${storyId}/views?limit=${limit}`),
   deleteStory: (storyId) => api.delete(`/stories/${storyId}`),
