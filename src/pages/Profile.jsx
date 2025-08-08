@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal, Camera } from 'lucide-react'
+import { Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal, Camera, Users } from 'lucide-react'
+import FriendsList from '../components/FriendsList'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts')
+  const [showFriends, setShowFriends] = useState(false)
 
   const profileData = {
     username: 'maria.silva',
@@ -94,14 +96,20 @@ const Profile = () => {
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
-          <div className="text-center">
+          <button
+            onClick={() => setShowFriends(true)}
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+          >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
-          </div>
-          <div className="text-center">
+          </button>
+          <button
+            onClick={() => setShowFriends(true)}
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+          >
             <p className="font-bold text-lg">{profileData.following}</p>
             <p className="text-gray-600 text-sm">Seguindo</p>
-          </div>
+          </button>
         </div>
 
         {/* Bio */}
@@ -116,8 +124,11 @@ const Profile = () => {
           <button className="btn-primary flex-1">
             Editar Perfil
           </button>
-          <button className="btn-secondary px-4">
-            <UserPlus size={20} />
+          <button
+            onClick={() => setShowFriends(true)}
+            className="btn-secondary px-4"
+          >
+            <Users size={20} />
           </button>
           <button className="btn-secondary px-4">
             <MessageCircle size={20} />
@@ -218,6 +229,13 @@ const Profile = () => {
           </div>
         ))}
       </div>
+
+      {/* Modal de Lista de Amigos */}
+      {showFriends && (
+        <FriendsList
+          onClose={() => setShowFriends(false)}
+        />
+      )}
     </div>
   )
 }
