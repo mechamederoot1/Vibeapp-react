@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Users, Plus, CheckCircle, XCircle } from 'lucide-react'
+import { Users, Plus, CheckCircle, XCircle, Database } from 'lucide-react'
 import { devAPI } from '../services/api'
+import DatabaseMigration from './DatabaseMigration'
 
 const CreateTestUsers = () => {
   const [loading, setLoading] = useState(false)
