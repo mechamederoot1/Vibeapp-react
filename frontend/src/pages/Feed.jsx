@@ -104,31 +104,30 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
       
       {/* Conteúdo do Post */}
       {post.type === 'profile_update' ? (
-        <div className="mx-3 mb-3">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg p-4 text-center">
-            <div className="flex items-center justify-center space-x-3 mb-3">
-              {post.author?.avatar ? (
-                <img
-                  src={post.author.avatar}
-                  alt="Avatar"
-                  className={`object-cover border-2 border-white ${
-                    post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
-                  }`}
-                />
-              ) : (
-                <div className={`bg-white bg-opacity-20 flex items-center justify-center border-2 border-white ${
-                  post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
-                }`}>
-                  <span className="text-white font-bold">
-                    {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-              )}
+        <div className="w-full overflow-hidden">
+          {post.profileUpdateType === 'avatar' && post.author?.avatar ? (
+            <img
+              src={post.author.avatar}
+              alt="Foto de perfil atualizada"
+              className="w-full h-96 object-cover"
+            />
+          ) : post.profileUpdateType === 'cover' && post.author?.coverPhoto ? (
+            <img
+              src={post.author.coverPhoto}
+              alt="Foto de capa atualizada"
+              className="w-full h-96 object-cover"
+            />
+          ) : post.author?.avatar ? (
+            <img
+              src={post.author.avatar}
+              alt="Foto de perfil"
+              className="w-full h-96 object-cover"
+            />
+          ) : (
+            <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-500">Foto não disponível</span>
             </div>
-            <p className="text-white font-medium">
-              {post.author?.fullName} {post.content}
-            </p>
-          </div>
+          )}
         </div>
       ) : post.type === 'text' ? (
         <div className="mx-3 mb-3">
