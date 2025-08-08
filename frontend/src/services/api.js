@@ -8,37 +8,57 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // 30 seconds for general requests
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Interceptor para adicionar token de autenticação
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
+// Create special instance for uploads with longer timeout
+const uploadApi = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 120000, // 2 minutes for uploads
+  headers: {
+    'Content-Type': 'application/json',
   },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+})
 
-// Interceptor para tratar respostas
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+// Function to add interceptors
+const addInterceptors = (apiInstance) => {
+  // Interceptor para adicionar token de autenticação
+  apiInstance.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+        console.log(`🔑 Adding auth token to ${config.method?.toUpperCase()} ${config.url}`)
+      } else {
+        console.log(`⚠️  No token found for ${config.method?.toUpperCase()} ${config.url}`)
+      }
+      return config
+    },
+    (error) => {
+      console.error('❌ Request interceptor error:', error)
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
-  }
-)
+  )
+
+  // Interceptor para tratar respostas
+  apiInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
+      return Promise.reject(error)
+    }
+  )
+}
+
+// Add interceptors to both instances
+addInterceptors(api)
+addInterceptors(uploadApi)
 
 // Auth endpoints
 export const authAPI = {
@@ -78,7 +98,7 @@ export const uploadsAPI = {
   uploadAvatar: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/uploads/avatar', formData, {
+    return uploadApi.post('/uploads/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -87,7 +107,7 @@ export const uploadsAPI = {
   uploadCover: (file) => {
     const formData = new FormData()
     formData.append('file', file)
-    return api.post('/uploads/cover', formData, {
+    return uploadApi.post('/uploads/cover', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -95,12 +115,21 @@ export const uploadsAPI = {
   },
   removeAvatar: () => api.delete('/uploads/avatar'),
   removeCover: () => api.delete('/uploads/cover'),
+  uploadStoryMedia: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return uploadApi.post('/uploads/story-media', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
 }
 
 // Stories endpoints
 export const storiesAPI = {
-  getStories: (limit = 20) => api.get(`/stories?limit=${limit}`),
-  createStory: (storyData) => api.post('/stories', storyData),
+  getStories: (limit = 20) => api.get(`/stories/?limit=${limit}`),
+  createStory: (storyData) => api.post('/stories/', storyData),
   getStory: (storyId) => api.get(`/stories/${storyId}`),
   getStoryViews: (storyId, limit = 50) => api.get(`/stories/${storyId}/views?limit=${limit}`),
   deleteStory: (storyId) => api.delete(`/stories/${storyId}`),

@@ -160,7 +160,90 @@ async def logout():
     # In a real app, you might want to blacklist the token
     return {"message": "Successfully logged out"}
 
+@router.post("/create-demo-user")
+async def create_demo_user(db: Session = Depends(get_db)):
+    """Create a demo user for testing"""
+
+    demo_email = "demo@vibesocial.com"
+    demo_password = "demo123"
+
+    # Check if demo user already exists
+    existing_user = db.query(User).filter(User.email == demo_email).first()
+    if existing_user:
+        # Login with existing demo user
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": str(existing_user.id)}, expires_delta=access_token_expires
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": existing_user.to_dict(),
+            "message": "Demo user already exists, logged in successfully"
+        }
+
+    # Create new demo user
+    new_user = User(
+        email=demo_email,
+        first_name="Demo",
+        last_name="User",
+        username="demo.user",
+        bio="This is a demo user for testing Vibe Social 🚀",
+        location="Demo City",
+        is_verified=True
+    )
+    new_user.set_password(demo_password)
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    # Create access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(new_user.id)}, expires_delta=access_token_expires
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": new_user.to_dict(),
+        "message": "Demo user created successfully"
+    }
+
 # Health check endpoint
 @router.get("/health")
 async def auth_health():
     return {"status": "healthy", "service": "authentication"}
+
+# Debug endpoint
+@router.post("/debug-token")
+async def debug_token(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    """Debug endpoint to check token validity"""
+    try:
+        token = credentials.credentials
+        user_id = verify_token(token)
+        user = db.query(User).filter(User.id == user_id).first()
+
+        return {
+            "status": "valid",
+            "token_valid": True,
+            "user_id": user_id,
+            "user_found": user is not None,
+            "user_active": user.is_active if user else False,
+            "user_email": user.email if user else None
+        }
+    except HTTPException as e:
+        return {
+            "status": "invalid",
+            "token_valid": False,
+            "error": e.detail,
+            "status_code": e.status_code
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "token_valid": False,
+            "error": str(e)
+        }

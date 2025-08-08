@@ -13,12 +13,15 @@ import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarViewer from '../components/AvatarViewer'
+import PostViewModal from '../components/PostViewModal'
+import ConnectionsModal from '../components/ConnectionsModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
+  const [showConnections, setShowConnections] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
@@ -36,6 +39,8 @@ const Profile = () => {
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
   const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showPostModal, setShowPostModal] = useState(false)
+  const [selectedPost, setSelectedPost] = useState(null)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -146,7 +151,8 @@ const Profile = () => {
         await postsAPI.createPost({
           content: 'atualizou a foto do perfil',
           type: 'profile_update',
-          profileUpdateType: 'avatar'
+          profileUpdateType: 'avatar',
+          imageUrl: updatedUser.avatar
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -186,7 +192,8 @@ const Profile = () => {
         await postsAPI.createPost({
           content: 'atualizou a foto de capa',
           type: 'profile_update',
-          profileUpdateType: 'cover'
+          profileUpdateType: 'cover',
+          imageUrl: updatedUser.coverPhoto
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -243,6 +250,24 @@ const Profile = () => {
 
   const handleCoverClick = () => {
     setShowCoverEditor(true)
+  }
+
+  const handlePostClick = (post) => {
+    setSelectedPost(post)
+    setShowPostModal(true)
+  }
+
+  const handleClosePostModal = () => {
+    setShowPostModal(false)
+    setSelectedPost(null)
+  }
+
+  const handlePostUpdate = (updatedPost) => {
+    setUserPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    )
   }
 
   const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
@@ -305,12 +330,13 @@ const Profile = () => {
 
           {/* Botão de trocar capa */}
           <button
-            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
             onClick={(e) => {
               e.stopPropagation()
               setShowCoverEditor(true)
             }}
             disabled={uploading.cover}
+            title={uploading.cover ? "Fazendo upload..." : "Editar foto de capa"}
           >
             <Camera size={20} />
           </button>
@@ -386,14 +412,14 @@ const Profile = () => {
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
           <button
-            onClick={() => setShowFriends(true)}
+            onClick={() => setShowConnections(true)}
             className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
           <button
-            onClick={() => setShowFriends(true)}
+            onClick={() => setShowConnections(true)}
             className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
@@ -442,18 +468,20 @@ const Profile = () => {
           >
             Editar Perfil
           </button>
-          <button 
-            onClick={() => setShowFriends(true)}
-            className="btn-secondary px-4"
+          <button
+            onClick={() => setShowConnections(true)}
+            className="btn-secondary px-4 flex items-center space-x-2"
           >
             <Users size={20} />
+            <span className="hidden sm:inline">Conexões</span>
           </button>
           <button className="btn-secondary px-4">
             <MessageCircle size={20} />
           </button>
         </div>
 
-        {/* Seção de Visitantes do Perfil */}
+
+        {/* Seção de Visitas Recentes */}
         <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
             <button
@@ -462,13 +490,13 @@ const Profile = () => {
             >
               <div className="flex items-center space-x-3">
                 <Eye size={20} className="text-vibe-blue" />
-                <span className="font-medium">Quem visualizou meu perfil</span>
-                <button
+                <span className="font-medium">Visitas Recentes</span>
+                <div
                   onClick={(e) => {
                     e.stopPropagation()
                     toggleVisitorsPrivacy()
                   }}
-                  className="p-1 hover:bg-white rounded-full"
+                  className="p-1 hover:bg-white rounded-full cursor-pointer"
                   title={privacySettings.showVisitors ? "Ocultar visitantes" : "Mostrar visitantes"}
                 >
                   {privacySettings.showVisitors ? (
@@ -476,14 +504,14 @@ const Profile = () => {
                   ) : (
                     <EyeOff size={16} className="text-gray-400" />
                   )}
-                </button>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <span className="text-vibe-blue font-semibold">{profileData.profileViews} pessoas</span>
                 {visitorsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
               </div>
             </button>
-            
+
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
                 {profileVisitors.length > 0 ? (
@@ -520,45 +548,13 @@ const Profile = () => {
                 )}
               </div>
             )}
-            
+
             {visitorsExpanded && !privacySettings.showVisitors && (
               <div className="px-3 pb-3 text-center">
                 <div className="py-4">
                   <Lock size={24} className="text-gray-400 mx-auto mb-2" />
                   <p className="text-gray-500 text-sm">Visitantes do perfil estão ocultos</p>
                   <p className="text-gray-400 text-xs">Clique no ícone acima para mostrar</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Divisor entre seções */}
-        <div className="border-t border-gray-200 my-6"></div>
-
-        {/* Seção de Amigos */}
-        <div className="mb-6">
-          <div className="bg-gray-50 rounded-lg">
-            <button 
-              onClick={() => setFriendsExpanded(!friendsExpanded)}
-              className="w-full p-3 flex items-center justify-between hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <Users size={20} className="text-vibe-blue" />
-                <span className="font-medium">Amigos</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-vibe-blue font-semibold">{profileData.friends} amigos</span>
-                {friendsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-            </button>
-            
-            {friendsExpanded && (
-              <div className="px-3 pb-3">
-                <div className="text-center py-4">
-                  <Users size={24} className="text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">Sistema de amizades em desenvolvimento</p>
-                  <p className="text-gray-400 text-xs">Em breve você poderá conectar-se com outros usuários!</p>
                 </div>
               </div>
             )}
@@ -658,7 +654,11 @@ const Profile = () => {
         /* Grid de Posts */
         <div className="grid grid-cols-3 gap-1">
           {userPosts.map((post) => (
-            <div key={post.id} className="relative aspect-square">
+            <div
+              key={post.id}
+              className="relative aspect-square cursor-pointer hover:opacity-75 transition-opacity"
+              onClick={() => handlePostClick(post)}
+            >
               {post.type === 'text' ? (
                 <div className={`
                   w-full h-full flex items-center justify-center p-4
@@ -670,7 +670,6 @@ const Profile = () => {
                     post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
                     post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
                     post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
-                    post.backgroundColor ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
                     'bg-gray-100 border-2 border-gray-200'}
                 `}>
                   <p className={`
@@ -746,7 +745,13 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleDateString()}</p>
+                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</p>
                 </div>
                 <button className="p-1 hover:bg-gray-100 rounded-full">
                   <MoreHorizontal size={16} className="text-gray-500" />
@@ -762,22 +767,63 @@ const Profile = () => {
 
               {/* Mídia do Post */}
               {post.type === 'image' && post.imageUrl && (
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <img
                     src={post.imageUrl}
                     alt={`Post ${post.id}`}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-64 object-cover hover:opacity-95 transition-opacity"
                   />
                 </div>
               )}
 
               {post.type === 'video' && post.videoUrl && (
-                <div className="relative">
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <video
                     src={post.videoUrl}
                     controls
                     className="w-full h-64 object-cover"
+                    onClick={(e) => e.stopPropagation()}
                   />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity pointer-events-none" />
+                </div>
+              )}
+
+              {/* Posts com fotos de perfil/capa */}
+              {post.type === 'profile_update' && post.imageUrl && (
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
+                  <img
+                    src={post.imageUrl}
+                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                    className={`w-full object-cover hover:opacity-95 transition-opacity ${
+                      post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
+                    }`}
+                  />
+                </div>
+              )}
+
+              {/* Posts de texto com fundo colorido */}
+              {post.type === 'text' && !post.imageUrl && (
+                <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
+                  <div className={`
+                    w-full h-64 flex items-center justify-center p-6
+                    ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                      post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                      post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                      post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                      post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                      post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                      post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                      post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                      'bg-gray-100'}
+                    hover:opacity-95 transition-opacity
+                  `}>
+                    <p className={`
+                      text-lg text-center font-medium leading-relaxed
+                      ${post.backgroundColor ? 'text-white' : 'text-gray-800'}
+                    `}>
+                      {post.content}
+                    </p>
+                  </div>
                 </div>
               )}
 
@@ -817,6 +863,13 @@ const Profile = () => {
         />
       )}
 
+      {showConnections && (
+        <ConnectionsModal
+          isOpen={showConnections}
+          onClose={() => setShowConnections(false)}
+        />
+      )}
+
       {showVisitors && (
         <ProfileVisitors
           onClose={() => setShowVisitors(false)}
@@ -851,6 +904,14 @@ const Profile = () => {
         onEditPhoto={handleEditAvatarFromViewer}
         user={user}
         hasRecentStory={false} // TODO: implementar lógica de stories
+      />
+
+      {/* Post View Modal */}
+      <PostViewModal
+        isOpen={showPostModal}
+        onClose={handleClosePostModal}
+        post={selectedPost}
+        onPostUpdate={handlePostUpdate}
       />
     </div>
   )

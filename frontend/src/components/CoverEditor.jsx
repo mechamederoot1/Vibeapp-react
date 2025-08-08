@@ -16,14 +16,21 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
 
   // Carregar imagem quando o modal abrir
   useEffect(() => {
-    if (isOpen && currentImage) {
-      const img = new Image()
-      img.crossOrigin = 'anonymous'
-      img.onload = () => {
-        setImage(img)
-        centerImage(img)
+    if (isOpen) {
+      if (currentImage) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          setImage(img)
+          centerImage(img)
+        }
+        img.src = currentImage
+      } else {
+        // Se não há imagem atual, abrir seletor automaticamente após um pequeno delay
+        setTimeout(() => {
+          fileInputRef.current?.click()
+        }, 300)
       }
-      img.src = currentImage
     }
   }, [isOpen, currentImage])
 
@@ -179,7 +186,16 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
       <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0 bg-white">
-          <h2 className="text-lg font-semibold">Editar foto de capa</h2>
+          <div className="flex items-center space-x-3">
+            <h2 className="text-lg font-semibold">Editar foto de capa</h2>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center space-x-2 px-3 py-1.5 bg-vibe-blue text-white text-sm rounded-lg hover:bg-vibe-blue-dark"
+            >
+              <Upload size={16} />
+              <span>{image ? 'Trocar foto' : 'Selecionar foto'}</span>
+            </button>
+          </div>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-full"
@@ -189,36 +205,62 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
         </div>
 
         <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-          {/* Canvas de edição */}
-          <div className="flex justify-center">
-            <div 
-              ref={containerRef}
-              className="relative"
-            >
-              <canvas
-                ref={canvasRef}
-                width={400}
-                height={200}
-                className="border border-gray-300 rounded-lg cursor-move"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                style={{ touchAction: 'none' }}
-              />
-              {!image && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-gray-50 hover:bg-opacity-50 rounded-lg transition-colors"
+          {!image ? (
+            /* Área de seleção de foto */
+            <div className="flex flex-col items-center justify-center space-y-6 py-12">
+              <div className="text-center">
+                <Upload size={64} className="mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Selecione uma foto de capa</h3>
+                <p className="text-gray-500 text-sm mb-6">Escolha uma imagem que represente você</p>
+
+                <button
                   onClick={() => fileInputRef.current?.click()}
+                  className="bg-vibe-blue text-white px-6 py-3 rounded-lg hover:bg-vibe-blue-dark transition-colors"
                 >
-                  <div className="text-center text-gray-500">
-                    <Upload size={48} className="mx-auto mb-2" />
-                    <p className="text-sm">Selecione uma foto</p>
+                  Escolher da galeria
+                </button>
+              </div>
+
+              <div className="w-full max-w-sm">
+                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <div className="text-center text-sm text-gray-500">
+                    <p>Formatos aceitos: JPEG, PNG, WebP</p>
+                    <p>Tamanho máximo: 5MB</p>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Canvas de edição */
+            <div className="flex justify-center">
+              <div
+                ref={containerRef}
+                className="relative"
+              >
+                <canvas
+                  ref={canvasRef}
+                  width={400}
+                  height={200}
+                  className="border border-gray-300 rounded-lg cursor-move"
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  style={{ touchAction: 'none' }}
+                />
+
+                <div className="absolute top-2 right-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-black bg-opacity-50 text-white p-1.5 rounded-full hover:bg-opacity-70 transition-all text-xs"
+                    title="Trocar foto"
+                  >
+                    <Upload size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Controles de zoom e posição */}
           {image && (

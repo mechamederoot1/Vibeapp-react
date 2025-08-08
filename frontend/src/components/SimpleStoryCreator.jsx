@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { X, Send, Type, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import axios from 'axios'
+import { uploadsAPI, storiesAPI } from '../services/api'
 
 const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
@@ -58,14 +58,7 @@ const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
     setLoading(true)
     try {
       // Upload da mídia
-      const formData = new FormData()
-      formData.append('file', mediaFile)
-      
-      const uploadResponse = await axios.post('/api/uploads/story-media', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      const uploadResponse = await uploadsAPI.uploadStoryMedia(mediaFile)
 
       // Criar story
       const storyData = {
@@ -76,7 +69,7 @@ const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
         duration: 24
       }
 
-      const response = await axios.post('/api/stories/', storyData)
+      const response = await storiesAPI.createStory(storyData)
       
       console.log('Story criado:', response.data)
       onStoryCreate?.(response.data)

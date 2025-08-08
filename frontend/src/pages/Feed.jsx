@@ -5,12 +5,15 @@ import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import CreateTestUsers from '../components/CreateTestUsers'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
+import StoryViewer from '../components/StoryViewer'
+import ShareAsStoryModal from '../components/ShareAsStoryModal'
 import DatabaseMigration from '../components/DatabaseMigration'
 import ApiTester from '../components/ApiTester'
 
-const Post = ({ post, onLike, onShare, onRepost }) => {
+const Post = ({ post, onLike, onShare, onStoryShare }) => {
   const { user } = useAuth()
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showShareAsStory, setShowShareAsStory] = useState(false)
 
   const handleLike = async () => {
     try {
@@ -29,24 +32,39 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
     }
   }
 
-  const handleRepost = async () => {
-    try {
-      await onRepost(post.id)
-      setShowShareMenu(false)
-    } catch (error) {
-      console.error('Error reposting post:', error)
-    }
-  }
 
-  const timeAgo = (dateString) => {
+  const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     const now = new Date()
-    const diffInSeconds = Math.floor((now - date) / 1000)
-    
-    if (diffInSeconds < 60) return `${diffInSeconds}s`
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
-    return `${Math.floor(diffInSeconds / 86400)}d`
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const postDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+    // Se for hoje, mostra apenas a hora
+    if (postDate.getTime() === today.getTime()) {
+      return date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    // Se for ontem
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (postDate.getTime() === yesterday.getTime()) {
+      return `ontem às ${date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`
+    }
+
+    // Para datas mais antigas, mostra data e hora
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   return (
@@ -76,7 +94,7 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                 </div>
               )}
             </div>
-            <p className="text-gray-500 text-xs">@{post.author?.username} • {timeAgo(post.createdAt)}</p>
+            <p className="text-gray-500 text-xs">@{post.author?.username} • {formatDateTime(post.createdAt)}</p>
           </div>
         </div>
         <button className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full">
@@ -86,31 +104,51 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
       
       {/* Conteúdo do Post */}
       {post.type === 'profile_update' ? (
-        <div className="mx-3 mb-3">
-          <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg p-4 text-center">
-            <div className="flex items-center justify-center space-x-3 mb-3">
-              {post.author?.avatar ? (
+        <div className="w-full bg-white py-8 flex justify-center">
+          {/* Renderizar foto de perfil como círculo ou foto de capa retangular */}
+          {post.profileUpdateType === 'avatar' ? (
+            // Foto de perfil - mostrar como círculo
+            <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
+              {post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de perfil atualizada"
+                  className="w-full h-full object-cover"
+                />
+              ) : post.author?.avatar ? (
                 <img
                   src={post.author.avatar}
-                  alt="Avatar"
-                  className={`object-cover border-2 border-white ${
-                    post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
-                  }`}
+                  alt="Foto de perfil atualizada"
+                  className="w-full h-full object-cover"
                 />
               ) : (
-                <div className={`bg-white bg-opacity-20 flex items-center justify-center border-2 border-white ${
-                  post.profileUpdateType === 'avatar' ? 'w-16 h-16 rounded-full' : 'w-20 h-12 rounded-lg'
-                }`}>
-                  <span className="text-white font-bold">
-                    {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500 text-sm">Sem foto</span>
                 </div>
               )}
             </div>
-            <p className="text-white font-medium">
-              {post.author?.fullName} {post.content}
-            </p>
-          </div>
+          ) : (
+            // Foto de capa - mostrar retangular
+            <div className="w-full max-w-md rounded-lg overflow-hidden shadow-lg">
+              {post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de capa atualizada"
+                  className="w-full h-48 object-cover"
+                />
+              ) : post.author?.coverPhoto ? (
+                <img
+                  src={post.author.coverPhoto}
+                  alt="Foto de capa atualizada"
+                  className="w-full h-48 object-cover"
+                />
+              ) : (
+                <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-500">Foto de capa não disponível</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : post.type === 'text' ? (
         <div className="mx-3 mb-3">
@@ -125,9 +163,11 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                 post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
                 post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
                 post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
-                'bg-gradient-to-br from-vibe-blue-light to-vibe-blue'}
+                ''}
             `}>
-              <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
+              <p className={`text-xl font-medium text-center leading-relaxed break-words ${
+                post.backgroundColor ? 'text-white' : 'text-gray-800'
+              }`}>
                 {post.content}
               </p>
             </div>
@@ -182,9 +222,10 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
             <button className="hover:scale-110 transition-transform flex items-center space-x-1">
               <MessageCircle size={24} className="text-gray-700 hover:text-vibe-blue" />
             </button>
-            <button 
-              onClick={handleRepost}
+            <button
+              onClick={() => setShowShareAsStory(true)}
               className="hover:scale-110 transition-transform flex items-center space-x-1"
+              title="Compartilhar como Story"
             >
               <Repeat2 size={24} className="text-gray-700 hover:text-green-500" />
             </button>
@@ -208,12 +249,15 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                     <MessageCircle size={16} />
                     <span>Enviar por DM</span>
                   </button>
-                  <button 
-                    onClick={handleRepost}
+                  <button
+                    onClick={() => {
+                      setShowShareAsStory(true)
+                      setShowShareMenu(false)
+                    }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
                     <Repeat2 size={16} />
-                    <span>Repostar</span>
+                    <span>Compartilhar como Story</span>
                   </button>
                 </div>
               )}
@@ -246,17 +290,28 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
       
       {/* Overlay para fechar menu de compartilhamento */}
       {showShareMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowShareMenu(false)}
         />
       )}
+
+      {/* Share as Story Modal */}
+      <ShareAsStoryModal
+        isOpen={showShareAsStory}
+        onClose={() => setShowShareAsStory(false)}
+        post={post}
+        onStoryCreate={onStoryShare}
+      />
     </div>
   )
 }
 
-const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0 }) => (
-  <div className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0, onClick }) => (
+  <div
+    className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+    onClick={onClick}
+  >
     <div className={`w-16 h-16 rounded-full p-0.5 ${
       hasUnviewed
         ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
@@ -291,27 +346,8 @@ const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0 }
   </div>
 )
 
-const Stories = ({ onOpenStoryCreator }) => {
+const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
   const { user } = useAuth()
-  const [stories, setStories] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadStories = async () => {
-      try {
-        const response = await storiesAPI.getStories()
-        setStories(response.data.storiesByAuthor || [])
-      } catch (error) {
-        console.error('Error loading stories:', error)
-        // Falhar silenciosamente e continuar sem stories
-        setStories([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadStories()
-  }, [])
 
   return (
     <div className="bg-white border-b border-gray-100 w-full max-w-full overflow-hidden relative">
@@ -342,6 +378,7 @@ const Stories = ({ onOpenStoryCreator }) => {
               hasStory={true}
               hasUnviewed={storyGroup.hasUnviewed}
               storiesCount={storyGroup.stories.length}
+              onClick={() => onStoryClick(storyGroup, 0)}
             />
           ))}
         </div>
@@ -351,11 +388,18 @@ const Stories = ({ onOpenStoryCreator }) => {
 }
 
 const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
+  const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
   const [showStoryCreator, setShowStoryCreator] = useState(false)
+
+  // Story viewer states
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [currentUserStories, setCurrentUserStories] = useState([])
+  const [stories, setStories] = useState([])
+  const [initialStoryIndex, setInitialStoryIndex] = useState(0)
 
   const loadFeed = async () => {
     try {
@@ -367,6 +411,15 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       setError('Erro ao carregar feed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadStories = async () => {
+    try {
+      const response = await storiesAPI.getStories()
+      setStories(response.data.storiesByAuthor || [])
+    } catch (error) {
+      console.error('Error loading stories:', error)
     }
   }
 
@@ -406,19 +459,13 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
-  const handleRepostPost = async (postId) => {
+  const handleStoryShare = async (storyData) => {
     try {
-      const response = await postsAPI.repostPost(postId)
-      // Update post in local state
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { ...post, repostsCount: response.data.repostsCount }
-            : post
-        )
-      )
+      // Story was created, reload stories
+      await loadStories()
+      console.log('Post compartilhado como story:', storyData)
     } catch (error) {
-      console.error('Error reposting post:', error)
+      console.error('Error sharing as story:', error)
     }
   }
 
@@ -426,10 +473,17 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setPosts([newPost, ...posts])
   }
 
+  const handleOpenStories = (storyGroup, startIndex = 0) => {
+    setCurrentUserStories(storyGroup.stories || [])
+    setInitialStoryIndex(startIndex)
+    setShowStoryViewer(true)
+  }
+
   const handleStoryCreate = async (storyData) => {
     try {
       await storiesAPI.createStory(storyData)
-      // Refresh stories would happen here
+      // Reload stories after creating
+      await loadStories()
       console.log('Story created successfully')
     } catch (error) {
       console.error('Error creating story:', error)
@@ -438,12 +492,17 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
 
   useEffect(() => {
     loadFeed()
+    loadStories()
   }, [page])
 
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
+        <Stories
+          onOpenStoryCreator={() => setShowStoryCreator(true)}
+          stories={stories}
+          onStoryClick={handleOpenStories}
+        />
         <div className="flex justify-center py-8">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
@@ -508,7 +567,11 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   return (
     <>
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
-        <Stories onOpenStoryCreator={() => setShowStoryCreator(true)} />
+        <Stories
+          onOpenStoryCreator={() => setShowStoryCreator(true)}
+          stories={stories}
+          onStoryClick={handleOpenStories}
+        />
         <div className="pb-safe w-full max-w-full">
           {posts.length === 0 ? (
             <div className="space-y-8 p-4">
@@ -535,12 +598,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
             </div>
           ) : (
             posts.map((post) => (
-              <Post 
-                key={post.id} 
+              <Post
+                key={post.id}
                 post={post}
                 onLike={handleLikePost}
                 onShare={handleSharePost}
-                onRepost={handleRepostPost}
+                onStoryShare={handleStoryShare}
               />
             ))
           )}
@@ -557,6 +620,15 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         isOpen={showStoryCreator}
         onClose={() => setShowStoryCreator(false)}
         onStoryCreate={handleStoryCreate}
+      />
+
+      {/* Story Viewer */}
+      <StoryViewer
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={currentUserStories}
+        initialStoryIndex={initialStoryIndex}
+        currentUser={user}
       />
     </>
   )

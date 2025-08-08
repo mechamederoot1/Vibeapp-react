@@ -18,13 +18,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
+      console.log('🔧 Auth init - token:', token ? `${token.substring(0, 20)}...` : 'null')
       if (token) {
         try {
           api.defaults.headers.Authorization = `Bearer ${token}`
+          console.log('🔑 Set Authorization header')
           const response = await authAPI.me()
+          console.log('✅ Auth init successful, user:', response.data)
           setUser(response.data)
         } catch (error) {
-          console.error('Auth init error:', error)
+          console.error('❌ Auth init error:', error)
           logout()
         }
       }
