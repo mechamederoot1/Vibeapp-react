@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Feed from './pages/Feed'
@@ -9,6 +9,11 @@ import CreatePost from './pages/CreatePost'
 import Login from './pages/Login'
 
 function App() {
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+
+  const handleOpenPostModal = () => setIsPostModalOpen(true)
+  const handleClosePostModal = () => setIsPostModalOpen(false)
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
@@ -16,22 +21,26 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/create" element={<CreatePost />} />
           <Route path="/" element={
-            <Layout>
-              <Feed />
+            <Layout onOpenPostModal={handleOpenPostModal}>
+              <Feed
+                isPostModalOpen={isPostModalOpen}
+                onClosePostModal={handleClosePostModal}
+                onOpenPostModal={handleOpenPostModal}
+              />
             </Layout>
           } />
           <Route path="/explore" element={
-            <Layout>
+            <Layout onOpenPostModal={handleOpenPostModal}>
               <Explore />
             </Layout>
           } />
           <Route path="/notifications" element={
-            <Layout>
+            <Layout onOpenPostModal={handleOpenPostModal}>
               <Notifications />
             </Layout>
           } />
           <Route path="/profile" element={
-            <Layout>
+            <Layout onOpenPostModal={handleOpenPostModal}>
               <Profile />
             </Layout>
           } />
