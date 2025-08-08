@@ -194,6 +194,7 @@ const StoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
         </button>
         <h1 className="text-lg font-semibold">
           {currentStep === 'select' && 'Criar Story'}
+          {currentStep === 'camera' && 'Câmera'}
           {currentStep === 'edit' && 'Editar Story'}
           {currentStep === 'privacy' && 'Privacidade'}
         </h1>
