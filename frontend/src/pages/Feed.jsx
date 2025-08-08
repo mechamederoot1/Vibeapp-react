@@ -422,6 +422,16 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setPosts([newPost, ...posts])
   }
 
+  const handleStoryCreate = async (storyData) => {
+    try {
+      await storiesAPI.createStory(storyData)
+      // Refresh stories would happen here
+      console.log('Story created successfully')
+    } catch (error) {
+      console.error('Error creating story:', error)
+    }
+  }
+
   useEffect(() => {
     loadFeed()
   }, [page])
