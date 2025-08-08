@@ -1,7 +1,7 @@
 import React from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal } from 'lucide-react'
 
-const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false }) => (
+const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false, type = 'image' }) => (
   <div className="bg-white mb-3">
     {/* Header do Post */}
     <div className="flex items-center justify-between p-3">
@@ -21,14 +21,24 @@ const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = f
       </button>
     </div>
     
-    {/* Imagem do Post */}
-    <div className="w-full">
-      <img 
-        src={image} 
-        alt="Post"
-        className="w-full h-96 object-cover"
-      />
-    </div>
+    {/* Conteúdo do Post */}
+    {type === 'text' ? (
+      <div className="mx-3 mb-3">
+        <div className="bg-gradient-to-br from-vibe-blue-light to-vibe-blue rounded-lg p-6 min-h-[200px] flex items-center justify-center">
+          <p className="text-white text-xl font-medium text-center leading-relaxed">
+            {caption}
+          </p>
+        </div>
+      </div>
+    ) : (
+      <div className="w-full">
+        <img 
+          src={image} 
+          alt="Post"
+          className="w-full h-96 object-cover"
+        />
+      </div>
+    )}
     
     {/* Ações e Informações */}
     <div className="p-3">
@@ -53,9 +63,11 @@ const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = f
       </div>
       
       <p className="font-semibold text-sm mb-1">{likes.toLocaleString()} curtidas</p>
-      <p className="text-sm mb-2">
-        <span className="font-semibold">{user}</span> {caption}
-      </p>
+      {type !== 'text' && (
+        <p className="text-sm mb-2">
+          <span className="font-semibold">{user}</span> {caption}
+        </p>
+      )}
       {comments > 0 && (
         <button className="text-gray-500 text-sm mb-2">
           Ver todos os {comments} comentários
@@ -124,57 +136,71 @@ const Feed = () => {
       likes: 1247,
       comments: 89,
       time: '2 horas',
-      isLiked: true
+      isLiked: true,
+      type: 'image'
+    },
+    {
+      user: 'pedro_oliveira',
+      avatar: 'https://picsum.photos/100/100?random=user4',
+      caption: 'A vida é feita de pequenos momentos que se tornam grandes memórias. Hoje estou grato por cada experiência vivida! ✨',
+      likes: 892,
+      comments: 156,
+      time: '3 horas',
+      isLiked: false,
+      type: 'text'
     },
     {
       user: 'joao_silva',
       avatar: 'https://picsum.photos/100/100?random=user2',
       image: 'https://picsum.photos/400/600?random=2',
       caption: 'Pôr do sol incrível hoje! 🌅 São Paulo sempre surpreende com essas vistas.',
-      likes: 892,
+      likes: 567,
       comments: 56,
       time: '4 horas',
-      isLiked: false
+      isLiked: false,
+      type: 'image'
+    },
+    {
+      user: 'sofia_lima',
+      avatar: 'https://picsum.photos/100/100?random=user5',
+      caption: 'Às vezes a felicidade está nos detalhes mais simples. Um café quente, um livro bom e a companhia certa fazem toda a diferença! ☕📚',
+      likes: 2156,
+      comments: 203,
+      time: '5 horas',
+      isLiked: true,
+      type: 'text'
     },
     {
       user: 'maria_santos',
       avatar: 'https://picsum.photos/100/100?random=user3',
       image: 'https://picsum.photos/400/400?random=3',
       caption: 'Jantar especial em casa hoje! 🍝✨ Receita da vó sempre funciona.',
-      likes: 2156,
+      likes: 1834,
       comments: 124,
       time: '6 horas',
-      isLiked: true
-    },
-    {
-      user: 'pedro_oliveira',
-      avatar: 'https://picsum.photos/100/100?random=user4',
-      image: 'https://picsum.photos/400/300?random=4',
-      caption: 'Nova conquista no treino! 💪 Foco, força e fé. #NoExcuses #Fitness',
-      likes: 567,
-      comments: 33,
-      time: '8 horas',
-      isLiked: false
-    },
-    {
-      user: 'sofia_lima',
-      avatar: 'https://picsum.photos/100/100?random=user5',
-      image: 'https://picsum.photos/400/500?random=5',
-      caption: 'Arte urbana que encontrei caminhando pela cidade 🎨 A criatividade não tem limites!',
-      likes: 1834,
-      comments: 92,
-      time: '12 horas',
-      isLiked: true
+      isLiked: true,
+      type: 'image'
     },
     {
       user: 'carlos_pereira',
       avatar: 'https://picsum.photos/100/100?random=user6',
-      image: 'https://picsum.photos/400/600?random=6',
-      caption: 'Momento café ☕ Começando a semana com energia renovada!',
+      caption: 'O segredo do sucesso não está em nunca falhar, mas em nunca desistir de tentar. Cada obstáculo é uma oportunidade de crescimento! 💪',
       likes: 445,
-      comments: 28,
-      time: '1 dia',
-      isLiked: false
+      comments: 67,
+      time: '8 horas',
+      isLiked: false,
+      type: 'text'
+    },
+    {
+      user: 'lucia_martins',
+      avatar: 'https://picsum.photos/100/100?random=user7',
+      image: 'https://picsum.photos/400/500?random=7',
+      caption: 'Arte urbana que encontrei caminhando pela cidade 🎨 A criatividade não tem limites!',
+      likes: 923,
+      comments: 92,
+      time: '12 horas',
+      isLiked: true,
+      type: 'image'
     }
   ]
 
