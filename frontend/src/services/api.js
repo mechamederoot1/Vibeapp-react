@@ -94,6 +94,16 @@ export const uploadsAPI = {
   removeCover: () => api.delete('/uploads/cover'),
 }
 
+// Stories endpoints
+export const storiesAPI = {
+  getStories: (limit = 20) => api.get(`/stories?limit=${limit}`),
+  createStory: (storyData) => api.post('/stories', storyData),
+  getStory: (storyId) => api.get(`/stories/${storyId}`),
+  getStoryViews: (storyId, limit = 50) => api.get(`/stories/${storyId}/views?limit=${limit}`),
+  deleteStory: (storyId) => api.delete(`/stories/${storyId}`),
+  getUserStories: (userId, limit = 10) => api.get(`/stories/user/${userId}?limit=${limit}`),
+}
+
 // Development endpoints
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),
