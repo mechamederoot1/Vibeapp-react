@@ -105,9 +105,8 @@ async def upload_avatar(
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
         
-        # Atualizar URL do avatar no banco
-        base_url = f"{request.url.scheme}://{request.url.netloc}"
-        avatar_url = f"{base_url}/uploads/avatars/{filename}"
+        # Atualizar URL do avatar no banco (usando caminho relativo)
+        avatar_url = f"/uploads/avatars/{filename}"
         current_user.avatar = avatar_url
         db.commit()
         db.refresh(current_user)
