@@ -643,7 +643,11 @@ const Profile = () => {
         /* Grid de Posts */
         <div className="grid grid-cols-3 gap-1">
           {userPosts.map((post) => (
-            <div key={post.id} className="relative aspect-square">
+            <div
+              key={post.id}
+              className="relative aspect-square cursor-pointer hover:opacity-75 transition-opacity"
+              onClick={() => handlePostClick(post)}
+            >
               {post.type === 'text' ? (
                 <div className={`
                   w-full h-full flex items-center justify-center p-4
