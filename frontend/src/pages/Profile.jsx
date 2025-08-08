@@ -419,8 +419,8 @@ const Profile = () => {
         <button
           onClick={() => setActiveTab('posts')}
           className={`flex-1 p-3 flex items-center justify-center ${
-            activeTab === 'posts' 
-              ? 'border-b-2 border-gray-900 text-gray-900' 
+            activeTab === 'posts'
+              ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
         >
@@ -429,13 +429,41 @@ const Profile = () => {
         <button
           onClick={() => setActiveTab('saved')}
           className={`flex-1 p-3 flex items-center justify-center ${
-            activeTab === 'saved' 
-              ? 'border-b-2 border-gray-900 text-gray-900' 
+            activeTab === 'saved'
+              ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
         >
           <Bookmark size={20} />
         </button>
+
+        {/* View Mode Toggle */}
+        {activeTab === 'posts' && (
+          <div className="flex items-center px-3 space-x-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              title="Visualização em grade"
+            >
+              <Grid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              title="Visualização em lista"
+            >
+              <List size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Grid de Posts */}
