@@ -174,7 +174,7 @@ async def get_user_stats(
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     profile_views_count = db.query(ProfileView).filter(
         ProfileView.profile_owner_id == user_id,
-        ProfileView.viewed_at >= thirty_days_ago
+        ProfileView.created_at >= thirty_days_ago
     ).count()
     
     return {
