@@ -95,6 +95,15 @@ export const uploadsAPI = {
   },
   removeAvatar: () => api.delete('/uploads/avatar'),
   removeCover: () => api.delete('/uploads/cover'),
+  uploadStoryMedia: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/uploads/story-media', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
 }
 
 // Stories endpoints
