@@ -708,7 +708,13 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleDateString()}</p>
+                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</p>
                 </div>
                 <button className="p-1 hover:bg-gray-100 rounded-full">
                   <MoreHorizontal size={16} className="text-gray-500" />
