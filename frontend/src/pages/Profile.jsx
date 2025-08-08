@@ -204,6 +204,20 @@ const Profile = () => {
     }
   }
 
+  // Funções para controlar os novos modais
+  const handleAvatarClick = () => {
+    setShowAvatarViewer(true)
+  }
+
+  const handleEditAvatarFromViewer = () => {
+    setShowAvatarViewer(false)
+    setShowAvatarEditor(true)
+  }
+
+  const handleCoverClick = () => {
+    setShowCoverEditor(true)
+  }
+
   const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
     const sizeClasses = {
       sm: 'w-12 h-12',
