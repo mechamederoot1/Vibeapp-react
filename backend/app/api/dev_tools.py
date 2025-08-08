@@ -182,3 +182,114 @@ async def list_test_users(db: Session = Depends(get_db)):
         "total_users": len(users),
         "users": [user.to_dict() for user in users]
     }
+
+@router.post("/migrate-database")
+async def migrate_database():
+    """Migrar banco de dados para adicionar novas colunas"""
+
+    try:
+        # Obter a URL do banco do engine
+        db_url = str(engine.url)
+
+        if not db_url.startswith("sqlite"):
+            return {"error": "Migração suportada apenas para SQLite"}
+
+        # Extrair o caminho do arquivo
+        db_path = db_url.replace("sqlite:///", "").replace("sqlite://", "")
+        if not db_path.startswith("/"):
+            db_path = os.path.abspath(db_path)
+
+        if not os.path.exists(db_path):
+            return {"error": "Banco de dados não encontrado"}
+
+        # Conectar ao banco
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        applied_migrations = []
+
+        # Migrações para aplicar
+        migrations = [
+            {
+                "table": "posts",
+                "column": "background_color",
+                "type": "VARCHAR",
+                "description": "Adicionar coluna background_color"
+            },
+            {
+                "table": "posts",
+                "column": "profile_update_type",
+                "type": "VARCHAR",
+                "description": "Adicionar coluna profile_update_type"
+            }
+        ]
+
+        for migration in migrations:
+            try:
+                # Verificar se a coluna já existe
+                cursor.execute(f"PRAGMA table_info({migration['table']})")
+                columns = [row[1] for row in cursor.fetchall()]
+
+                if migration['column'] not in columns:
+                    # Aplicar migração
+                    alter_sql = f"ALTER TABLE {migration['table']} ADD COLUMN {migration['column']} {migration['type']}"
+                    cursor.execute(alter_sql)
+                    applied_migrations.append(migration['description'])
+
+            except sqlite3.Error as e:
+                applied_migrations.append(f"ERRO: {migration['description']} - {str(e)}")
+
+        # Criar tabelas de stories se não existirem
+        try:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stories (
+                    id INTEGER PRIMARY KEY,
+                    author_id INTEGER NOT NULL,
+                    story_type VARCHAR NOT NULL DEFAULT 'text',
+                    content TEXT,
+                    media_url VARCHAR,
+                    background_gradient VARCHAR,
+                    text_elements JSON,
+                    privacy VARCHAR NOT NULL DEFAULT 'public',
+                    duration_hours INTEGER DEFAULT 24,
+                    views_count INTEGER DEFAULT 0,
+                    is_active BOOLEAN DEFAULT 1,
+                    is_archived BOOLEAN DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    expires_at DATETIME,
+                    FOREIGN KEY (author_id) REFERENCES users (id)
+                )
+            """)
+            applied_migrations.append("Tabela stories criada/verificada")
+        except sqlite3.Error as e:
+            applied_migrations.append(f"ERRO: Tabela stories - {str(e)}")
+
+        try:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS story_views (
+                    id INTEGER PRIMARY KEY,
+                    story_id INTEGER NOT NULL,
+                    viewer_id INTEGER NOT NULL,
+                    viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (story_id) REFERENCES stories (id),
+                    FOREIGN KEY (viewer_id) REFERENCES users (id)
+                )
+            """)
+            applied_migrations.append("Tabela story_views criada/verificada")
+        except sqlite3.Error as e:
+            applied_migrations.append(f"ERRO: Tabela story_views - {str(e)}")
+
+        # Commit e fechar
+        conn.commit()
+        conn.close()
+
+        return {
+            "message": "Migração concluída",
+            "applied_migrations": applied_migrations,
+            "total_applied": len(applied_migrations)
+        }
+
+    except Exception as e:
+        return {
+            "error": f"Erro durante migração: {str(e)}"
+        }
