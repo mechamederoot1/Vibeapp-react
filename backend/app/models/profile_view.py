@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, DateTime, ForeignKey, String
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.database.database import Base
+from ..database.database import Base
 
 class ProfileView(Base):
     __tablename__ = "profile_views"
@@ -18,8 +18,8 @@ class ProfileView(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relacionamentos
-    viewer = relationship("User", foreign_keys=[viewer_id], back_populates="profile_views_made")
-    profile_owner = relationship("User", foreign_keys=[profile_owner_id], back_populates="profile_views_received")
+    viewer = relationship("User", foreign_keys=[viewer_id])
+    profile_owner = relationship("User", foreign_keys=[profile_owner_id], back_populates="profile_views")
 
     def __repr__(self):
         return f"<ProfileView(viewer_id={self.viewer_id}, profile_owner_id={self.profile_owner_id})>"

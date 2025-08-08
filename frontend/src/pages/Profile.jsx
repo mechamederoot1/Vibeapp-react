@@ -1,128 +1,98 @@
-import React, { useState } from 'react'
-import { 
-  Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal, 
-  Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock 
+import React, { useState, useEffect } from 'react'
+import {
+  Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
+  Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
+  MessageCircle as MessageCircleIcon, Share, Repeat2
 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import { usersAPI, postsAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
+import ProfileEditModal from '../components/ProfileEditModal'
 
 const Profile = () => {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('posts')
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [visitorsExpanded, setVisitorsExpanded] = useState(false)
   const [friendsExpanded, setFriendsExpanded] = useState(false)
+
+  // Real data from backend
+  const [userStats, setUserStats] = useState({
+    friendsCount: 0,
+    followersCount: 0,
+    followingCount: 0,
+    postsCount: 0,
+    profileViewsCount: 0
+  })
+  const [userPosts, setUserPosts] = useState([])
+  const [profileVisitors, setProfileVisitors] = useState([])
+  const [loading, setLoading] = useState(true)
+
   const [privacySettings, setPrivacySettings] = useState({
     showVisitors: false,
     showFriends: true,
     profileVisibility: 'public'
   })
 
+  // Load user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.id) return
+
+      try {
+        setLoading(true)
+
+        // Load user stats
+        const statsResponse = await usersAPI.getUserStats(user.id)
+        setUserStats(statsResponse.data)
+
+        // Load user posts
+        const postsResponse = await postsAPI.getUserPosts(user.id)
+        setUserPosts(postsResponse.data.posts || [])
+
+        // Load profile visitors (only if user wants to show them)
+        if (privacySettings.showVisitors) {
+          try {
+            const visitorsResponse = await usersAPI.getProfileVisitors(user.id)
+            setProfileVisitors(visitorsResponse.data || [])
+          } catch (error) {
+            // User might not have permission to see visitors
+            console.log('Could not load visitors:', error.response?.data?.detail)
+          }
+        }
+
+      } catch (error) {
+        console.error('Error loading user data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadUserData()
+  }, [user?.id, privacySettings.showVisitors])
+
+  // Use real user data from auth context, fallback to defaults
   const profileData = {
-    username: 'maria.silva',
-    name: 'Maria Silva',
-    bio: 'Fotógrafa & Designer ✨\n📍 São Paulo, Brasil\n🎨 Criando memórias através das lentes\n📧 contato@mariasilva.com',
-    isVerified: true,
-    followers: '2.847',
-    following: '892',
-    posts: '156',
-    profileViews: '127',
-    friends: '42'
+    username: user?.username || user?.email?.split('@')[0] || 'usuario',
+    name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
+    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
+    isVerified: user?.isVerified || false,
+    followers: userStats.followersCount.toString(),
+    following: userStats.followingCount.toString(),
+    posts: userStats.postsCount.toString(),
+    profileViews: userStats.profileViewsCount.toString(),
+    friends: userStats.friendsCount.toString(),
+    avatar: user?.avatar,
+    coverPhoto: user?.coverPhoto,
+    location: user?.location,
+    website: user?.website
   }
 
-  const recentVisitors = [
-    { 
-      id: 1, 
-      username: 'ana_costa', 
-      name: 'Ana Costa', 
-      avatar: 'https://picsum.photos/50/50?random=visitor1', 
-      time: '2h',
-      hasStory: true 
-    },
-    { 
-      id: 2, 
-      username: 'joao_silva', 
-      name: 'João Silva', 
-      avatar: 'https://picsum.photos/50/50?random=visitor2', 
-      time: '4h',
-      hasStory: false 
-    },
-    { 
-      id: 3, 
-      username: 'pedro_oliveira', 
-      name: 'Pedro Oliveira', 
-      avatar: 'https://picsum.photos/50/50?random=visitor3', 
-      time: '1d',
-      hasStory: true 
-    },
-    { 
-      id: 4, 
-      username: 'sofia_lima', 
-      name: 'Sofia Lima', 
-      avatar: 'https://picsum.photos/50/50?random=visitor4', 
-      time: '2h',
-      hasStory: false 
-    },
-    { 
-      id: 5, 
-      username: 'carlos_pereira', 
-      name: 'Carlos Pereira', 
-      avatar: 'https://picsum.photos/50/50?random=visitor5', 
-      time: '5h',
-      hasStory: true 
-    },
-  ]
-
-  const recentFriends = [
-    { 
-      id: 1, 
-      username: 'sofia_lima', 
-      name: 'Sofia Lima', 
-      avatar: 'https://picsum.photos/50/50?random=friend1', 
-      mutualFriends: 8,
-      hasStory: true 
-    },
-    { 
-      id: 2, 
-      username: 'carlos_pereira', 
-      name: 'Carlos Pereira', 
-      avatar: 'https://picsum.photos/50/50?random=friend2', 
-      mutualFriends: 12,
-      hasStory: false 
-    },
-    { 
-      id: 3, 
-      username: 'lucia_martins', 
-      name: 'Lucia Martins', 
-      avatar: 'https://picsum.photos/50/50?random=friend3', 
-      mutualFriends: 5,
-      hasStory: true 
-    },
-    { 
-      id: 4, 
-      username: 'ana_costa', 
-      name: 'Ana Costa', 
-      avatar: 'https://picsum.photos/50/50?random=friend4', 
-      mutualFriends: 15,
-      hasStory: true 
-    },
-    { 
-      id: 5, 
-      username: 'joao_silva', 
-      name: 'João Silva', 
-      avatar: 'https://picsum.photos/50/50?random=friend5', 
-      mutualFriends: 3,
-      hasStory: false 
-    },
-  ]
-
-  const posts = Array(12).fill(null).map((_, index) => ({
-    id: index,
-    type: index % 5 === 0 ? 'video' : 'image',
-    likes: Math.floor(Math.random() * 500) + 50,
-    comments: Math.floor(Math.random() * 50) + 5,
-    thumbnail: `https://picsum.photos/400/400?random=${index}`
-  }))
+  // Real data is now loaded from backend via useEffect
 
   const stories = [
     { id: 1, title: 'Highlights', image: 'https://picsum.photos/100/100?random=story1' },
@@ -185,38 +155,50 @@ const Profile = () => {
       {/* Capa do Perfil */}
       <div className="relative">
         <div className="w-full h-48 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 relative">
-          <img 
-            src="https://picsum.photos/400/200?random=cover" 
-            alt="Capa do perfil"
-            className="w-full h-full object-cover"
-          />
+          {profileData.coverPhoto ? (
+            <img
+              src={profileData.coverPhoto}
+              alt="Capa do perfil"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300"></div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-          
+
           {/* Botão de trocar capa */}
           <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all">
             <Camera size={20} />
           </button>
         </div>
-        
-        {/* Avatar centralizado sobrepondo a capa */}
-        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
-              <img 
-                src="https://picsum.photos/200/200?random=avatar" 
+      </div>
+
+      {/* Avatar Section */}
+      <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
+            {profileData.avatar ? (
+              <img
+                src={profileData.avatar}
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
-            </div>
-            <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
-              <Camera size={14} className="text-white" />
-            </button>
+            ) : (
+              <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500 text-2xl font-bold">
+                  {profileData.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
+          <button className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors">
+            <Camera size={14} className="text-white" />
+          </button>
         </div>
       </div>
 
       {/* Informações do Perfil */}
-      <div className="pt-16 px-4">
+      <div className="px-4">
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
@@ -231,21 +213,21 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center space-x-8 mb-6">
-          <div className="text-center">
+        <div className="flex justify-center space-x-6 mb-6">
+          <div className="text-center min-w-[60px]">
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
-          <button 
+          <button
             onClick={() => setShowFriends(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
-          <button 
+          <button
             onClick={() => setShowFriends(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
             <p className="text-gray-600 text-sm">Seguindo</p>
@@ -261,7 +243,10 @@ const Profile = () => {
 
         {/* Botões de Ação */}
         <div className="flex space-x-2 mb-6">
-          <button className="btn-primary flex-1">
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="btn-primary flex-1"
+          >
             Editar Perfil
           </button>
           <button 
@@ -278,7 +263,7 @@ const Profile = () => {
         {/* Seção de Visitantes do Perfil */}
         <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
-            <button 
+            <button
               onClick={() => setVisitorsExpanded(!visitorsExpanded)}
               className="w-full p-3 flex items-center justify-between hover:bg-gray-100 rounded-lg transition-colors"
             >
@@ -308,23 +293,38 @@ const Profile = () => {
             
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
-                {/* Avatares dos visitantes lado a lado */}
-                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                  {recentVisitors.map((visitor) => (
-                    <AvatarWithStory 
-                      key={visitor.id} 
-                      user={visitor} 
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
-                  ))}
-                </div>
-                <button 
-                  onClick={() => setShowVisitors(true)}
-                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                >
-                  Ver todos os visitantes
-                </button>
+                {profileVisitors.length > 0 ? (
+                  <>
+                    {/* Avatares dos visitantes lado a lado */}
+                    <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
+                      {profileVisitors.slice(0, 5).map((visitorData, index) => (
+                        <AvatarWithStory
+                          key={index}
+                          user={{
+                            id: visitorData.user.id,
+                            name: visitorData.user.fullName,
+                            username: visitorData.user.username,
+                            avatar: visitorData.user.avatar,
+                            hasStory: false // Real stories would come from another API
+                          }}
+                          size="sm"
+                          className="flex-shrink-0"
+                        />
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setShowVisitors(true)}
+                      className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
+                    >
+                      Ver todos os visitantes
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center py-4">
+                    <Eye size={24} className="text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">Nenhum visitante ainda</p>
+                  </div>
+                )}
               </div>
             )}
             
@@ -339,6 +339,9 @@ const Profile = () => {
             )}
           </div>
         </div>
+
+        {/* Divisor entre seções */}
+        <div className="border-t border-gray-200 my-6"></div>
 
         {/* Seção de Amigos */}
         <div className="mb-6">
@@ -359,23 +362,11 @@ const Profile = () => {
             
             {friendsExpanded && (
               <div className="px-3 pb-3">
-                {/* Avatares dos amigos lado a lado */}
-                <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                  {recentFriends.map((friend) => (
-                    <AvatarWithStory 
-                      key={friend.id} 
-                      user={friend} 
-                      size="sm"
-                      className="flex-shrink-0"
-                    />
-                  ))}
+                <div className="text-center py-4">
+                  <Users size={24} className="text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500 text-sm">Sistema de amizades em desenvolvimento</p>
+                  <p className="text-gray-400 text-xs">Em breve você poderá conectar-se com outros usuários!</p>
                 </div>
-                <button 
-                  onClick={() => setShowFriends(true)}
-                  className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                >
-                  Ver todos os amigos
-                </button>
               </div>
             )}
           </div>
@@ -416,8 +407,8 @@ const Profile = () => {
         <button
           onClick={() => setActiveTab('posts')}
           className={`flex-1 p-3 flex items-center justify-center ${
-            activeTab === 'posts' 
-              ? 'border-b-2 border-gray-900 text-gray-900' 
+            activeTab === 'posts'
+              ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
         >
@@ -426,57 +417,219 @@ const Profile = () => {
         <button
           onClick={() => setActiveTab('saved')}
           className={`flex-1 p-3 flex items-center justify-center ${
-            activeTab === 'saved' 
-              ? 'border-b-2 border-gray-900 text-gray-900' 
+            activeTab === 'saved'
+              ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
         >
           <Bookmark size={20} />
         </button>
+
+        {/* View Mode Toggle */}
+        {activeTab === 'posts' && (
+          <div className="flex items-center px-3 space-x-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              title="Visualização em grade"
+            >
+              <Grid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+              title="Visualização em lista"
+            >
+              <List size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Grid de Posts */}
-      <div className="grid grid-cols-3 gap-1">
-        {posts.map((post) => (
-          <div key={post.id} className="relative aspect-square">
-            <img 
-              src={post.thumbnail} 
-              alt={`Post ${post.id}`}
-              className="w-full h-full object-cover"
-            />
-            {post.type === 'video' && (
-              <div className="absolute top-2 right-2">
-                <div className="bg-black bg-opacity-60 rounded px-1.5 py-0.5">
-                  <span className="text-white text-xs">▶</span>
+      {/* Posts Content */}
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+            <p className="text-gray-600">Carregando posts...</p>
+          </div>
+        </div>
+      ) : userPosts.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Grid size={32} className="text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
+          <p className="text-gray-500">
+            Compartilhe seus primeiros momentos no Vibe Social!
+          </p>
+        </div>
+      ) : viewMode === 'grid' ? (
+        /* Grid de Posts */
+        <div className="grid grid-cols-3 gap-1">
+          {userPosts.map((post) => (
+            <div key={post.id} className="relative aspect-square">
+              {post.type === 'text' ? (
+                <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center p-4">
+                  <p className="text-white text-sm text-center font-medium line-clamp-4">
+                    {post.content}
+                  </p>
                 </div>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-              <div className="flex items-center space-x-4 text-white">
-                <div className="flex items-center space-x-1">
-                  <span className="text-sm">❤️</span>
-                  <span className="text-sm font-semibold">{post.likes}</span>
+              ) : post.type === 'image' && post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt={`Post ${post.id}`}
+                  className="w-full h-full object-cover"
+                />
+              ) : post.type === 'video' && post.videoUrl ? (
+                <div className="w-full h-full bg-black flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <div className="w-12 h-12 bg-black bg-opacity-60 rounded-full flex items-center justify-center mx-auto mb-2">
+                      <span className="text-white text-xl">▶</span>
+                    </div>
+                    <span className="text-xs">Vídeo</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <span className="text-sm">💬</span>
-                  <span className="text-sm font-semibold">{post.comments}</span>
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400">Post</span>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+                <div className="flex items-center space-x-4 text-white">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm">❤️</span>
+                    <span className="text-sm font-semibold">{post.likesCount}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm">💬</span>
+                    <span className="text-sm font-semibold">{post.commentsCount}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Lista de Posts */
+        <div className="space-y-6">
+          {userPosts.map((post) => (
+            <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              {/* Header do Post */}
+              <div className="flex items-center p-4 pb-3">
+                {profileData.avatar ? (
+                  <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
+                    <img
+                      src={profileData.avatar}
+                      alt="Avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full border-2 border-vibe-blue bg-vibe-blue flex items-center justify-center">
+                    <span className="text-white font-bold">
+                      {profileData.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <div className="ml-3 flex-1">
+                  <div className="flex items-center space-x-2">
+                    <h4 className="font-semibold text-gray-900">{profileData.name}</h4>
+                    {profileData.isVerified && (
+                      <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleDateString()}</p>
+                </div>
+                <button className="p-1 hover:bg-gray-100 rounded-full">
+                  <MoreHorizontal size={16} className="text-gray-500" />
+                </button>
+              </div>
+
+              {/* Conteúdo do Post */}
+              {post.content && (
+                <div className="px-4 pb-3">
+                  <p className="text-gray-800">{post.content}</p>
+                </div>
+              )}
+
+              {/* Mídia do Post */}
+              {post.type === 'image' && post.imageUrl && (
+                <div className="relative">
+                  <img
+                    src={post.imageUrl}
+                    alt={`Post ${post.id}`}
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
+              {post.type === 'video' && post.videoUrl && (
+                <div className="relative">
+                  <video
+                    src={post.videoUrl}
+                    controls
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Ações do Post */}
+              <div className="px-4 py-3 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <button className={`flex items-center space-x-2 transition-colors ${
+                      post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                    }`}>
+                      <Heart size={18} className={post.isLiked ? 'fill-current' : ''} />
+                      <span className="text-sm font-medium">{post.likesCount}</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-500 hover:text-vibe-blue transition-colors">
+                      <MessageCircleIcon size={18} />
+                      <span className="text-sm font-medium">{post.commentsCount}</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors">
+                      <Repeat2 size={18} />
+                      <span className="text-sm font-medium">{post.repostsCount}</span>
+                    </button>
+                  </div>
+                  <button className="text-gray-500 hover:text-vibe-blue transition-colors">
+                    <Share size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Modals */}
       {showFriends && (
-        <FriendsList 
+        <FriendsList
           onClose={() => setShowFriends(false)}
         />
       )}
-      
+
       {showVisitors && (
-        <ProfileVisitors 
+        <ProfileVisitors
           onClose={() => setShowVisitors(false)}
+        />
+      )}
+
+      {showEditModal && (
+        <ProfileEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
         />
       )}
     </div>

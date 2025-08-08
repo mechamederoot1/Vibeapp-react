@@ -20,9 +20,9 @@ export default {
           900: '#0c4a6e',
         },
         vibe: {
-          blue: '#87CEEB',
-          'blue-dark': '#6BB6D6',
-          'blue-light': '#B3D9F2'
+          blue: '#2563eb',          // Azul mais escuro e vibrante
+          'blue-dark': '#1d4ed8',   // Azul ainda mais escuro
+          'blue-light': '#3b82f6'   // Azul claro mais saturado
         }
       },
       fontFamily: {

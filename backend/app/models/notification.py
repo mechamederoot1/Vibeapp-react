@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from app.database.database import Base
+from ..database.database import Base
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -33,7 +33,7 @@ class Notification(Base):
     
     # Relacionamentos
     user = relationship("User", foreign_keys=[user_id], back_populates="notifications")
-    related_user = relationship("User", foreign_keys=[related_user_id])
+    related_user = relationship("User", foreign_keys=[related_user_id], post_update=True)
 
     def __repr__(self):
         return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type})>"

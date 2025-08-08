@@ -1,64 +1,76 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 import uvicorn
-import os
-from loguru import logger
 
-from app.api import auth, users, posts, explore, notifications
-from app.database.database import engine, create_tables
+# Import database
+from app.database.database import engine, Base
 
-# Criar aplicação FastAPI
+# Import API routers
+from app.api.auth import router as auth_router
+from app.api.users import router as users_router
+from app.api.posts import router as posts_router
+
+# Import models to ensure they're registered
+from app.models.user import User
+from app.models.post import Post, PostLike, Comment, Share
+from app.models.friendship import Friendship
+from app.models.profile_view import ProfileView
+from app.models.notification import Notification
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables
+    Base.metadata.create_all(bind=engine)
+    print("Database tables created")
+    yield
+    print("Application shutdown")
+
+# Create FastAPI app
 app = FastAPI(
-    title="Vibe API",
-    description="API da rede social Vibe",
+    title="Vibe Social API",
+    description="API for Vibe Social - A modern social media platform",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    lifespan=lifespan
 )
 
-# Configurar CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "*"],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Criar pasta de uploads se não existir
-os.makedirs("uploads", exist_ok=True)
-
-# Servir arquivos estáticos
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Incluir rotas da API
-app.include_router(auth.router, prefix="/api/auth", tags=["Autenticação"])
-app.include_router(users.router, prefix="/api/users", tags=["Usuários"])
-app.include_router(posts.router, prefix="/api/posts", tags=["Posts"])
-app.include_router(explore.router, prefix="/api/explore", tags=["Explorar"])
-app.include_router(notifications.router, prefix="/api/notifications", tags=["Notificações"])
-
-@app.on_event("startup")
-async def startup_event():
-    """Criar tabelas do banco de dados ao iniciar"""
-    logger.info("🚀 Iniciando Vibe API...")
-    create_tables()
-    logger.info("✅ Banco de dados configurado")
+# Include routers
+app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
+app.include_router(users_router, prefix="/api/users", tags=["users"])
+app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
 
 @app.get("/")
 async def root():
-    """Endpoint raiz da API"""
     return {
-        "message": "Vibe API está funcionando! 🚀",
+        "message": "Welcome to Vibe Social API",
         "version": "1.0.0",
-        "docs": "/api/docs"
+        "status": "running"
     }
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
-    """Verificação de saúde da API"""
-    return {"status": "healthy", "service": "vibe-api"}
+    return {
+        "status": "healthy",
+        "message": "Vibe Social API is running"
+    }
+
+# Error handlers
+@app.exception_handler(404)
+async def not_found_handler(request, exc):
+    return HTTPException(status_code=404, detail="Endpoint not found")
+
+@app.exception_handler(500)
+async def internal_error_handler(request, exc):
+    return HTTPException(status_code=500, detail="Internal server error")
 
 if __name__ == "__main__":
     uvicorn.run(
