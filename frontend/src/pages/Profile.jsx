@@ -391,6 +391,7 @@ const Profile = () => {
             className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
             onClick={() => setShowAvatarEditor(true)}
             disabled={uploading.avatar}
+            title={uploading.avatar ? "Fazendo upload..." : "Alterar foto de perfil"}
           >
             <Camera size={14} className="text-white" />
           </button>
