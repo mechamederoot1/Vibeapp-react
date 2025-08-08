@@ -447,19 +447,13 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
-  const handleRepostPost = async (postId) => {
+  const handleStoryShare = async (storyData) => {
     try {
-      const response = await postsAPI.repostPost(postId)
-      // Update post in local state
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { ...post, repostsCount: response.data.repostsCount }
-            : post
-        )
-      )
+      // Story was created, reload stories
+      await loadStories()
+      console.log('Post compartilhado como story:', storyData)
     } catch (error) {
-      console.error('Error reposting post:', error)
+      console.error('Error sharing as story:', error)
     }
   }
 
