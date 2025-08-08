@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Image, Video, Type, Send } from 'lucide-react'
+import { X, Image, Video, Type, Send, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
 
