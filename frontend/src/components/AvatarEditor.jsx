@@ -278,30 +278,6 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             </div>
           )}
 
-          {/* Upload de nova imagem */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Selecionar nova foto
-            </label>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-vibe-blue hover:bg-gray-50 transition-colors"
-            >
-              <div className="text-center">
-                <Upload size={24} className="mx-auto mb-2 text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  Clique para selecionar uma foto
-                </span>
-              </div>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </div>
         </div>
 
         {/* Footer */}
