@@ -446,29 +446,18 @@ const Profile = () => {
         {/* Stories/Highlights */}
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2">
-            {/* Adicionar novo story */}
+            {/* Adicionar novo destaque */}
             <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer">
                 <span className="text-gray-400 text-2xl">+</span>
               </div>
               <span className="text-xs text-gray-600">Novo</span>
             </div>
-            
-            {/* Stories salvos */}
-            {stories.map((story) => (
-              <div key={story.id} className="flex flex-col items-center space-y-2 flex-shrink-0">
-                <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5">
-                  <img 
-                    src={story.image} 
-                    alt={story.title}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-                <span className="text-xs text-gray-600 max-w-[60px] truncate">
-                  {story.title}
-                </span>
-              </div>
-            ))}
+
+            {/* Mensagem quando não há destaques */}
+            <div className="flex-1 flex items-center justify-center py-4">
+              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+            </div>
           </div>
         </div>
       </div>
