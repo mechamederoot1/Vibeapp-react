@@ -38,15 +38,38 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
     }
   }
 
-  const timeAgo = (dateString) => {
+  const formatDateTime = (dateString) => {
     const date = new Date(dateString)
     const now = new Date()
-    const diffInSeconds = Math.floor((now - date) / 1000)
-    
-    if (diffInSeconds < 60) return `${diffInSeconds}s`
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
-    return `${Math.floor(diffInSeconds / 86400)}d`
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const postDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+    // Se for hoje, mostra apenas a hora
+    if (postDate.getTime() === today.getTime()) {
+      return date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
+    // Se for ontem
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (postDate.getTime() === yesterday.getTime()) {
+      return `ontem às ${date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`
+    }
+
+    // Para datas mais antigas, mostra data e hora
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   return (
