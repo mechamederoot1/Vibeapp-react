@@ -109,6 +109,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setImageFile(null)
     setVideoFile(null)
     setPostType('text')
+    setBackgroundColor(null)
+    setShowColorPicker(false)
     setError('')
     onClose()
   }
