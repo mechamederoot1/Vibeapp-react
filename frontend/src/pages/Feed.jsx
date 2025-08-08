@@ -84,11 +84,30 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
       {/* Conteúdo do Post */}
       {post.type === 'text' ? (
         <div className="mx-3 mb-3">
-          <div className="bg-gradient-to-br from-vibe-blue-light to-vibe-blue rounded-lg p-6 min-h-[200px] flex items-center justify-center">
-            <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
-              {post.content}
-            </p>
-          </div>
+          {post.backgroundColor ? (
+            <div className={`
+              rounded-lg p-6 min-h-[200px] flex items-center justify-center
+              ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                'bg-gradient-to-br from-vibe-blue-light to-vibe-blue'}
+            `}>
+              <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
+                {post.content}
+              </p>
+            </div>
+          ) : (
+            <div className="p-4">
+              <p className="text-gray-800 text-lg leading-relaxed break-words">
+                {post.content}
+              </p>
+            </div>
+          )}
         </div>
       ) : post.type === 'image' && post.imageUrl ? (
         <div className="w-full overflow-hidden">
