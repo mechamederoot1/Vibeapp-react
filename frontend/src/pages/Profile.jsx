@@ -162,6 +162,7 @@ const Profile = () => {
   const handleCoverUpload = async (file) => {
     setUploading(prev => ({ ...prev, cover: true }))
     setUploadError(null)
+    setUploadSuccess(null)
 
     try {
       const response = await uploadsAPI.uploadCover(file)
@@ -170,10 +171,13 @@ const Profile = () => {
       const updatedUser = response.data.user
       setUser(updatedUser)
 
-      // Forçar atualização da interface
+      // Mostrar mensagem de sucesso
+      setUploadSuccess('Foto de capa atualizada com sucesso!')
+
+      // Forçar atualização da interface após um delay
       setTimeout(() => {
         window.location.reload()
-      }, 500)
+      }, 1000)
 
       console.log('Cover uploaded successfully:', response.data.message)
 
