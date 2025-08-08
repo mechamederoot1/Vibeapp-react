@@ -12,7 +12,8 @@ import ProfileEditModal from '../components/ProfileEditModal'
 import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
-import AvatarViewer from '../components/AvatarViewer'
+import AvatarDropdown from '../components/AvatarDropdown'
+import PhotoModal from '../components/PhotoModal'
 import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
@@ -39,7 +40,8 @@ const Profile = () => {
   // Estados para modais avançados
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
-  const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
+  const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
@@ -242,18 +244,23 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    setShowAvatarViewer(true)
+    setShowAvatarDropdown(!showAvatarDropdown)
   }
 
-  const handleEditAvatarFromViewer = () => {
-    setShowAvatarViewer(false)
+  const handleEditAvatarFromDropdown = () => {
+    setShowAvatarDropdown(false)
     setShowAvatarEditor(true)
+  }
+
+  const handleViewPhoto = () => {
+    setShowAvatarDropdown(false)
+    setShowPhotoModal(true)
   }
 
   const handleViewStory = () => {
     // TODO: implementar visualização de story
     console.log('Visualizar story do usuário')
-    setShowAvatarViewer(false)
+    setShowAvatarDropdown(false)
   }
 
   const handleCoverClick = () => {
