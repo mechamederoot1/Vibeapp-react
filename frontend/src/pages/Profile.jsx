@@ -14,6 +14,8 @@ import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarDropdown from '../components/AvatarDropdown'
 import PhotoModal from '../components/PhotoModal'
+import CoverDropdown from '../components/CoverDropdown'
+import CoverModal from '../components/CoverModal'
 import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
@@ -42,6 +44,8 @@ const Profile = () => {
   const [showCoverEditor, setShowCoverEditor] = useState(false)
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
+  const [showCoverDropdown, setShowCoverDropdown] = useState(false)
+  const [showCoverModal, setShowCoverModal] = useState(false)
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
