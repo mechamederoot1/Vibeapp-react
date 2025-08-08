@@ -12,6 +12,23 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Estados para cor de fundo
+  const [backgroundColor, setBackgroundColor] = useState(null)
+  const [showColorPicker, setShowColorPicker] = useState(false)
+
+  // Opções de cores predefinidas
+  const colorOptions = [
+    { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
+    { name: 'Azul', value: 'blue', gradient: 'bg-gradient-to-br from-blue-400 to-blue-600' },
+    { name: 'Verde', value: 'green', gradient: 'bg-gradient-to-br from-green-400 to-green-600' },
+    { name: 'Roxo', value: 'purple', gradient: 'bg-gradient-to-br from-purple-400 to-purple-600' },
+    { name: 'Rosa', value: 'pink', gradient: 'bg-gradient-to-br from-pink-400 to-pink-600' },
+    { name: 'Laranja', value: 'orange', gradient: 'bg-gradient-to-br from-orange-400 to-orange-600' },
+    { name: 'Vermelho', value: 'red', gradient: 'bg-gradient-to-br from-red-400 to-red-600' },
+    { name: 'Vibe', value: 'vibe', gradient: 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' },
+    { name: 'Sunset', value: 'sunset', gradient: 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' }
+  ]
+
   const handleFileUpload = (file, type) => {
     if (type === 'image') {
       setImageFile(file)
