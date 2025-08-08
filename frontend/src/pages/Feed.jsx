@@ -516,6 +516,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         onClose={onClosePostModal}
         onPost={handleAddPost}
       />
+
+      <StoryCreator
+        isOpen={showStoryCreator}
+        onClose={() => setShowStoryCreator(false)}
+        onStoryCreate={handleStoryCreate}
+      />
     </>
   )
 }
