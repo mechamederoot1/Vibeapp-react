@@ -13,6 +13,7 @@ import ImageUpload from '../components/ImageUpload'
 import AvatarEditor from '../components/AvatarEditor'
 import CoverEditor from '../components/CoverEditor'
 import AvatarViewer from '../components/AvatarViewer'
+import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 
@@ -39,6 +40,7 @@ const Profile = () => {
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
   const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
 
@@ -248,7 +250,18 @@ const Profile = () => {
     setShowAvatarEditor(true)
   }
 
+  const handleViewStory = () => {
+    // TODO: implementar visualização de story
+    console.log('Visualizar story do usuário')
+    setShowAvatarViewer(false)
+  }
+
   const handleCoverClick = () => {
+    setShowCoverViewer(true)
+  }
+
+  const handleEditCoverFromViewer = () => {
+    setShowCoverViewer(false)
     setShowCoverEditor(true)
   }
 
@@ -336,7 +349,7 @@ const Profile = () => {
               setShowCoverEditor(true)
             }}
             disabled={uploading.cover}
-            title={uploading.cover ? "Fazendo upload..." : "Editar foto de capa"}
+            title={uploading.cover ? "Fazendo upload..." : "Alterar foto de capa"}
           >
             <Camera size={20} />
           </button>
@@ -378,6 +391,7 @@ const Profile = () => {
             className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
             onClick={() => setShowAvatarEditor(true)}
             disabled={uploading.avatar}
+            title={uploading.avatar ? "Fazendo upload..." : "Alterar foto de perfil"}
           >
             <Camera size={14} className="text-white" />
           </button>
@@ -795,7 +809,7 @@ const Profile = () => {
                     src={post.imageUrl}
                     alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
                     className={`w-full object-cover hover:opacity-95 transition-opacity ${
-                      post.profileUpdateType === 'avatar' ? 'h-96 md:h-[500px]' : 'h-48 md:h-64'
+                      post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
                     }`}
                   />
                 </div>
@@ -902,8 +916,16 @@ const Profile = () => {
         isOpen={showAvatarViewer}
         onClose={() => setShowAvatarViewer(false)}
         onEditPhoto={handleEditAvatarFromViewer}
+        onViewStory={handleViewStory}
         user={user}
         hasRecentStory={false} // TODO: implementar lógica de stories
+      />
+
+      <CoverViewer
+        isOpen={showCoverViewer}
+        onClose={() => setShowCoverViewer(false)}
+        onEditPhoto={handleEditCoverFromViewer}
+        user={user}
       />
 
       {/* Post View Modal */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { X, Eye, Play, User, Camera } from 'lucide-react'
 
-const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPhoto }) => {
+const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPhoto, onViewStory }) => {
   const [currentView, setCurrentView] = useState('options') // 'options', 'photo', 'story'
 
   const handleClose = () => {
@@ -14,7 +14,11 @@ const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPho
   }
 
   const handleViewStory = () => {
-    setCurrentView('story')
+    if (onViewStory) {
+      onViewStory()
+    } else {
+      setCurrentView('story')
+    }
   }
 
   const handleBackToOptions = () => {
@@ -80,14 +84,20 @@ const AvatarViewer = ({ isOpen, onClose, user, hasRecentStory = false, onEditPho
                 <span className="text-gray-900">Ver foto do perfil</span>
               </button>
 
-              {hasRecentStory && (
+              {hasRecentStory ? (
                 <button
                   onClick={handleViewStory}
                   className="w-full p-4 flex items-center space-x-3 hover:bg-gray-50 border-t border-gray-100"
                 >
-                  <Play size={20} className="text-gray-600" />
+                  <Play size={20} className="text-vibe-blue" />
                   <span className="text-gray-900">Ver story</span>
+                  <span className="ml-auto text-xs bg-vibe-blue text-white px-2 py-1 rounded-full">Novo</span>
                 </button>
+              ) : (
+                <div className="w-full p-4 flex items-center space-x-3 border-t border-gray-100 opacity-50">
+                  <Play size={20} className="text-gray-400" />
+                  <span className="text-gray-500">Nenhum story disponível</span>
+                </div>
               )}
 
               <button
