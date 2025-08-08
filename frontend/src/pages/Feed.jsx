@@ -374,20 +374,27 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         <Stories />
         <div className="pb-safe w-full max-w-full">
           {posts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Eye size={32} className="text-gray-400" />
+            <div className="space-y-8 p-4">
+              <div className="text-center py-8">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Eye size={32} className="text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
+                <p className="text-gray-500 mb-4">
+                  Seja o primeiro a compartilhar algo! Clique no botão + para criar seu primeiro post.
+                </p>
+                <button
+                  onClick={onOpenPostModal}
+                  className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Criar primeiro post
+                </button>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum post ainda</h3>
-              <p className="text-gray-500 mb-4">
-                Seja o primeiro a compartilhar algo! Clique no botão + para criar seu primeiro post.
-              </p>
-              <button 
-                onClick={onOpenPostModal}
-                className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
-              >
-                Criar primeiro post
-              </button>
+
+              {/* Componente para criar usuários teste */}
+              <div className="border-t border-gray-200 pt-8">
+                <CreateTestUsers />
+              </div>
             </div>
           ) : (
             posts.map((post) => (
