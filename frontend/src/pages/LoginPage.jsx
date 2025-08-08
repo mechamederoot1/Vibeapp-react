@@ -1,0 +1,147 @@
+import React, { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
+const LoginPage = () => {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    const result = await login(email, password)
+    
+    if (result.success) {
+      navigate('/feed')
+    } else {
+      setError(result.error)
+    }
+    
+    setLoading(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-vibe-blue rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">V</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Vibe Social</h1>
+          <p className="text-gray-600">Entre na sua conta</p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setError('')
+              }}
+              className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+              required
+            />
+          </div>
+
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Senha"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setError('')
+              }}
+              className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none pr-12"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Submit button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-vibe-blue text-white py-4 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          >
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
+        </form>
+
+        {/* Forgot password */}
+        <div className="text-center mt-4">
+          <button className="text-vibe-blue hover:underline text-sm">
+            Esqueceu sua senha?
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">ou</span>
+          </div>
+        </div>
+
+        {/* Sign up link */}
+        <div className="text-center">
+          <p className="text-gray-600">
+            Não tem uma conta?{' '}
+            <button
+              onClick={() => navigate('/register')}
+              className="text-vibe-blue hover:underline font-medium"
+            >
+              Criar conta
+            </button>
+          </p>
+        </div>
+
+        {/* Demo credentials */}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-600 text-center mb-2">Para demonstração:</p>
+          <div className="text-xs text-gray-500 space-y-1">
+            <p><strong>Email:</strong> demo@vibe.social</p>
+            <p><strong>Senha:</strong> demo123</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default LoginPage
