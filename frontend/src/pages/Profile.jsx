@@ -604,14 +604,21 @@ const Profile = () => {
 
       {/* Modals */}
       {showFriends && (
-        <FriendsList 
+        <FriendsList
           onClose={() => setShowFriends(false)}
         />
       )}
-      
+
       {showVisitors && (
-        <ProfileVisitors 
+        <ProfileVisitors
           onClose={() => setShowVisitors(false)}
+        />
+      )}
+
+      {showEditModal && (
+        <ProfileEditModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
         />
       )}
     </div>
