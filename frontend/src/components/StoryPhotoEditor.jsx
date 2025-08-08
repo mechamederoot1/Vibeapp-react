@@ -118,14 +118,14 @@ const StoryPhotoEditor = ({
       return
     }
 
-    if (activeTools === 'move') return
+    if (activeTool === 'move') return
 
     setIsDrawing(true)
     const coords = getCanvasCoordinates(e)
-    
+
     const newPath = {
       id: Date.now(),
-      tool: activeTools,
+      tool: activeTool,
       color: drawingColor,
       size: brushSize,
       points: [coords]
