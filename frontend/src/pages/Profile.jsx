@@ -199,7 +199,7 @@ const Profile = () => {
         </div>
         
         {/* Avatar centralizado sobrepondo a capa */}
-        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
           <div className="relative">
             <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
               <img 
@@ -216,7 +216,7 @@ const Profile = () => {
       </div>
 
       {/* Informações do Perfil */}
-      <div className="pt-16 px-4">
+      <div className="pt-12 px-4">
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
@@ -231,21 +231,21 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center space-x-8 mb-6">
-          <div className="text-center">
+        <div className="flex justify-center space-x-6 mb-6">
+          <div className="text-center min-w-[60px]">
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
-          <button 
+          <button
             onClick={() => setShowFriends(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
-          <button 
+          <button
             onClick={() => setShowFriends(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
             <p className="text-gray-600 text-sm">Seguindo</p>
