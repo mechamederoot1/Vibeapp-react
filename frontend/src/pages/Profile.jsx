@@ -521,7 +521,7 @@ const Profile = () => {
       ) : (
         /* Lista de Posts */
         <div className="space-y-6">
-          {posts.map((post) => (
+          {userPosts.map((post) => (
             <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {/* Header do Post */}
               <div className="flex items-center p-4 pb-3">
