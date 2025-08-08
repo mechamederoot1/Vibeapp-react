@@ -4,8 +4,10 @@ import {
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
   MessageCircle as MessageCircleIcon, Share, Repeat2
 } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
+import ProfileEditModal from '../components/ProfileEditModal'
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts')
