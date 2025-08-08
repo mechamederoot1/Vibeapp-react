@@ -37,6 +37,8 @@ const Profile = () => {
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   const [showCoverEditor, setShowCoverEditor] = useState(false)
   const [showAvatarViewer, setShowAvatarViewer] = useState(false)
+  const [showPostModal, setShowPostModal] = useState(false)
+  const [selectedPost, setSelectedPost] = useState(null)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
