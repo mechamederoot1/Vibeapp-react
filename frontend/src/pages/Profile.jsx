@@ -915,6 +915,7 @@ const Profile = () => {
         isOpen={showAvatarViewer}
         onClose={() => setShowAvatarViewer(false)}
         onEditPhoto={handleEditAvatarFromViewer}
+        onViewStory={handleViewStory}
         user={user}
         hasRecentStory={false} // TODO: implementar lógica de stories
       />
