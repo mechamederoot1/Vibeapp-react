@@ -913,6 +913,13 @@ const Profile = () => {
         hasRecentStory={false} // TODO: implementar lógica de stories
       />
 
+      <CoverViewer
+        isOpen={showCoverViewer}
+        onClose={() => setShowCoverViewer(false)}
+        onEditPhoto={handleEditCoverFromViewer}
+        user={user}
+      />
+
       {/* Post View Modal */}
       <PostViewModal
         isOpen={showPostModal}
