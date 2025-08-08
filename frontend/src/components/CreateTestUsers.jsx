@@ -108,13 +108,21 @@ const CreateTestUsers = () => {
           </div>
 
           {/* Mostrar migração se for erro de coluna */}
-          {(error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')) && (
+          {(error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')) ? (
             <div>
               <div className="text-center mb-4">
                 <h4 className="font-medium text-gray-900 mb-2">Solução:</h4>
                 <p className="text-sm text-gray-600">Execute a migração do banco de dados abaixo</p>
               </div>
               <DatabaseMigration />
+            </div>
+          ) : (
+            <div>
+              <div className="text-center mb-4">
+                <h4 className="font-medium text-gray-900 mb-2">Diagnóstico:</h4>
+                <p className="text-sm text-gray-600">Execute o diagnóstico para identificar o problema</p>
+              </div>
+              <BackendDebug />
             </div>
           )}
         </div>
