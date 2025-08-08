@@ -174,7 +174,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               onChange={(e) => setContent(e.target.value)}
               placeholder="O que está acontecendo?"
               className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none resize-none"
-              rows={4}
+              rows={8}
               maxLength={500}
             />
             <div className="flex justify-between items-center mt-2">
