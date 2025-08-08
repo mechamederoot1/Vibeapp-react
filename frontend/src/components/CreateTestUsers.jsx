@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Users, Plus, CheckCircle, XCircle, Database } from 'lucide-react'
 import { devAPI } from '../services/api'
 import DatabaseMigration from './DatabaseMigration'
+import BackendDebug from './BackendDebug'
 
 const CreateTestUsers = () => {
   const [loading, setLoading] = useState(false)
