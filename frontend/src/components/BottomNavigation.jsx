@@ -15,8 +15,8 @@ const BottomNavigation = () => {
   ]
 
   return (
-    <nav className="bg-white border-t border-gray-200 safe-area-bottom">
-      <div className="flex justify-around py-2">
+    <nav className="bg-white border-t border-gray-200 safe-area-bottom w-full max-w-full overflow-hidden">
+      <div className="flex justify-around py-2 w-full max-w-full">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = location.pathname === item.path
