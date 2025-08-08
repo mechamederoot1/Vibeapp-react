@@ -10,9 +10,9 @@ const VibeLogoSimple = ({ size = 'md', className = '', showText = true, textColo
   }
 
   return (
-    <div className={`${className}`}>
+    <div className={`flex items-center justify-center ${className}`}>
       {showText && (
-        <h1 className={`font-bold tracking-tight ${sizeClasses[size]} ${textColor || 'bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent'}`}>
+        <h1 className={`font-bold tracking-tight text-center ${sizeClasses[size]} ${textColor || 'bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent'}`}>
           Vibe
         </h1>
       )}
