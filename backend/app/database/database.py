@@ -1,35 +1,31 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# URL do banco de dados SQLite
-DATABASE_URL = "sqlite:///./vibe.db"
+# Database URL
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./vibe_social.db")
 
-# Criar engine do SQLAlchemy
-engine = create_engine(
-    DATABASE_URL, 
-    connect_args={"check_same_thread": False},
-    echo=True  # Para debug, remover em produção
-)
+# Create engine
+if DATABASE_URL.startswith("sqlite"):
+    engine = create_engine(
+        DATABASE_URL, 
+        connect_args={"check_same_thread": False},
+        echo=True  # Set to False in production
+    )
+else:
+    engine = create_engine(DATABASE_URL, echo=True)
 
-# Criar sessão
+# Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base para os modelos
+# Create Base class
 Base = declarative_base()
 
-# Metadata para migrations
-metadata = MetaData()
-
+# Dependency to get database session
 def get_db():
-    """Dependency para obter sessão do banco de dados"""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-def create_tables():
-    """Criar todas as tabelas"""
-    Base.metadata.create_all(bind=engine)
