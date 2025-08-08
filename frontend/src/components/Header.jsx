@@ -6,20 +6,20 @@ const Header = () => {
   const navigate = useNavigate()
 
   return (
-    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
+    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full overflow-hidden">
+      <div className="flex items-center justify-between max-w-full">
+        <div className="flex items-center space-x-3 min-w-0 flex-1">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white font-bold text-lg">V</span>
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent whitespace-nowrap">
               Vibe
             </h1>
           </div>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 flex-shrink-0">
           <button 
             onClick={() => navigate('/create')}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"

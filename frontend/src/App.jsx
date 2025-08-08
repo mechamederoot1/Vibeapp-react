@@ -11,7 +11,7 @@ import Login from './pages/Login'
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full max-w-full">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/create" element={<CreatePost />} />

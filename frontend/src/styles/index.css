@@ -8,6 +8,7 @@
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   
   body {
@@ -18,6 +19,8 @@
     background-color: #ffffff;
     color: #1f2937;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
   
   * {
@@ -29,6 +32,14 @@
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Prevent horizontal scrolling globally */
+  * {
+    max-width: 100%;
   }
 }
 
@@ -55,5 +66,15 @@
   
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-vibe-blue focus:border-transparent;
+  }
+
+  /* Scrollbar personalizado para stories */
+  .stories-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .stories-scroll::-webkit-scrollbar {
+    display: none;
   }
 }

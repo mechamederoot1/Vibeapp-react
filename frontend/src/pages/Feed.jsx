@@ -2,21 +2,21 @@ import React from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal } from 'lucide-react'
 
 const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = false, type = 'image' }) => (
-  <div className="bg-white mb-3">
+  <div className="bg-white mb-3 w-full overflow-hidden">
     {/* Header do Post */}
     <div className="flex items-center justify-between p-3">
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-3 min-w-0 flex-1">
         <img 
           src={avatar} 
           alt={user}
-          className="w-8 h-8 rounded-full object-cover"
+          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
         />
-        <div>
-          <p className="font-semibold text-sm">{user}</p>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-sm truncate">{user}</p>
           <p className="text-gray-500 text-xs">{time}</p>
         </div>
       </div>
-      <button className="p-1">
+      <button className="p-1 flex-shrink-0">
         <MoreHorizontal size={20} className="text-gray-600" />
       </button>
     </div>
@@ -25,13 +25,13 @@ const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = f
     {type === 'text' ? (
       <div className="mx-3 mb-3">
         <div className="bg-gradient-to-br from-vibe-blue-light to-vibe-blue rounded-lg p-6 min-h-[200px] flex items-center justify-center">
-          <p className="text-white text-xl font-medium text-center leading-relaxed">
+          <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
             {caption}
           </p>
         </div>
       </div>
     ) : (
-      <div className="w-full">
+      <div className="w-full overflow-hidden">
         <img 
           src={image} 
           alt="Post"
@@ -64,7 +64,7 @@ const Post = ({ user, avatar, image, caption, likes, comments, time, isLiked = f
       
       <p className="font-semibold text-sm mb-1">{likes.toLocaleString()} curtidas</p>
       {type !== 'text' && (
-        <p className="text-sm mb-2">
+        <p className="text-sm mb-2 break-words">
           <span className="font-semibold">{user}</span> {caption}
         </p>
       )}
@@ -97,7 +97,7 @@ const Story = ({ user, avatar, isOwn = false, hasNew = true }) => (
         )}
       </div>
     </div>
-    <span className="text-xs text-gray-600 max-w-[60px] truncate">
+    <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
       {isOwn ? 'Seu story' : user}
     </span>
   </div>
@@ -116,11 +116,13 @@ const Stories = () => {
   ]
 
   return (
-    <div className="bg-white border-b border-gray-100 p-4">
-      <div className="flex space-x-3 overflow-x-auto">
-        {stories.map((story, index) => (
-          <Story key={index} {...story} />
-        ))}
+    <div className="bg-white border-b border-gray-100 w-full overflow-hidden">
+      <div className="p-4">
+        <div className="flex space-x-3 overflow-x-auto stories-scroll pb-1">
+          {stories.map((story, index) => (
+            <Story key={index} {...story} />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -205,9 +207,9 @@ const Feed = () => {
   ]
 
   return (
-    <div className="bg-gray-50 min-h-full">
+    <div className="bg-gray-50 min-h-full w-full overflow-x-hidden">
       <Stories />
-      <div className="pb-safe">
+      <div className="pb-safe w-full">
         {posts.map((post, index) => (
           <Post key={index} {...post} />
         ))}
