@@ -200,11 +200,15 @@ const Profile = () => {
       {/* Capa do Perfil */}
       <div className="relative">
         <div className="w-full h-48 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 relative">
-          <img
-            src="https://picsum.photos/400/200?random=cover"
-            alt="Capa do perfil"
-            className="w-full h-full object-cover"
-          />
+          {profileData.coverPhoto ? (
+            <img
+              src={profileData.coverPhoto}
+              alt="Capa do perfil"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300"></div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
           {/* Botão de trocar capa */}
