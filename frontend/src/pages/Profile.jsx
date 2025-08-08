@@ -466,37 +466,128 @@ const Profile = () => {
         )}
       </div>
 
-      {/* Grid de Posts */}
-      <div className="grid grid-cols-3 gap-1">
-        {posts.map((post) => (
-          <div key={post.id} className="relative aspect-square">
-            <img 
-              src={post.thumbnail} 
-              alt={`Post ${post.id}`}
-              className="w-full h-full object-cover"
-            />
-            {post.type === 'video' && (
-              <div className="absolute top-2 right-2">
-                <div className="bg-black bg-opacity-60 rounded px-1.5 py-0.5">
-                  <span className="text-white text-xs">▶</span>
+      {/* Posts Content */}
+      {viewMode === 'grid' ? (
+        /* Grid de Posts */
+        <div className="grid grid-cols-3 gap-1">
+          {posts.map((post) => (
+            <div key={post.id} className="relative aspect-square">
+              {post.type === 'text' ? (
+                <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center p-4">
+                  <p className="text-white text-sm text-center font-medium line-clamp-4">
+                    {post.text}
+                  </p>
                 </div>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
-              <div className="flex items-center space-x-4 text-white">
-                <div className="flex items-center space-x-1">
-                  <span className="text-sm">❤️</span>
-                  <span className="text-sm font-semibold">{post.likes}</span>
+              ) : (
+                <img
+                  src={post.thumbnail}
+                  alt={`Post ${post.id}`}
+                  className="w-full h-full object-cover"
+                />
+              )}
+              {post.type === 'video' && (
+                <div className="absolute top-2 right-2">
+                  <div className="bg-black bg-opacity-60 rounded px-1.5 py-0.5">
+                    <span className="text-white text-xs">▶</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1">
-                  <span className="text-sm">💬</span>
-                  <span className="text-sm font-semibold">{post.comments}</span>
+              )}
+              <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 hover:opacity-100">
+                <div className="flex items-center space-x-4 text-white">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm">❤️</span>
+                    <span className="text-sm font-semibold">{post.likes}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-sm">💬</span>
+                    <span className="text-sm font-semibold">{post.comments}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Lista de Posts */
+        <div className="space-y-6">
+          {posts.map((post) => (
+            <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+              {/* Header do Post */}
+              <div className="flex items-center p-4 pb-3">
+                <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
+                  <img
+                    src="https://picsum.photos/200/200?random=avatar"
+                    alt="Avatar"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </div>
+                <div className="ml-3 flex-1">
+                  <div className="flex items-center space-x-2">
+                    <h4 className="font-semibold text-gray-900">Maria Silva</h4>
+                    <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                  </div>
+                  <p className="text-gray-500 text-sm">@maria.silva • {post.timestamp}</p>
+                </div>
+                <button className="p-1 hover:bg-gray-100 rounded-full">
+                  <MoreHorizontal size={16} className="text-gray-500" />
+                </button>
+              </div>
+
+              {/* Conteúdo do Post */}
+              {post.text && (
+                <div className="px-4 pb-3">
+                  <p className="text-gray-800">{post.text}</p>
+                </div>
+              )}
+
+              {/* Mídia do Post */}
+              {post.type !== 'text' && (
+                <div className="relative">
+                  <img
+                    src={post.thumbnail}
+                    alt={`Post ${post.id}`}
+                    className="w-full h-64 object-cover"
+                  />
+                  {post.type === 'video' && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 bg-black bg-opacity-60 rounded-full flex items-center justify-center">
+                        <span className="text-white text-2xl ml-1">▶</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Ações do Post */}
+              <div className="px-4 py-3 border-t border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <button className={`flex items-center space-x-2 transition-colors ${
+                      post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
+                    }`}>
+                      <Heart size={18} className={post.isLiked ? 'fill-current' : ''} />
+                      <span className="text-sm font-medium">{post.likes}</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-500 hover:text-vibe-blue transition-colors">
+                      <MessageCircleIcon size={18} />
+                      <span className="text-sm font-medium">{post.comments}</span>
+                    </button>
+                    <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors">
+                      <Repeat2 size={18} />
+                      <span className="text-sm font-medium">{post.shares}</span>
+                    </button>
+                  </div>
+                  <button className="text-gray-500 hover:text-vibe-blue transition-colors">
+                    <Share size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Modals */}
       {showFriends && (
