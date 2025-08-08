@@ -421,6 +421,19 @@ const Profile = () => {
           </div>
         )}
 
+        {/* Sucesso de upload */}
+        {uploadSuccess && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <p className="text-green-600 text-sm text-center">{uploadSuccess}</p>
+            <button
+              onClick={() => setUploadSuccess(null)}
+              className="text-green-500 text-xs underline block mx-auto mt-1"
+            >
+              Fechar
+            </button>
+          </div>
+        )}
+
         {/* Botões de Ação */}
         <div className="flex space-x-2 mb-6">
           <button
