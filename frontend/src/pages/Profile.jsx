@@ -199,11 +199,11 @@ const Profile = () => {
         </div>
         
         {/* Avatar centralizado sobrepondo a capa */}
-        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-10">
           <div className="relative">
             <div className="w-24 h-24 rounded-full border-4 border-white bg-white p-1">
-              <img 
-                src="https://picsum.photos/200/200?random=avatar" 
+              <img
+                src="https://picsum.photos/200/200?random=avatar"
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
@@ -216,7 +216,7 @@ const Profile = () => {
       </div>
 
       {/* Informações do Perfil */}
-      <div className="pt-12 px-4">
+      <div className="pt-16 px-4 relative z-0">
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
