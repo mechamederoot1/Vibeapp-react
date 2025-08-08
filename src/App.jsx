@@ -5,6 +5,7 @@ import Feed from './pages/Feed'
 import Profile from './pages/Profile'
 import Explore from './pages/Explore'
 import Notifications from './pages/Notifications'
+import CreatePost from './pages/CreatePost'
 import Login from './pages/Login'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/create" element={<CreatePost />} />
           <Route path="/" element={
             <Layout>
               <Feed />
