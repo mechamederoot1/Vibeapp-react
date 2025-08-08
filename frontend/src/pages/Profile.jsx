@@ -305,12 +305,13 @@ const Profile = () => {
 
           {/* Botão de trocar capa */}
           <button
-            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+            className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
             onClick={(e) => {
               e.stopPropagation()
               setShowCoverEditor(true)
             }}
             disabled={uploading.cover}
+            title={uploading.cover ? "Fazendo upload..." : "Editar foto de capa"}
           >
             <Camera size={20} />
           </button>
