@@ -13,6 +13,7 @@ import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
 import DatabaseFixer from './components/DatabaseFixer'
+import AuthDebug from './components/AuthDebug'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
