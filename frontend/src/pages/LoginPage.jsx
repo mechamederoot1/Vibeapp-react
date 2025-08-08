@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import VibeLogo from '../components/VibeLogo'
+import { VibeLogoSound } from '../components/VibeLogoGeometric'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
