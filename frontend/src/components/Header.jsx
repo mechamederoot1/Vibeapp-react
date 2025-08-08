@@ -18,9 +18,9 @@ const Header = ({ onOpenPostModal }) => {
     <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-lg">V</span>
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-r from-vibe-blue to-vibe-blue-dark rounded-xl p-2 flex-shrink-0">
+              <VibeLogo size="md" className="text-white" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-vibe-blue to-vibe-blue-dark bg-clip-text text-transparent whitespace-nowrap">
               Vibe
