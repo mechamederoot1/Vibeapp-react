@@ -284,13 +284,33 @@ const Profile = () => {
       {/* Avatar Section */}
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
         <div className="relative">
-          <ImageUpload
-            type="avatar"
-            currentImage={profileData.avatar}
-            onImageSelect={handleAvatarUpload}
-            onImageRemove={handleAvatarRemove}
+          <div
+            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105"
+            onClick={handleAvatarClick}
+          >
+            {profileData.avatar ? (
+              <img
+                src={profileData.avatar}
+                alt="Avatar"
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500 text-2xl font-bold">
+                  {profileData.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <button
+            className="absolute bottom-0 right-0 w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
+            onClick={() => setShowAvatarEditor(true)}
             disabled={uploading.avatar}
-          />
+          >
+            <Camera size={14} className="text-white" />
+          </button>
+
           {uploading.avatar && (
             <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
