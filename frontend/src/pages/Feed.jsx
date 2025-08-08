@@ -10,9 +10,10 @@ import ShareAsStoryModal from '../components/ShareAsStoryModal'
 import DatabaseMigration from '../components/DatabaseMigration'
 import ApiTester from '../components/ApiTester'
 
-const Post = ({ post, onLike, onShare, onRepost }) => {
+const Post = ({ post, onLike, onShare, onStoryShare }) => {
   const { user } = useAuth()
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showShareAsStory, setShowShareAsStory] = useState(false)
 
   const handleLike = async () => {
     try {
