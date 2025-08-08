@@ -92,4 +92,5 @@ export const postService = {
   addComment: (postId, comment) => postsAPI.createComment(postId, comment.content),
 }
 
+export { api }
 export default api
