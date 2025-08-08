@@ -279,25 +279,25 @@ const StoryPhotoEditor = ({
         <div className="flex items-center justify-center space-x-4">
           <button
             onClick={() => setActiveTool('move')}
-            className={`p-3 rounded-full ${activeTools === 'move' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
+            className={`p-3 rounded-full ${activeTool === 'move' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
           >
             <Move size={20} />
           </button>
           <button
             onClick={() => setActiveTool('draw')}
-            className={`p-3 rounded-full ${activeTools === 'draw' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
+            className={`p-3 rounded-full ${activeTool === 'draw' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
           >
             <Palette size={20} />
           </button>
           <button
             onClick={() => setActiveTool('erase')}
-            className={`p-3 rounded-full ${activeTools === 'erase' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
+            className={`p-3 rounded-full ${activeTool === 'erase' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
           >
             <Eraser size={20} />
           </button>
           <button
             onClick={() => setActiveTool('text')}
-            className={`p-3 rounded-full ${activeTools === 'text' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
+            className={`p-3 rounded-full ${activeTool === 'text' ? 'bg-blue-600' : 'bg-gray-600'} text-white`}
           >
             <Type size={20} />
           </button>
