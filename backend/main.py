@@ -51,6 +51,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5173",
         "http://192.168.1.109:3000",
+        "http://192.168.1.39:3000",  # Added the IP from logs
         "http://127.0.0.1:3000",
         "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
         "*"
@@ -59,6 +60,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Debug middleware
+@app.middleware("http")
+async def debug_requests(request: Request, call_next):
+    if "/api/stories" in str(request.url) and request.method == "POST":
+        print(f"🔍 DEBUG: {request.method} {request.url}")
+        print(f"🔍 Headers: {dict(request.headers)}")
+        # Check for Authorization header
+        auth_header = request.headers.get("authorization")
+        if auth_header:
+            print(f"🔑 Auth header found: {auth_header[:50]}...")
+        else:
+            print("❌ NO AUTH HEADER FOUND!")
+
+    response = await call_next(request)
+
+    if "/api/stories" in str(request.url) and request.method == "POST":
+        print(f"📤 Response status: {response.status_code}")
+
+    return response
 
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
