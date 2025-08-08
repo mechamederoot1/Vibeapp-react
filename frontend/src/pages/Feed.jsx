@@ -127,7 +127,9 @@ const Post = ({ post, onLike, onShare, onRepost }) => {
                 post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
                 'bg-gray-50'}
             `}>
-              <p className="text-white text-xl font-medium text-center leading-relaxed break-words">
+              <p className={`text-xl font-medium text-center leading-relaxed break-words ${
+                post.backgroundColor ? 'text-white' : 'text-gray-800'
+              }`}>
                 {post.content}
               </p>
             </div>
