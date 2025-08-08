@@ -931,13 +931,10 @@ const Profile = () => {
         currentImage={profileData.coverPhoto}
       />
 
-      <AvatarViewer
-        isOpen={showAvatarViewer}
-        onClose={() => setShowAvatarViewer(false)}
-        onEditPhoto={handleEditAvatarFromViewer}
-        onViewStory={handleViewStory}
-        user={user}
-        hasRecentStory={false} // TODO: implementar lógica de stories
+      <PhotoModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        user={profileData}
       />
 
       <CoverViewer
