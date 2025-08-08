@@ -2,7 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date
 import random
-from ..database.database import get_db
+import sqlite3
+import os
+from pathlib import Path
+from ..database.database import get_db, engine
 from ..models.user import User
 from ..models.post import Post
 
