@@ -538,8 +538,23 @@ const Profile = () => {
           {userPosts.map((post) => (
             <div key={post.id} className="relative aspect-square">
               {post.type === 'text' ? (
-                <div className="w-full h-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center p-4">
-                  <p className="text-white text-sm text-center font-medium line-clamp-4">
+                <div className={`
+                  w-full h-full flex items-center justify-center p-4
+                  ${post.backgroundColor === 'blue' ? 'bg-gradient-to-br from-blue-400 to-blue-600' :
+                    post.backgroundColor === 'green' ? 'bg-gradient-to-br from-green-400 to-green-600' :
+                    post.backgroundColor === 'purple' ? 'bg-gradient-to-br from-purple-400 to-purple-600' :
+                    post.backgroundColor === 'pink' ? 'bg-gradient-to-br from-pink-400 to-pink-600' :
+                    post.backgroundColor === 'orange' ? 'bg-gradient-to-br from-orange-400 to-orange-600' :
+                    post.backgroundColor === 'red' ? 'bg-gradient-to-br from-red-400 to-red-600' :
+                    post.backgroundColor === 'vibe' ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                    post.backgroundColor === 'sunset' ? 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' :
+                    post.backgroundColor ? 'bg-gradient-to-br from-vibe-blue to-vibe-blue-dark' :
+                    'bg-gray-100 border-2 border-gray-200'}
+                `}>
+                  <p className={`
+                    text-sm text-center font-medium line-clamp-4
+                    ${post.backgroundColor ? 'text-white' : 'text-gray-800'}
+                  `}>
                     {post.content}
                   </p>
                 </div>
