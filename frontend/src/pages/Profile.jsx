@@ -283,6 +283,7 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
+    console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
     setShowAvatarDropdown(!showAvatarDropdown)
   }
 
