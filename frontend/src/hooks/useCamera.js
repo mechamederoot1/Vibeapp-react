@@ -13,6 +13,11 @@ export const useCamera = () => {
 
   const startCamera = async () => {
     try {
+      // Verificar se estamos em um contexto seguro (HTTPS)
+      if (!isSecureContext()) {
+        throw new Error('Contexto inseguro. A câmera só funciona com HTTPS.')
+      }
+
       // Verificar se a API de câmera está disponível
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('API de câmera não disponível neste navegador')
