@@ -56,22 +56,25 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
       {/* Camera View */}
       <div className="flex-1 relative">
         {error ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-white p-4 max-w-sm mx-auto">
-              <div className="mb-4">
+          <div className="camera-error">
+            <div className="text-center text-white max-w-sm mx-auto">
+              <div className="mb-6">
                 <CameraIcon size={48} className="mx-auto text-gray-400 mb-4" />
                 <p className="text-sm leading-relaxed">{error}</p>
               </div>
               <div className="space-y-3">
                 <button
                   onClick={startCamera}
-                  className="w-full bg-vibe-blue hover:bg-vibe-blue-dark text-white px-4 py-2 rounded-lg transition-colors"
+                  className="btn-primary w-full"
                 >
                   Tentar Novamente
                 </button>
                 <div className="text-xs text-gray-400">
                   {error.includes('HTTPS') && (
-                    <p>Para usar a câmera, acesse o site via HTTPS</p>
+                    <p>💡 Dica: A câmera só funciona com conexão segura (HTTPS)</p>
+                  )}
+                  {error.includes('Permissão') && (
+                    <p>💡 Dica: Verifique as permissões da câmera no navegador</p>
                   )}
                 </div>
               </div>
@@ -83,7 +86,7 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover"
+            className="camera-video"
           />
         )}
       </div>
