@@ -113,14 +113,31 @@ class Comment(Base):
     post = relationship("Post", back_populates="comments")
     reactions = relationship("CommentReaction", back_populates="comment")
 
-    def to_dict(self):
+    def to_dict(self, current_user_id=None):
         """Convert comment to dictionary for API responses"""
+        # Check user's reaction to this comment
+        user_reaction = None
+        if current_user_id:
+            for reaction in self.reactions:
+                if reaction.user_id == current_user_id:
+                    user_reaction = reaction.reaction_type
+                    break
+
+        # Count reactions by type
+        reaction_counts = {}
+        for reaction in self.reactions:
+            reaction_type = reaction.reaction_type
+            reaction_counts[reaction_type] = reaction_counts.get(reaction_type, 0) + 1
+
         return {
             "id": self.id,
             "userId": self.user_id,
             "user": self.user.to_public_dict() if self.user else None,
             "postId": self.post_id,
             "content": self.content,
+            "likesCount": self.likes_count,
+            "userReaction": user_reaction,
+            "reactionCounts": reaction_counts,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat()
         }
