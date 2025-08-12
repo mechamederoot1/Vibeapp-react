@@ -239,6 +239,9 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
             />
             <button className="hover:scale-110 transition-transform flex items-center space-x-1">
               <MessageCircle size={24} className="text-gray-700 hover:text-vibe-blue" />
+              {post.commentsCount > 0 && (
+                <span className="text-sm text-gray-600">{post.commentsCount}</span>
+              )}
             </button>
             <button
               onClick={() => setShowShareAsStory(true)}
