@@ -230,7 +230,7 @@ async def get_post_comments(
         Comment.post_id == post_id
     ).order_by(Comment.created_at.desc()).offset(offset).limit(limit).all()
     
-    comments_data = [comment.to_dict() for comment in comments]
+    comments_data = [comment.to_dict(current_user.id) for comment in comments]
     
     return {
         "comments": comments_data,
