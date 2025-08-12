@@ -29,6 +29,7 @@ const CoverDropdown = ({ isOpen, onClose, user, onEditCover, onViewCover }) => {
     >
       <button
         onClick={() => {
+          console.log('👁️ Ver capa clicado')
           onViewCover()
           onClose()
         }}
@@ -41,6 +42,7 @@ const CoverDropdown = ({ isOpen, onClose, user, onEditCover, onViewCover }) => {
 
       <button
         onClick={() => {
+          console.log('📷 Editar capa clicado')
           onEditCover()
           onClose()
         }}
