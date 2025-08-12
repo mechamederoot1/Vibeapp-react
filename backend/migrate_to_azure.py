@@ -74,7 +74,7 @@ try:
     print("✅ Dependências importadas")
 except ImportError as e:
     print(f"❌ Dependência faltando: {e}")
-    print("Execute: pip install PyMySQL sqlalchemy")
+    print("Execute: pip install PyMySQL sqlalchemy python-dotenv")
     sys.exit(1)
 
 # 3. Testar conexão
