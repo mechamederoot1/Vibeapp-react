@@ -34,19 +34,19 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="camera-container">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 safe-area-top">
+      <div className="camera-header">
         <button
           onClick={onClose}
-          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full"
+          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
         >
           <X size={24} />
         </button>
-        <h2 className="text-white font-semibold">Câmera</h2>
+        <h2 className="text-white font-semibold text-lg">Câmera</h2>
         <button
           onClick={switchCamera}
-          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full"
+          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full transition-colors disabled:opacity-50"
           disabled={!isActive}
         >
           <RotateCcw size={24} />
