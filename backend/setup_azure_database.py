@@ -20,10 +20,9 @@ from dotenv import load_dotenv
 from app.models import (
     User, Post, PostLike, Comment, Share,
     PostReaction, CommentReaction, Notification,
-    Friendship, ProfileView, AccountSettings
+    Friendship, ProfileView, AccountSettings,
+    Story, StoryView
 )
-# Importar modelos adicionais que não estão no __init__.py
-from app.models.story import Story, StoryView
 from app.database.database import Base
 
 def main():
@@ -179,7 +178,7 @@ def create_demo_data():
         # Verificar se já existe o usuário demo
         existing_user = db.query(User).filter(User.email == "demo@vibesocial.com").first()
         if existing_user:
-            print("ℹ️ Usuário demo já existe")
+            print("���️ Usuário demo já existe")
             return
         
         # Criar usuário demo
