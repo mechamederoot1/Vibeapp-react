@@ -10,10 +10,11 @@ import ReactionPicker from '../components/ReactionPicker'
 import ReactionSummary from '../components/ReactionSummary'
 import ShareModal from '../components/ShareModal'
 
-const Post = ({ post, onLike, onShare, onStoryShare }) => {
+const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
   const { user } = useAuth()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const handleLike = async () => {
     try {
