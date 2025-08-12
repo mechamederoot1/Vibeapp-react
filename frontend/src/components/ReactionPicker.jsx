@@ -195,41 +195,50 @@ const ReactionPicker = ({
 
       {/* Picker de reações */}
       {showReactions && (
-        <div 
+        <div
           ref={reactionsRef}
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-50"
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-[9999] animate-in fade-in duration-200"
         >
-          <div className="bg-white rounded-full shadow-lg border border-gray-200 px-2 py-2 flex space-x-1">
-            {reactions.map((reaction) => (
+          <div className="bg-white rounded-full shadow-xl border border-gray-200 px-3 py-3 flex space-x-2">
+            {reactions.map((reaction, index) => (
               <button
                 key={reaction.type}
                 onClick={() => handleReactionSelect(reaction.type)}
                 className={`
                   w-12 h-12 rounded-full flex items-center justify-center text-2xl
-                  hover:scale-125 transform transition-all duration-200
-                  hover:bg-gray-100 relative group
-                  ${currentReaction === reaction.type ? 'scale-110 bg-gray-100' : ''}
+                  hover:scale-125 transform transition-all duration-150
+                  hover:bg-gray-100 relative group active:scale-95
+                  ${currentReaction === reaction.type ? 'scale-110 bg-gray-100 ring-2 ring-blue-200' : ''}
                 `}
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animation: 'bounceIn 0.3s ease-out forwards'
+                }}
                 title={reaction.label}
               >
                 <span className="select-none">{reaction.emoji}</span>
-                
-                {/* Tooltip */}
-                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 
+
+                {/* Tooltip melhorado */}
+                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2
                               opacity-0 group-hover:opacity-100 transition-opacity duration-200
-                              bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                              bg-gray-900 text-white text-xs px-2 py-1 rounded-md whitespace-nowrap
+                              pointer-events-none z-[10000]">
                   {reaction.label}
                   {reactionCounts[reaction.type] > 0 && (
-                    <span className="ml-1">({reactionCounts[reaction.type]})</span>
+                    <span className="ml-1 font-semibold">({reactionCounts[reaction.type]})</span>
                   )}
+                  {/* Seta do tooltip */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div className="w-2 h-2 bg-gray-900 transform rotate-45"></div>
+                  </div>
                 </div>
               </button>
             ))}
           </div>
-          
+
           {/* Seta apontando para baixo */}
           <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-            <div className="w-3 h-3 bg-white border-r border-b border-gray-200 transform rotate-45"></div>
+            <div className="w-3 h-3 bg-white border-r border-b border-gray-200 transform rotate-45 shadow-sm"></div>
           </div>
         </div>
       )}
