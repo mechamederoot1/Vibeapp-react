@@ -35,6 +35,8 @@ class Post(Base):
     author = relationship("User", back_populates="posts")
     likes = relationship("PostLike", back_populates="post")
     comments = relationship("Comment", back_populates="post")
+    reactions = relationship("PostReaction", back_populates="post")
+    shares = relationship("Share", back_populates="post")
 
     def to_dict(self, current_user_id=None):
         """Convert post to dictionary for API responses"""
