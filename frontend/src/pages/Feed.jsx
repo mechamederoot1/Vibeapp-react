@@ -24,10 +24,29 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
     }
   }
 
+  const handleReaction = async (reactionType) => {
+    try {
+      if (onReaction) {
+        await onReaction(post.id, reactionType)
+      }
+    } catch (error) {
+      console.error('Error reacting to post:', error)
+    }
+  }
+
   const handleShare = async () => {
     try {
       await onShare(post.id)
       setShowShareMenu(false)
+    } catch (error) {
+      console.error('Error sharing post:', error)
+    }
+  }
+
+  const handleAdvancedShare = async (shareData) => {
+    try {
+      await onShare(post.id, shareData)
+      setShowShareModal(false)
     } catch (error) {
       console.error('Error sharing post:', error)
     }
