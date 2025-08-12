@@ -27,9 +27,10 @@ const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditP
   if (!isOpen || !user) return null
 
   return (
-    <div 
+    <div
       ref={dropdownRef}
-      className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50 min-w-48"
+      className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-[9999] min-w-48"
+      style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.15)' }}
     >
       <button
         onClick={() => {
