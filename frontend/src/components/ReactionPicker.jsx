@@ -185,6 +185,7 @@ const ReactionPicker = ({
           select-none outline-none focus:outline-none
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           ${userReaction ? 'text-red-500' : 'text-gray-700 hover:text-red-500'}
+          ${isLongPressing ? 'scale-125 animate-pulse' : ''}
         `}
       >
         {userReaction ? (
