@@ -38,17 +38,14 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 3000,
-    https: true,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false
+        changeOrigin: true
       },
       '/uploads': {
         target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false
+        changeOrigin: true
       }
     }
   }
