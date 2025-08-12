@@ -293,6 +293,124 @@ async def delete_post(
     
     return {"message": "Post deleted successfully"}
 
+@router.put("/comments/{comment_id}")
+async def update_comment(
+    comment_id: int,
+    comment_data: CommentCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update a comment (only by author)"""
+
+    comment = db.query(Comment).filter(
+        Comment.id == comment_id,
+        Comment.user_id == current_user.id
+    ).first()
+
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found or access denied"
+        )
+
+    comment.content = comment_data.content
+    db.commit()
+    db.refresh(comment)
+
+    return comment.to_dict(current_user.id)
+
+@router.delete("/comments/{comment_id}")
+async def delete_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a comment (only by author or post owner)"""
+
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found"
+        )
+
+    # Check if user is comment author or post owner
+    post = db.query(Post).filter(Post.id == comment.post_id).first()
+    if comment.user_id != current_user.id and post.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
+    # Decrease comment count
+    if post:
+        post.comments_count = max(0, post.comments_count - 1)
+
+    db.delete(comment)
+    db.commit()
+
+    return {"message": "Comment deleted successfully"}
+
+@router.get("/{post_id}/shares")
+async def get_post_shares(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    page: int = 1,
+    limit: int = 20
+):
+    """Get users who shared a post"""
+
+    offset = (page - 1) * limit
+
+    shares = db.query(Share).filter(
+        Share.post_id == post_id
+    ).order_by(Share.created_at.desc()).offset(offset).limit(limit).all()
+
+    shares_data = [share.to_dict() for share in shares]
+
+    return {
+        "shares": shares_data,
+        "page": page,
+        "limit": limit,
+        "total": len(shares_data)
+    }
+
+@router.delete("/{post_id}/shares/{share_id}")
+async def unshare_post(
+    post_id: int,
+    share_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Remove a share/repost"""
+
+    share = db.query(Share).filter(
+        Share.id == share_id,
+        Share.user_id == current_user.id,
+        Share.post_id == post_id
+    ).first()
+
+    if not share:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Share not found or access denied"
+        )
+
+    # Update post counters
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if post:
+        if share.share_type == "share":
+            post.shares_count = max(0, post.shares_count - 1)
+        elif share.share_type == "repost":
+            post.reposts_count = max(0, post.reposts_count - 1)
+
+    db.delete(share)
+    db.commit()
+
+    return {"message": "Share removed successfully"}
+
 @router.get("/user/{user_id}")
 async def get_user_posts(
     user_id: int,
