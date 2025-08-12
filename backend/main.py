@@ -5,6 +5,10 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 import uvicorn
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Import database
 from app.database.database import engine, Base
