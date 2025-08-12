@@ -5,6 +5,7 @@ from .notification import Notification
 from .friendship import Friendship
 from .profile_view import ProfileView
 from .account_settings import AccountSettings
+from .story import Story, StoryView
 
 __all__ = [
     "User",
@@ -17,5 +18,7 @@ __all__ = [
     "Notification",
     "Friendship",
     "ProfileView",
-    "AccountSettings"
+    "AccountSettings",
+    "Story",
+    "StoryView"
 ]
