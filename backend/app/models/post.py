@@ -154,7 +154,7 @@ class Share(Base):
     
     # Relationships
     user = relationship("User")
-    post = relationship("Post")
+    post = relationship("Post", back_populates="shares")
 
     def to_dict(self):
         """Convert share to dictionary for API responses"""
