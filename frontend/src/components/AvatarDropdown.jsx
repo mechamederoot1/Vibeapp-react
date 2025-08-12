@@ -66,6 +66,28 @@ const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditP
         <Camera size={18} className="text-gray-600" />
         <span className="text-gray-900 text-sm">Editar foto do perfil</span>
       </button>
+
+      <button
+        onClick={() => {
+          navigate('/settings')
+          onClose()
+        }}
+        className="w-full p-3 flex items-center space-x-3 hover:bg-gray-50 border-t border-gray-100 text-left"
+      >
+        <Settings size={18} className="text-gray-600" />
+        <span className="text-gray-900 text-sm">Configurações</span>
+      </button>
+
+      <button
+        onClick={() => {
+          logout()
+          onClose()
+        }}
+        className="w-full p-3 flex items-center space-x-3 hover:bg-red-50 border-t border-gray-100 text-left text-red-600"
+      >
+        <LogOut size={18} className="text-red-600" />
+        <span className="text-red-600 text-sm">Sair</span>
+      </button>
     </div>
   )
 }
