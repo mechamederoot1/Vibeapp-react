@@ -172,7 +172,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Debug route */}
+        {/* Debug routes */}
         <Route
           path="/debug/database"
           element={
@@ -180,6 +180,10 @@ const AppContent = () => {
               <DatabaseFixer />
             </div>
           }
+        />
+        <Route
+          path="/test/reactions"
+          element={<ReactionTest />}
         />
 
         {/* Catch all route */}
