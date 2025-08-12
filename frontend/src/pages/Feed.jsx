@@ -6,6 +6,9 @@ import PostModal from '../components/PostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
 import ShareAsStoryModal from '../components/ShareAsStoryModal'
+import ReactionPicker from '../components/ReactionPicker'
+import ReactionSummary from '../components/ReactionSummary'
+import ShareModal from '../components/ShareModal'
 
 const Post = ({ post, onLike, onShare, onStoryShare }) => {
   const { user } = useAuth()
