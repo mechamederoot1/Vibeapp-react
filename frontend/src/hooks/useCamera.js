@@ -103,6 +103,8 @@ export const useCamera = () => {
         errorMessage = 'Permissão negada para trocar câmera.'
       } else if (err.name === 'NotFoundError') {
         errorMessage = 'Câmera traseira não encontrada.'
+      } else if (err.message.includes('Contexto inseguro')) {
+        errorMessage = 'Acesso negado. A câmera só funciona com conexão HTTPS segura.'
       } else if (err.message.includes('API de câmera não disponível')) {
         errorMessage = 'Câmera não disponível. Certifique-se de estar usando HTTPS.'
       }
