@@ -300,7 +300,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
         </div>
         
         <div className="flex items-center space-x-4 mb-2">
-          <p className="font-semibold text-sm">{post.likesCount.toLocaleString()} curtidas</p>
+          <ReactionSummary
+            reactionCounts={post.reactionCounts || {}}
+            likesCount={post.likesCount}
+          />
           {post.commentsCount > 0 && (
             <p className="text-gray-600 text-sm">{post.commentsCount} comentários</p>
           )}
