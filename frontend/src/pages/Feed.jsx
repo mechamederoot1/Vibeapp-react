@@ -654,6 +654,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 onLike={handleLikePost}
                 onShare={handleSharePost}
                 onStoryShare={handleStoryShare}
+                onReaction={handleReaction}
               />
             ))
           )}
