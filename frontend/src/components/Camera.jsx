@@ -70,11 +70,14 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
                   Tentar Novamente
                 </button>
                 <div className="text-xs text-gray-400">
-                  {error.includes('HTTPS') && (
-                    <p>💡 Dica: A câmera só funciona com conexão segura (HTTPS)</p>
-                  )}
                   {error.includes('Permissão') && (
                     <p>💡 Dica: Verifique as permissões da câmera no navegador</p>
+                  )}
+                  {error.includes('em uso') && (
+                    <p>💡 Dica: Feche outros aplicativos que podem estar usando a câmera</p>
+                  )}
+                  {error.includes('não encontrada') && (
+                    <p>💡 Dica: Verifique se seu dispositivo possui câmera</p>
                   )}
                 </div>
               </div>
