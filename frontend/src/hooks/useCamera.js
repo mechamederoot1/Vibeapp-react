@@ -66,10 +66,10 @@ export const useCamera = () => {
         errorMessage = 'Nenhuma câmera encontrada no dispositivo.'
       } else if (err.name === 'NotSupportedError') {
         errorMessage = 'Câmera não suportada neste navegador.'
-      } else if (err.message.includes('Contexto inseguro')) {
-        errorMessage = 'Acesso negado. A câmera só funciona com conexão HTTPS segura.'
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Câmera em uso por outro aplicativo. Feche outros apps que usam a câmera.'
       } else if (err.message.includes('API de câmera não disponível')) {
-        errorMessage = 'Câmera não disponível. Certifique-se de estar usando HTTPS.'
+        errorMessage = 'Câmera não disponível neste navegador.'
       }
 
       setError(errorMessage)
