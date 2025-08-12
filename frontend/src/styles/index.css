@@ -116,6 +116,33 @@
     overflow-x: hidden;
   }
 
+  /* Camera specific styles */
+  .camera-container {
+    @apply fixed inset-0 bg-black z-50 flex flex-col;
+  }
+
+  .camera-header {
+    @apply flex items-center justify-between p-4;
+    padding-top: calc(1rem + env(safe-area-inset-top));
+  }
+
+  .camera-controls {
+    @apply p-6;
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+
+  .camera-error {
+    @apply flex-1 flex items-center justify-center p-4;
+  }
+
+  .camera-video {
+    @apply w-full h-full object-cover;
+  }
+
+  .camera-capture-btn {
+    @apply w-16 h-16 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform active:scale-95;
+  }
+
   /* Layout mobile perfeito */
   @media (max-width: 768px) {
     * {

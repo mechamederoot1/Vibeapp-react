@@ -34,19 +34,19 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className="camera-container">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 safe-area-top">
+      <div className="camera-header">
         <button
           onClick={onClose}
-          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full"
+          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full transition-colors"
         >
           <X size={24} />
         </button>
-        <h2 className="text-white font-semibold">Câmera</h2>
+        <h2 className="text-white font-semibold text-lg">Câmera</h2>
         <button
           onClick={switchCamera}
-          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full"
+          className="p-2 text-white hover:bg-white hover:bg-opacity-20 rounded-full transition-colors disabled:opacity-50"
           disabled={!isActive}
         >
           <RotateCcw size={24} />
@@ -56,15 +56,31 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
       {/* Camera View */}
       <div className="flex-1 relative">
         {error ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-white p-4">
-              <p className="mb-4">{error}</p>
-              <button
-                onClick={startCamera}
-                className="btn-primary"
-              >
-                Tentar Novamente
-              </button>
+          <div className="camera-error">
+            <div className="text-center text-white max-w-sm mx-auto">
+              <div className="mb-6">
+                <CameraIcon size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-sm leading-relaxed">{error}</p>
+              </div>
+              <div className="space-y-3">
+                <button
+                  onClick={startCamera}
+                  className="btn-primary w-full"
+                >
+                  Tentar Novamente
+                </button>
+                <div className="text-xs text-gray-400">
+                  {error.includes('Permissão') && (
+                    <p>💡 Dica: Verifique as permissões da câmera no navegador</p>
+                  )}
+                  {error.includes('em uso') && (
+                    <p>💡 Dica: Feche outros aplicativos que podem estar usando a câmera</p>
+                  )}
+                  {error.includes('não encontrada') && (
+                    <p>💡 Dica: Verifique se seu dispositivo possui câmera</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         ) : (
@@ -73,18 +89,18 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover"
+            className="camera-video"
           />
         )}
       </div>
 
       {/* Controls */}
       {isActive && (
-        <div className="p-6 safe-area-bottom">
+        <div className="camera-controls">
           <div className="flex items-center justify-center">
             <button
               onClick={handleCapture}
-              className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+              className="camera-capture-btn"
             >
               <CameraIcon size={32} className="text-gray-800" />
             </button>

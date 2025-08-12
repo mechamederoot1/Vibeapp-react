@@ -3,17 +3,18 @@ import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } f
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
-import CreateTestUsers from '../components/CreateTestUsers'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
 import ShareAsStoryModal from '../components/ShareAsStoryModal'
-import DatabaseMigration from '../components/DatabaseMigration'
-import ApiTester from '../components/ApiTester'
+import ReactionPicker from '../components/ReactionPicker'
+import ReactionSummary from '../components/ReactionSummary'
+import ShareModal from '../components/ShareModal'
 
-const Post = ({ post, onLike, onShare, onStoryShare }) => {
+const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
   const { user } = useAuth()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
 
   const handleLike = async () => {
     try {
@@ -23,10 +24,29 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
     }
   }
 
+  const handleReaction = async (reactionType) => {
+    try {
+      if (onReaction) {
+        await onReaction(post.id, reactionType)
+      }
+    } catch (error) {
+      console.error('Error reacting to post:', error)
+    }
+  }
+
   const handleShare = async () => {
     try {
       await onShare(post.id)
       setShowShareMenu(false)
+    } catch (error) {
+      console.error('Error sharing post:', error)
+    }
+  }
+
+  const handleAdvancedShare = async (shareData) => {
+    try {
+      await onShare(post.id, shareData)
+      setShowShareModal(false)
     } catch (error) {
       console.error('Error sharing post:', error)
     }
@@ -210,17 +230,18 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
       <div className="p-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleLike}
-              className="hover:scale-110 transition-transform flex items-center space-x-1"
-            >
-              <Heart 
-                size={24} 
-                className={post.isLiked ? "text-red-500 fill-current" : "text-gray-700 hover:text-red-400"}
-              />
-            </button>
+            <ReactionPicker
+              onReaction={handleReaction}
+              isLiked={post.isLiked}
+              currentReaction={post.userReaction}
+              likesCount={post.likesCount}
+              reactionCounts={post.reactionCounts || {}}
+            />
             <button className="hover:scale-110 transition-transform flex items-center space-x-1">
               <MessageCircle size={24} className="text-gray-700 hover:text-vibe-blue" />
+              {post.commentsCount > 0 && (
+                <span className="text-sm text-gray-600">{post.commentsCount}</span>
+              )}
             </button>
             <button
               onClick={() => setShowShareAsStory(true)}
@@ -237,17 +258,23 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
                 <Share size={24} className="text-gray-700 hover:text-vibe-blue" />
               </button>
               {showShareMenu && (
-                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
-                  <button 
-                    onClick={handleShare}
+                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[180px]">
+                  <button
+                    onClick={() => {
+                      setShowShareModal(true)
+                      setShowShareMenu(false)
+                    }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
                     <Share size={16} />
-                    <span>Compartilhar</span>
+                    <span>Compartilhar no Feed</span>
                   </button>
-                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
-                    <MessageCircle size={16} />
-                    <span>Enviar por DM</span>
+                  <button
+                    onClick={handleShare}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                  >
+                    <Repeat2 size={16} />
+                    <span>Compartilhar Rápido</span>
                   </button>
                   <button
                     onClick={() => {
@@ -256,8 +283,12 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
                     }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
-                    <Repeat2 size={16} />
+                    <Eye size={16} />
                     <span>Compartilhar como Story</span>
+                  </button>
+                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
+                    <MessageCircle size={16} />
+                    <span>Enviar por DM</span>
                   </button>
                 </div>
               )}
@@ -269,7 +300,10 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
         </div>
         
         <div className="flex items-center space-x-4 mb-2">
-          <p className="font-semibold text-sm">{post.likesCount.toLocaleString()} curtidas</p>
+          <ReactionSummary
+            reactionCounts={post.reactionCounts || {}}
+            likesCount={post.likesCount}
+          />
           {post.commentsCount > 0 && (
             <p className="text-gray-600 text-sm">{post.commentsCount} comentários</p>
           )}
@@ -302,6 +336,15 @@ const Post = ({ post, onLike, onShare, onStoryShare }) => {
         onClose={() => setShowShareAsStory(false)}
         post={post}
         onStoryCreate={onStoryShare}
+      />
+
+      {/* Advanced Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        post={post}
+        onShare={handleAdvancedShare}
+        currentUser={user}
       />
     </div>
   )
@@ -469,6 +512,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleReaction = async (postId, reactionType) => {
+    try {
+      // TODO: Implement reaction API call
+      // For now, just update local state
+      setPosts(posts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              userReaction: reactionType,
+              reactionCounts: {
+                ...post.reactionCounts,
+                [reactionType]: (post.reactionCounts?.[reactionType] || 0) + 1
+              }
+            }
+          : post
+      ))
+      console.log('Reaction added:', reactionType, 'to post:', postId)
+    } catch (error) {
+      console.error('Error reacting to post:', error)
+    }
+  }
+
   const handleAddPost = (newPost) => {
     setPosts([newPost, ...posts])
   }
@@ -514,39 +579,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   if (error) {
-    // Verificar se é erro de coluna não encontrada (precisa migração)
-    const needsMigration = error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')
     // Verificar se é erro de rede/conectividade
-    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS')
+    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS') || error.includes('conectar')
 
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
         <div className="flex justify-center py-8">
           <div className="space-y-6 max-w-md w-full px-4">
-            {needsMigration ? (
-              <>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Atualização do Banco Necessária
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    O banco de dados precisa ser atualizado com as novas funcionalidades.
-                  </p>
-                </div>
-                <DatabaseMigration />
-              </>
-            ) : isNetworkError ? (
-              <>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Problema de Conectividade
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Não foi possível conectar com o servidor backend.
-                  </p>
-                </div>
-                <ApiTester />
-              </>
+            {isNetworkError ? (
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Problema de Conectividade
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Não foi possível conectar com o servidor. Tente novamente.
+                </p>
+                <button
+                  onClick={loadFeed}
+                  className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Tentar novamente
+                </button>
+              </div>
             ) : (
               <div className="text-center">
                 <p className="text-red-600 mb-4">{error}</p>
@@ -591,10 +645,6 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 </button>
               </div>
 
-              {/* Componente para criar usuários teste */}
-              <div className="border-t border-gray-200 pt-8">
-                <CreateTestUsers />
-              </div>
             </div>
           ) : (
             posts.map((post) => (
@@ -604,6 +654,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 onLike={handleLikePost}
                 onShare={handleSharePost}
                 onStoryShare={handleStoryShare}
+                onReaction={handleReaction}
               />
             ))
           )}

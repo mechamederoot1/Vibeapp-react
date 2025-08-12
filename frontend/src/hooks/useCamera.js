@@ -6,26 +6,73 @@ export const useCamera = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
+  // Verificar se estamos em um contexto seguro (remover verificação manual)
+  // O navegador automaticamente bloqueia acesso à câmera em contextos inseguros
+
+  // Polyfill para navegadores mais antigos
+  const getUserMediaPolyfill = () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      return navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
+    }
+
+    // Fallback para navegadores mais antigos
+    const getUserMedia = navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia
+
+    if (getUserMedia) {
+      return (constraints) => {
+        return new Promise((resolve, reject) => {
+          getUserMedia.call(navigator, constraints, resolve, reject)
+        })
+      }
+    }
+
+    return null
+  }
+
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+      // Verificar se a API de câmera está disponível
+      const getUserMedia = getUserMediaPolyfill()
+      if (!getUserMedia) {
+        throw new Error('API de câmera não disponível neste navegador')
+      }
+
+      const stream = await getUserMedia({
+        video: {
           facingMode: 'user',
           width: { ideal: 1080 },
           height: { ideal: 1920 }
         },
         audio: false
       })
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
-      
+
       streamRef.current = stream
       setIsActive(true)
       setError(null)
     } catch (err) {
-      setError('Erro ao acessar a câmera: ' + err.message)
+      let errorMessage = 'Erro ao acessar a câmera: ' + err.message
+
+      // Mensagens mais específicas para diferentes tipos de erro
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Permissão negada. Por favor, permita o acesso à câmera nas configurações do navegador.'
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'Nenhuma câmera encontrada no dispositivo.'
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = 'Câmera não suportada neste navegador.'
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Câmera em uso por outro aplicativo. Feche outros apps que usam a câmera.'
+      } else if (err.message.includes('API de câmera não disponível')) {
+        errorMessage = 'Câmera não disponível neste navegador.'
+      }
+
+      setError(errorMessage)
       console.error('Camera error:', err)
     }
   }
@@ -41,23 +88,41 @@ export const useCamera = () => {
   const switchCamera = async () => {
     stopCamera()
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+      // Verificar se a API de câmera está disponível
+      const getUserMedia = getUserMediaPolyfill()
+      if (!getUserMedia) {
+        throw new Error('API de câmera não disponível neste navegador')
+      }
+
+      const stream = await getUserMedia({
+        video: {
           facingMode: isActive ? 'environment' : 'user',
           width: { ideal: 1080 },
           height: { ideal: 1920 }
         },
         audio: false
       })
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
-      
+
       streamRef.current = stream
       setIsActive(true)
     } catch (err) {
-      setError('Erro ao trocar câmera: ' + err.message)
+      let errorMessage = 'Erro ao trocar câmera: ' + err.message
+
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Permissão negada para trocar câmera.'
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'Câmera traseira não encontrada.'
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = 'Câmera em uso por outro aplicativo.'
+      } else if (err.message.includes('API de câmera não disponível')) {
+        errorMessage = 'Câmera não disponível neste navegador.'
+      }
+
+      setError(errorMessage)
     }
   }
 

@@ -106,7 +106,7 @@ const Profile = () => {
   }, [user?.id, privacySettings.showVisitors])
 
   // Use real user data from auth context, fallback to defaults
-  const profileData = {
+  const [profileData, setProfileData] = useState({
     username: user?.username || user?.email?.split('@')[0] || 'usuario',
     name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
     bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
@@ -120,7 +120,24 @@ const Profile = () => {
     coverPhoto: user?.coverPhoto,
     location: user?.location,
     website: user?.website
-  }
+  })
+
+  // Update profileData when user data changes
+  useEffect(() => {
+    if (user) {
+      setProfileData(prev => ({
+        ...prev,
+        username: user.username || user.email?.split('@')[0] || 'usuario',
+        name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Usuário',
+        bio: user.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
+        isVerified: user.isVerified || false,
+        avatar: user.avatar,
+        coverPhoto: user.coverPhoto,
+        location: user.location,
+        website: user.website
+      }))
+    }
+  }, [user])
 
   // Real data is now loaded from backend via useEffect
 
@@ -144,13 +161,22 @@ const Profile = () => {
       const updatedUser = response.data.user
       setUser(updatedUser)
 
+      // Atualizar dados do perfil localmente
+      setProfileData(prev => ({
+        ...prev,
+        avatar: updatedUser.avatar
+      }))
+
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de perfil atualizada com sucesso!')
 
-      // Forçar atualização da interface após um delay
+      // Fechar o modal do editor
+      setShowAvatarEditor(false)
+
+      // Limpar mensagem após um tempo
       setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+        setUploadSuccess(null)
+      }, 3000)
 
       console.log('Avatar uploaded successfully:', response.data.message)
 
@@ -185,13 +211,22 @@ const Profile = () => {
       const updatedUser = response.data.user
       setUser(updatedUser)
 
+      // Atualizar dados do perfil localmente
+      setProfileData(prev => ({
+        ...prev,
+        coverPhoto: updatedUser.coverPhoto
+      }))
+
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de capa atualizada com sucesso!')
 
-      // Forçar atualização da interface após um delay
+      // Fechar o modal do editor
+      setShowCoverEditor(false)
+
+      // Limpar mensagem após um tempo
       setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+        setUploadSuccess(null)
+      }, 3000)
 
       console.log('Cover uploaded successfully:', response.data.message)
 

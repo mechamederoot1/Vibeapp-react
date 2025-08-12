@@ -35,14 +35,28 @@ class Post(Base):
     author = relationship("User", back_populates="posts")
     likes = relationship("PostLike", back_populates="post")
     comments = relationship("Comment", back_populates="post")
+    reactions = relationship("PostReaction", back_populates="post")
+    shares = relationship("Share", back_populates="post")
 
     def to_dict(self, current_user_id=None):
         """Convert post to dictionary for API responses"""
         # Check if current user liked this post
         is_liked = False
+        user_reaction = None
         if current_user_id:
             is_liked = any(like.user_id == current_user_id for like in self.likes)
-        
+            # Get user's reaction if any
+            for reaction in self.reactions:
+                if reaction.user_id == current_user_id:
+                    user_reaction = reaction.reaction_type
+                    break
+
+        # Count reactions by type
+        reaction_counts = {}
+        for reaction in self.reactions:
+            reaction_type = reaction.reaction_type
+            reaction_counts[reaction_type] = reaction_counts.get(reaction_type, 0) + 1
+
         return {
             "id": self.id,
             "authorId": self.author_id,
@@ -58,6 +72,8 @@ class Post(Base):
             "sharesCount": self.shares_count,
             "repostsCount": self.reposts_count,
             "isLiked": is_liked,
+            "userReaction": user_reaction,
+            "reactionCounts": reaction_counts,
             "isPinned": self.is_pinned,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat()
@@ -84,23 +100,44 @@ class Comment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
     content = Column(Text, nullable=False)
-    
+
+    # Engagement
+    likes_count = Column(Integer, default=0)
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     user = relationship("User")
     post = relationship("Post", back_populates="comments")
+    reactions = relationship("CommentReaction", back_populates="comment")
 
-    def to_dict(self):
+    def to_dict(self, current_user_id=None):
         """Convert comment to dictionary for API responses"""
+        # Check user's reaction to this comment
+        user_reaction = None
+        if current_user_id:
+            for reaction in self.reactions:
+                if reaction.user_id == current_user_id:
+                    user_reaction = reaction.reaction_type
+                    break
+
+        # Count reactions by type
+        reaction_counts = {}
+        for reaction in self.reactions:
+            reaction_type = reaction.reaction_type
+            reaction_counts[reaction_type] = reaction_counts.get(reaction_type, 0) + 1
+
         return {
             "id": self.id,
             "userId": self.user_id,
             "user": self.user.to_public_dict() if self.user else None,
             "postId": self.post_id,
             "content": self.content,
+            "likesCount": self.likes_count,
+            "userReaction": user_reaction,
+            "reactionCounts": reaction_counts,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat()
         }
@@ -117,7 +154,7 @@ class Share(Base):
     
     # Relationships
     user = relationship("User")
-    post = relationship("Post")
+    post = relationship("Post", back_populates="shares")
 
     def to_dict(self):
         """Convert share to dictionary for API responses"""
