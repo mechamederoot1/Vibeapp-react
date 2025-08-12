@@ -194,13 +194,22 @@ const Profile = () => {
       const updatedUser = response.data.user
       setUser(updatedUser)
 
+      // Atualizar dados do perfil localmente
+      setProfileData(prev => ({
+        ...prev,
+        coverPhoto: updatedUser.coverPhoto
+      }))
+
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de capa atualizada com sucesso!')
 
-      // Forçar atualização da interface após um delay
+      // Fechar o modal do editor
+      setShowCoverEditor(false)
+
+      // Limpar mensagem após um tempo
       setTimeout(() => {
-        window.location.reload()
-      }, 1000)
+        setUploadSuccess(null)
+      }, 3000)
 
       console.log('Cover uploaded successfully:', response.data.message)
 
@@ -808,7 +817,7 @@ const Profile = () => {
                     <h4 className="font-semibold text-gray-900">{profileData.name}</h4>
                     {profileData.isVerified && (
                       <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">��</span>
+                        <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </div>
