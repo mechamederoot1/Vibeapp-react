@@ -59,23 +59,38 @@ export const useCamera = () => {
   const switchCamera = async () => {
     stopCamera()
     try {
+      // Verificar se a API de câmera está disponível
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('API de câmera não disponível neste navegador')
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: isActive ? 'environment' : 'user',
           width: { ideal: 1080 },
           height: { ideal: 1920 }
         },
         audio: false
       })
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
-      
+
       streamRef.current = stream
       setIsActive(true)
     } catch (err) {
-      setError('Erro ao trocar câmera: ' + err.message)
+      let errorMessage = 'Erro ao trocar câmera: ' + err.message
+
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Permissão negada para trocar câmera.'
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'Câmera traseira não encontrada.'
+      } else if (err.message.includes('API de câmera não disponível')) {
+        errorMessage = 'Câmera não disponível. Certifique-se de estar usando HTTPS.'
+      }
+
+      setError(errorMessage)
     }
   }
 
