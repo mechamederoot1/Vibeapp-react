@@ -3,6 +3,7 @@ import { Search, MessageCircle, Heart, Plus, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
+import AvatarDropdown from './AvatarDropdown'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
