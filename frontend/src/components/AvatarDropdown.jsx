@@ -1,7 +1,11 @@
 import React, { useRef, useEffect } from 'react'
-import { Eye, Play, Camera } from 'lucide-react'
+import { Eye, Play, Camera, Settings, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditPhoto, onViewStory, onViewPhoto }) => {
+  const navigate = useNavigate()
+  const { logout } = useAuth()
   const dropdownRef = useRef(null)
 
   useEffect(() => {
