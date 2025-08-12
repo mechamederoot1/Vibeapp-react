@@ -6,10 +6,8 @@ export const useCamera = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
-  // Verificar se estamos em um contexto seguro
-  const isSecureContext = () => {
-    return window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  }
+  // Verificar se estamos em um contexto seguro (remover verificação manual)
+  // O navegador automaticamente bloqueia acesso à câmera em contextos inseguros
 
   // Polyfill para navegadores mais antigos
   const getUserMediaPolyfill = () => {
