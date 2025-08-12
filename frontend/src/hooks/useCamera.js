@@ -11,6 +11,29 @@ export const useCamera = () => {
     return window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost'
   }
 
+  // Polyfill para navegadores mais antigos
+  const getUserMediaPolyfill = () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      return navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices)
+    }
+
+    // Fallback para navegadores mais antigos
+    const getUserMedia = navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia
+
+    if (getUserMedia) {
+      return (constraints) => {
+        return new Promise((resolve, reject) => {
+          getUserMedia.call(navigator, constraints, resolve, reject)
+        })
+      }
+    }
+
+    return null
+  }
+
   const startCamera = async () => {
     try {
       // Verificar se estamos em um contexto seguro (HTTPS)
