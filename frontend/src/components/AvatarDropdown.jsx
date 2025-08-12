@@ -60,6 +60,7 @@ const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditP
 
       <button
         onClick={() => {
+          console.log('📷 Editar foto do perfil clicado')
           onEditPhoto()
           onClose()
         }}
