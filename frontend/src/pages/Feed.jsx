@@ -591,10 +591,6 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 </button>
               </div>
 
-              {/* Componente para criar usuários teste */}
-              <div className="border-t border-gray-200 pt-8">
-                <CreateTestUsers />
-              </div>
             </div>
           ) : (
             posts.map((post) => (
