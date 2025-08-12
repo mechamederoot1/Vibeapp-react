@@ -8,24 +8,42 @@ export const useCamera = () => {
 
   const startCamera = async () => {
     try {
+      // Verificar se a API de câmera está disponível
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('API de câmera não disponível neste navegador')
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: 'user',
           width: { ideal: 1080 },
           height: { ideal: 1920 }
         },
         audio: false
       })
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
       }
-      
+
       streamRef.current = stream
       setIsActive(true)
       setError(null)
     } catch (err) {
-      setError('Erro ao acessar a câmera: ' + err.message)
+      let errorMessage = 'Erro ao acessar a câmera: ' + err.message
+
+      // Mensagens mais específicas para diferentes tipos de erro
+      if (err.name === 'NotAllowedError') {
+        errorMessage = 'Permissão negada. Por favor, permita o acesso à câmera.'
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = 'Nenhuma câmera encontrada no dispositivo.'
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = 'Câmera não suportada neste navegador.'
+      } else if (err.message.includes('API de câmera não disponível')) {
+        errorMessage = 'Câmera não disponível. Certifique-se de estar usando HTTPS.'
+      }
+
+      setError(errorMessage)
       console.error('Camera error:', err)
     }
   }
