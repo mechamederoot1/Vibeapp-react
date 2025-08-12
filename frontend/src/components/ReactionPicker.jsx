@@ -32,7 +32,9 @@ const ReactionPicker = ({
     const handleClickOutside = (event) => {
       if (reactionsRef.current && !reactionsRef.current.contains(event.target) &&
           buttonRef.current && !buttonRef.current.contains(event.target)) {
+        console.log('🔒 Fechando picker - click fora')
         setShowReactions(false)
+        setIsLongPressing(false)
       }
     }
 
@@ -133,7 +135,7 @@ const ReactionPicker = ({
       // Se já tem reação, remover
       onReaction(null)
     } else {
-      // Se não tem reação, adicionar like
+      // Se não tem reaç��o, adicionar like
       onReaction('like')
     }
   }
