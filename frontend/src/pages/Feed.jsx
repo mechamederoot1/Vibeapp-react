@@ -337,6 +337,15 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
         post={post}
         onStoryCreate={onStoryShare}
       />
+
+      {/* Advanced Share Modal */}
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        post={post}
+        onShare={handleAdvancedShare}
+        currentUser={user}
+      />
     </div>
   )
 }
