@@ -512,6 +512,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleReaction = async (postId, reactionType) => {
+    try {
+      // TODO: Implement reaction API call
+      // For now, just update local state
+      setPosts(posts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              userReaction: reactionType,
+              reactionCounts: {
+                ...post.reactionCounts,
+                [reactionType]: (post.reactionCounts?.[reactionType] || 0) + 1
+              }
+            }
+          : post
+      ))
+      console.log('Reaction added:', reactionType, 'to post:', postId)
+    } catch (error) {
+      console.error('Error reacting to post:', error)
+    }
+  }
+
   const handleAddPost = (newPost) => {
     setPosts([newPost, ...posts])
   }
