@@ -62,20 +62,20 @@ const Header = ({ onOpenPostModal }) => {
             </span>
           </button>
 
-          {/* User Menu */}
+          {/* User Avatar with Dropdown */}
           <div className="relative">
             <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              onClick={() => setShowAvatarDropdown(!showAvatarDropdown)}
               className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
               {user?.avatar ? (
                 <img
                   src={user.avatar}
                   alt="Avatar"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-200 transition-all"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center ring-2 ring-transparent hover:ring-blue-200 transition-all">
                   <span className="text-white text-sm font-bold">
                     {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                   </span>
@@ -83,39 +83,15 @@ const Header = ({ onOpenPostModal }) => {
               )}
             </button>
 
-            {showUserMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[180px]">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="font-medium text-gray-900">{user?.fullName || 'Usuário'}</p>
-                  <p className="text-sm text-gray-500">@{user?.username || user?.email}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    navigate('/profile')
-                    setShowUserMenu(false)
-                  }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
-                >
-                  <User size={16} />
-                  <span>Meu Perfil</span>
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2 text-red-600"
-                >
-                  <LogOut size={16} />
-                  <span>Sair</span>
-                </button>
-              </div>
-            )}
-
-            {/* Overlay to close menu */}
-            {showUserMenu && (
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowUserMenu(false)}
-              />
-            )}
+            <AvatarDropdown
+              isOpen={showAvatarDropdown}
+              onClose={() => setShowAvatarDropdown(false)}
+              user={user}
+              hasRecentStory={false}
+              onEditPhoto={handleEditPhoto}
+              onViewStory={handleViewStory}
+              onViewPhoto={handleViewPhoto}
+            />
           </div>
         </div>
       </div>
