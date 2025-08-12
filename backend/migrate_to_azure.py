@@ -13,23 +13,59 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 print("🚀 Migrando do SQLite para Azure MySQL...")
 
-# 1. Importar configurações
+# 1. Carregar configurações (múltiplas fontes)
+DB_HOST = None
+DB_USER = None
+DB_PASSWORD = None
+DB_NAME = None
+DB_PORT = None
+
+# Tentar carregar do env.py primeiro
 try:
     import env
-    print("✅ Configurações carregadas do env.py")
-    
     DB_HOST = env.DB_HOST
-    DB_USER = env.DB_USER  
+    DB_USER = env.DB_USER
     DB_PASSWORD = env.DB_PASSWORD
     DB_NAME = env.DB_NAME
     DB_PORT = int(env.DB_PORT)
-    
-    print(f"📍 Conectando em: {DB_HOST}:{DB_PORT}")
-    print(f"🗄️ Banco: {DB_NAME}")
-    
-except Exception as e:
-    print(f"❌ Erro ao carregar configurações: {e}")
+    print("✅ Configurações carregadas do env.py")
+except ImportError:
+    print("📄 env.py não encontrado, tentando .env...")
+
+    # Tentar carregar do .env
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+
+        DB_HOST = os.getenv("DB_HOST")
+        DB_USER = os.getenv("DB_USER")
+        DB_PASSWORD = os.getenv("DB_PASSWORD")
+        DB_NAME = os.getenv("DB_NAME")
+        DB_PORT = int(os.getenv("DB_PORT", 3306))
+        print("✅ Configurações carregadas do .env")
+    except:
+        print("📄 .env não encontrado, usando valores diretos...")
+
+        # Valores diretos das configurações Azure
+        DB_HOST = "evoque-database.mysql.database.azure.com"
+        DB_USER = "infra"
+        DB_PASSWORD = "Evoque12@"
+        DB_NAME = "testes"
+        DB_PORT = 3306
+        print("✅ Usando configurações diretas do Azure")
+
+# Verificar se temos todas as configurações
+if not all([DB_HOST, DB_USER, DB_PASSWORD, DB_NAME]):
+    print("❌ Configurações incompletas!")
+    print(f"   DB_HOST: {DB_HOST or 'FALTANDO'}")
+    print(f"   DB_USER: {DB_USER or 'FALTANDO'}")
+    print(f"   DB_PASSWORD: {'***' if DB_PASSWORD else 'FALTANDO'}")
+    print(f"   DB_NAME: {DB_NAME or 'FALTANDO'}")
     sys.exit(1)
+
+print(f"📍 Conectando em: {DB_HOST}:{DB_PORT}")
+print(f"🗄️ Banco: {DB_NAME}")
+print(f"👤 Usuário: {DB_USER}")
 
 # 2. Importar dependências
 try:
