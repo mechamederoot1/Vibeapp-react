@@ -46,6 +46,7 @@ class User(Base):
     friendships_received = relationship("Friendship", foreign_keys="Friendship.friend_id", back_populates="friend")
     profile_views = relationship("ProfileView", foreign_keys="ProfileView.profile_owner_id", back_populates="profile_owner")
     notifications = relationship("Notification", foreign_keys="Notification.user_id", back_populates="user")
+    account_settings = relationship("AccountSettings", back_populates="user", uselist=False)
 
     def set_password(self, password: str):
         """Hash and set the password"""
