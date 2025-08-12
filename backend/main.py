@@ -26,6 +26,7 @@ from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
 from app.models.notification import Notification
+from app.models.account_settings import AccountSettings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
