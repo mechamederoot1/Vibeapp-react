@@ -55,17 +55,22 @@ const ReactionPicker = ({
     }
   }, [longPressTimer])
 
-  const handleMouseDown = () => {
+  const handleMouseDown = (e) => {
     if (disabled) return
-    
+
+    console.log('🖱️ Mouse down - iniciando long press timer')
+
     const timer = setTimeout(() => {
+      console.log('⏰ Long press detectado - mostrando reações')
       setShowReactions(true)
-    }, 500) // 500ms para long press
-    
+    }, 300) // Reduzindo para 300ms para melhor resposta
+
     setLongPressTimer(timer)
   }
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
+    console.log('🖱️ Mouse up - timer atual:', !!longPressTimer, 'reações visíveis:', showReactions)
+
     if (longPressTimer) {
       clearTimeout(longPressTimer)
       setLongPressTimer(null)
@@ -73,33 +78,41 @@ const ReactionPicker = ({
 
     // Se não mostrou as reações, é um click normal
     if (!showReactions) {
+      console.log('👆 Click rápido - executando reação normal')
       handleQuickReaction()
     }
   }
 
   const handleTouchStart = (e) => {
     if (disabled) return
-    
+
+    console.log('📱 Touch start - iniciando long press timer')
     setTouchStartTime(Date.now())
+
     const timer = setTimeout(() => {
+      console.log('⏰ Long press touch detectado - mostrando reações')
       setShowReactions(true)
       // Prevenir o comportamento padrão do toque longo
       e.preventDefault()
-    }, 500)
-    
+    }, 300) // Reduzindo para 300ms
+
     setLongPressTimer(timer)
   }
 
   const handleTouchEnd = (e) => {
+    console.log('📱 Touch end - timer atual:', !!longPressTimer, 'reações visíveis:', showReactions)
+
     if (longPressTimer) {
       clearTimeout(longPressTimer)
       setLongPressTimer(null)
     }
 
     const touchDuration = Date.now() - (touchStartTime || 0)
-    
-    // Se foi um toque rápido (menos que 500ms) e não mostrou reações
-    if (touchDuration < 500 && !showReactions) {
+    console.log('📏 Duração do toque:', touchDuration, 'ms')
+
+    // Se foi um toque rápido (menos que 300ms) e não mostrou reações
+    if (touchDuration < 300 && !showReactions) {
+      console.log('👆 Touch rápido - executando reação normal')
       handleQuickReaction()
     }
   }
