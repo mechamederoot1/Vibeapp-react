@@ -100,14 +100,18 @@ class Comment(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
     content = Column(Text, nullable=False)
-    
+
+    # Engagement
+    likes_count = Column(Integer, default=0)
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     # Relationships
     user = relationship("User")
     post = relationship("Post", back_populates="comments")
+    reactions = relationship("CommentReaction", back_populates="comment")
 
     def to_dict(self):
         """Convert comment to dictionary for API responses"""
