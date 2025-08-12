@@ -16,6 +16,7 @@ from app.api.posts import router as posts_router
 from app.api.stories import router as stories_router
 from app.api.reactions import router as reactions_router
 from app.api.uploads import router as uploads_router
+from app.api.account_settings import router as account_settings_router
 
 # Import models to ensure they're registered
 from app.models.user import User
