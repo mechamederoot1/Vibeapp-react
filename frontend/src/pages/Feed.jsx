@@ -230,15 +230,13 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
       <div className="p-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleLike}
-              className="hover:scale-110 transition-transform flex items-center space-x-1"
-            >
-              <Heart 
-                size={24} 
-                className={post.isLiked ? "text-red-500 fill-current" : "text-gray-700 hover:text-red-400"}
-              />
-            </button>
+            <ReactionPicker
+              onReaction={handleReaction}
+              isLiked={post.isLiked}
+              currentReaction={post.userReaction}
+              likesCount={post.likesCount}
+              reactionCounts={post.reactionCounts || {}}
+            />
             <button className="hover:scale-110 transition-transform flex items-center space-x-1">
               <MessageCircle size={24} className="text-gray-700 hover:text-vibe-blue" />
             </button>
