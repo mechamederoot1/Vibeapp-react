@@ -533,17 +533,20 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 <DatabaseMigration />
               </>
             ) : isNetworkError ? (
-              <>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Problema de Conectividade
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    Não foi possível conectar com o servidor backend.
-                  </p>
-                </div>
-                <ApiTester />
-              </>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Problema de Conectividade
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Não foi possível conectar com o servidor. Tente novamente.
+                </p>
+                <button
+                  onClick={loadFeed}
+                  className="bg-vibe-blue text-white px-4 py-2 rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Tentar novamente
+                </button>
+              </div>
             ) : (
               <div className="text-center">
                 <p className="text-red-600 mb-4">{error}</p>
