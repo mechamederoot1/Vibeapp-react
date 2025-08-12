@@ -14,12 +14,14 @@ from app.api.auth import router as auth_router
 from app.api.users import router as users_router
 from app.api.posts import router as posts_router
 from app.api.stories import router as stories_router
+from app.api.reactions import router as reactions_router
 from app.api.dev_tools import router as dev_tools_router
 from app.api.uploads import router as uploads_router
 
 # Import models to ensure they're registered
 from app.models.user import User
 from app.models.post import Post, PostLike, Comment, Share
+from app.models.reaction import PostReaction, CommentReaction
 from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
