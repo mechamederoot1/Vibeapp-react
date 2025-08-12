@@ -258,17 +258,23 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
                 <Share size={24} className="text-gray-700 hover:text-vibe-blue" />
               </button>
               {showShareMenu && (
-                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
-                  <button 
-                    onClick={handleShare}
+                <div className="absolute bottom-full left-0 mb-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[180px]">
+                  <button
+                    onClick={() => {
+                      setShowShareModal(true)
+                      setShowShareMenu(false)
+                    }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
                     <Share size={16} />
-                    <span>Compartilhar</span>
+                    <span>Compartilhar no Feed</span>
                   </button>
-                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
-                    <MessageCircle size={16} />
-                    <span>Enviar por DM</span>
+                  <button
+                    onClick={handleShare}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                  >
+                    <Repeat2 size={16} />
+                    <span>Compartilhar Rápido</span>
                   </button>
                   <button
                     onClick={() => {
@@ -277,8 +283,12 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
                     }}
                     className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                   >
-                    <Repeat2 size={16} />
+                    <Eye size={16} />
                     <span>Compartilhar como Story</span>
+                  </button>
+                  <button className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2">
+                    <MessageCircle size={16} />
+                    <span>Enviar por DM</span>
                   </button>
                 </div>
               )}
