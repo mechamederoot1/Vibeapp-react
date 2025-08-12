@@ -303,6 +303,7 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
+    console.log('🖼️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
     setShowCoverDropdown(!showCoverDropdown)
   }
 
