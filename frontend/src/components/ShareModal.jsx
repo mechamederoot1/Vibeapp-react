@@ -180,7 +180,7 @@ const ShareModal = ({
               {/* Autor do post original */}
               <div className="flex items-center space-x-3 mb-3">
                 <img
-                  src={post.author?.avatar_url || `https://ui-avatars.com/api/?name=${post.author?.firstName}+${post.author?.lastName}&background=87ceeb&color=fff`}
+                  src={post.author?.avatar || `https://ui-avatars.com/api/?name=${post.author?.firstName}+${post.author?.lastName}&background=87ceeb&color=fff`}
                   alt={post.author?.firstName}
                   className="w-8 h-8 rounded-full object-cover"
                 />
