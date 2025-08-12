@@ -520,19 +520,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
         <div className="flex justify-center py-8">
           <div className="space-y-6 max-w-md w-full px-4">
-            {needsMigration ? (
-              <>
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Atualização do Banco Necessária
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4">
-                    O banco de dados precisa ser atualizado com as novas funcionalidades.
-                  </p>
-                </div>
-                <DatabaseMigration />
-              </>
-            ) : isNetworkError ? (
+            {isNetworkError ? (
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Problema de Conectividade
