@@ -70,6 +70,7 @@ const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditP
 
       <button
         onClick={() => {
+          console.log('🔧 Navegando para configurações...')
           navigate('/settings')
           onClose()
         }}
