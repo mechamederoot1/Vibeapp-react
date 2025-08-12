@@ -8,7 +8,7 @@ export const useCamera = () => {
 
   // Verificar se estamos em um contexto seguro
   const isSecureContext = () => {
-    return window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+    return window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   }
 
   // Polyfill para navegadores mais antigos
