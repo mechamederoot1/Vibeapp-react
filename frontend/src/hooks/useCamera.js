@@ -42,11 +42,12 @@ export const useCamera = () => {
       }
 
       // Verificar se a API de câmera está disponível
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      const getUserMedia = getUserMediaPolyfill()
+      if (!getUserMedia) {
         throw new Error('API de câmera não disponível neste navegador')
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const stream = await getUserMedia({
         video: {
           facingMode: 'user',
           width: { ideal: 1080 },
