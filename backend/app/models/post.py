@@ -42,9 +42,21 @@ class Post(Base):
         """Convert post to dictionary for API responses"""
         # Check if current user liked this post
         is_liked = False
+        user_reaction = None
         if current_user_id:
             is_liked = any(like.user_id == current_user_id for like in self.likes)
-        
+            # Get user's reaction if any
+            for reaction in self.reactions:
+                if reaction.user_id == current_user_id:
+                    user_reaction = reaction.reaction_type
+                    break
+
+        # Count reactions by type
+        reaction_counts = {}
+        for reaction in self.reactions:
+            reaction_type = reaction.reaction_type
+            reaction_counts[reaction_type] = reaction_counts.get(reaction_type, 0) + 1
+
         return {
             "id": self.id,
             "authorId": self.author_id,
@@ -60,6 +72,8 @@ class Post(Base):
             "sharesCount": self.shares_count,
             "repostsCount": self.reposts_count,
             "isLiked": is_liked,
+            "userReaction": user_reaction,
+            "reactionCounts": reaction_counts,
             "isPinned": self.is_pinned,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat()
