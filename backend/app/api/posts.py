@@ -266,7 +266,7 @@ async def create_comment(
     db.commit()
     db.refresh(new_comment)
     
-    return new_comment.to_dict()
+    return new_comment.to_dict(current_user.id)
 
 @router.delete("/{post_id}")
 async def delete_post(
