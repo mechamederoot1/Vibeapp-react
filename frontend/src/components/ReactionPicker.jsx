@@ -60,10 +60,12 @@ const ReactionPicker = ({
     if (disabled) return
 
     console.log('🖱️ Mouse down - iniciando long press timer')
+    setIsLongPressing(true)
 
     const timer = setTimeout(() => {
       console.log('⏰ Long press detectado - mostrando reações')
       setShowReactions(true)
+      setIsLongPressing(false)
     }, 300) // Reduzindo para 300ms para melhor resposta
 
     setLongPressTimer(timer)
@@ -71,6 +73,8 @@ const ReactionPicker = ({
 
   const handleMouseUp = (e) => {
     console.log('🖱️ Mouse up - timer atual:', !!longPressTimer, 'reações visíveis:', showReactions)
+
+    setIsLongPressing(false)
 
     if (longPressTimer) {
       clearTimeout(longPressTimer)
@@ -89,10 +93,12 @@ const ReactionPicker = ({
 
     console.log('📱 Touch start - iniciando long press timer')
     setTouchStartTime(Date.now())
+    setIsLongPressing(true)
 
     const timer = setTimeout(() => {
       console.log('⏰ Long press touch detectado - mostrando reações')
       setShowReactions(true)
+      setIsLongPressing(false)
       // Prevenir o comportamento padrão do toque longo
       e.preventDefault()
     }, 300) // Reduzindo para 300ms
@@ -102,6 +108,8 @@ const ReactionPicker = ({
 
   const handleTouchEnd = (e) => {
     console.log('📱 Touch end - timer atual:', !!longPressTimer, 'reações visíveis:', showReactions)
+
+    setIsLongPressing(false)
 
     if (longPressTimer) {
       clearTimeout(longPressTimer)
