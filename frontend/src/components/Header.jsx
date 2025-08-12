@@ -8,11 +8,23 @@ import AvatarDropdown from './AvatarDropdown'
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
 
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
+  const handleEditPhoto = () => {
+    navigate('/profile')
+    setShowAvatarDropdown(false)
+  }
+
+  const handleViewPhoto = () => {
+    // Para implementar: modal de visualização da foto
+    console.log('Visualizar foto do perfil')
+    setShowAvatarDropdown(false)
+  }
+
+  const handleViewStory = () => {
+    // Para implementar: visualizar story
+    console.log('Visualizar story')
+    setShowAvatarDropdown(false)
   }
 
   return (
