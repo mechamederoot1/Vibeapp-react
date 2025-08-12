@@ -44,11 +44,13 @@ export const useCamera = () => {
 
       // Mensagens mais específicas para diferentes tipos de erro
       if (err.name === 'NotAllowedError') {
-        errorMessage = 'Permissão negada. Por favor, permita o acesso à câmera.'
+        errorMessage = 'Permissão negada. Por favor, permita o acesso à câmera nas configurações do navegador.'
       } else if (err.name === 'NotFoundError') {
         errorMessage = 'Nenhuma câmera encontrada no dispositivo.'
       } else if (err.name === 'NotSupportedError') {
         errorMessage = 'Câmera não suportada neste navegador.'
+      } else if (err.message.includes('Contexto inseguro')) {
+        errorMessage = 'Acesso negado. A câmera só funciona com conexão HTTPS segura.'
       } else if (err.message.includes('API de câmera não disponível')) {
         errorMessage = 'Câmera não disponível. Certifique-se de estar usando HTTPS.'
       }
