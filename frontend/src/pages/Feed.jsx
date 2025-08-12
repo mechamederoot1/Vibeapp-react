@@ -3,12 +3,9 @@ import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } f
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, storiesAPI } from '../services/api'
 import PostModal from '../components/PostModal'
-import CreateTestUsers from '../components/CreateTestUsers'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
 import ShareAsStoryModal from '../components/ShareAsStoryModal'
-import DatabaseMigration from '../components/DatabaseMigration'
-import ApiTester from '../components/ApiTester'
 
 const Post = ({ post, onLike, onShare, onStoryShare }) => {
   const { user } = useAuth()
