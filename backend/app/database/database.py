@@ -3,18 +3,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# Database URL
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./vibe_social.db")
+# Database URL - SQLite local
+DATABASE_URL = "sqlite:///./vibe_social.db"
 
-# Create engine
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(
-        DATABASE_URL, 
-        connect_args={"check_same_thread": False},
-        echo=True  # Set to False in production
-    )
-else:
-    engine = create_engine(DATABASE_URL, echo=True)
+print(f"🗄️ Usando banco SQLite: {DATABASE_URL}")
+
+# Create engine for SQLite
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    echo=False  # Set to True for debugging SQL
+)
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

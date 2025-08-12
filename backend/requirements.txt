@@ -7,7 +7,6 @@ python-jose[cryptography]==3.3.0
 PyJWT==2.8.0
 bcrypt==4.1.2
 passlib[bcrypt]==1.7.4
-alembic==1.13.1
 python-dotenv==1.0.0
 pillow==10.1.0
 aiofiles==23.2.0

@@ -7,6 +7,8 @@ import Profile from './pages/Profile'
 import Explore from './pages/Explore'
 import Notifications from './pages/Notifications'
 import CreatePost from './pages/CreatePost'
+import Settings from './pages/Settings'
+import ReactionTest from './components/ReactionTest'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
@@ -143,15 +145,23 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Profile />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/create"
@@ -162,7 +172,7 @@ const AppContent = () => {
           }
         />
 
-        {/* Debug route */}
+        {/* Debug routes */}
         <Route
           path="/debug/database"
           element={
@@ -170,6 +180,10 @@ const AppContent = () => {
               <DatabaseFixer />
             </div>
           }
+        />
+        <Route
+          path="/test/reactions"
+          element={<ReactionTest />}
         />
 
         {/* Catch all route */}

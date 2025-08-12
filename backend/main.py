@@ -5,6 +5,10 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 import uvicorn
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Import database
 from app.database.database import engine, Base
@@ -16,6 +20,7 @@ from app.api.posts import router as posts_router
 from app.api.stories import router as stories_router
 from app.api.reactions import router as reactions_router
 from app.api.uploads import router as uploads_router
+from app.api.account_settings import router as account_settings_router
 
 # Import models to ensure they're registered
 from app.models.user import User
@@ -25,6 +30,7 @@ from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
 from app.models.notification import Notification
+from app.models.account_settings import AccountSettings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -89,6 +95,7 @@ app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
 app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(reactions_router, prefix="/api/reactions", tags=["reactions"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
+app.include_router(account_settings_router, prefix="/api/settings", tags=["account_settings"])
 
 # Mount static files (uploads)
 os.makedirs("uploads", exist_ok=True)

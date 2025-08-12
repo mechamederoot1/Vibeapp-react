@@ -283,6 +283,7 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
+    console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
     setShowAvatarDropdown(!showAvatarDropdown)
   }
 
@@ -303,6 +304,7 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
+    console.log('🖼️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
     setShowCoverDropdown(!showCoverDropdown)
   }
 
@@ -378,7 +380,13 @@ const Profile = () => {
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <MoreHorizontal size={24} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
+          <button
+            onClick={() => {
+              console.log('🔧 Botão configurações clicado')
+              navigate('/settings')
+            }}
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
             <Settings size={24} className="text-gray-600" />
           </button>
         </div>
