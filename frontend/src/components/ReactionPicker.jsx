@@ -13,6 +13,7 @@ const ReactionPicker = ({
   const [showReactions, setShowReactions] = useState(false)
   const [longPressTimer, setLongPressTimer] = useState(null)
   const [touchStartTime, setTouchStartTime] = useState(null)
+  const [isLongPressing, setIsLongPressing] = useState(false)
   const buttonRef = useRef(null)
   const reactionsRef = useRef(null)
 
