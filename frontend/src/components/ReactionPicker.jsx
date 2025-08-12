@@ -181,7 +181,7 @@ const ReactionPicker = ({
         ref={buttonRef}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onContextMenu={(e) => e.preventDefault()} // Prevenir menu de contexto
