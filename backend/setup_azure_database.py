@@ -22,6 +22,8 @@ from app.models import (
     PostReaction, CommentReaction, Notification,
     Friendship, ProfileView, AccountSettings
 )
+# Importar modelos adicionais que não estão no __init__.py
+from app.models.story import Story, StoryView
 from app.database.database import Base
 
 def main():
