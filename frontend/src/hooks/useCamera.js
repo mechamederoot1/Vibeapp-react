@@ -6,6 +6,11 @@ export const useCamera = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
+  // Verificar se estamos em um contexto seguro
+  const isSecureContext = () => {
+    return window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost'
+  }
+
   const startCamera = async () => {
     try {
       // Verificar se a API de câmera está disponível
