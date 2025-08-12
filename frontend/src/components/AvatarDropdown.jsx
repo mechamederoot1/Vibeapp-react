@@ -34,6 +34,7 @@ const AvatarDropdown = ({ isOpen, onClose, user, hasRecentStory = false, onEditP
     >
       <button
         onClick={() => {
+          console.log('👁️ Ver foto do perfil clicado')
           onViewPhoto()
           onClose()
         }}
