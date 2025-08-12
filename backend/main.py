@@ -88,6 +88,7 @@ app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(users_router, prefix="/api/users", tags=["users"])
 app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
 app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
+app.include_router(reactions_router, prefix="/api/reactions", tags=["reactions"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
 app.include_router(dev_tools_router, prefix="/api/dev", tags=["development"])
 
