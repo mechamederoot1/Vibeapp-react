@@ -91,7 +91,7 @@ const ShareModal = ({
             <div className="flex space-x-3">
               {/* Avatar do usuário atual */}
               <img
-                src={currentUser?.avatar_url || `https://ui-avatars.com/api/?name=${currentUser?.first_name}+${currentUser?.last_name}&background=87ceeb&color=fff`}
+                src={currentUser?.avatar || `https://ui-avatars.com/api/?name=${currentUser?.first_name}+${currentUser?.last_name}&background=87ceeb&color=fff`}
                 alt={currentUser?.first_name}
                 className="w-10 h-10 rounded-full object-cover"
               />
