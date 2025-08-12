@@ -4,6 +4,7 @@ from .reaction import PostReaction, CommentReaction
 from .notification import Notification
 from .friendship import Friendship
 from .profile_view import ProfileView
+from .account_settings import AccountSettings
 
 __all__ = [
     "User",
@@ -15,5 +16,6 @@ __all__ = [
     "CommentReaction",
     "Notification",
     "Friendship",
-    "ProfileView"
+    "ProfileView",
+    "AccountSettings"
 ]
