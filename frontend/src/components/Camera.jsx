@@ -93,11 +93,11 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
 
       {/* Controls */}
       {isActive && (
-        <div className="p-6 safe-area-bottom">
+        <div className="camera-controls">
           <div className="flex items-center justify-center">
             <button
               onClick={handleCapture}
-              className="w-16 h-16 bg-white rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+              className="camera-capture-btn"
             >
               <CameraIcon size={32} className="text-gray-800" />
             </button>
