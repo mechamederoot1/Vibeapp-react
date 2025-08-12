@@ -144,15 +144,23 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Profile />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/create"
