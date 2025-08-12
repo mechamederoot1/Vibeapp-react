@@ -57,14 +57,24 @@ const Camera = ({ isOpen, onClose, onCapture }) => {
       <div className="flex-1 relative">
         {error ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-white p-4">
-              <p className="mb-4">{error}</p>
-              <button
-                onClick={startCamera}
-                className="btn-primary"
-              >
-                Tentar Novamente
-              </button>
+            <div className="text-center text-white p-4 max-w-sm mx-auto">
+              <div className="mb-4">
+                <CameraIcon size={48} className="mx-auto text-gray-400 mb-4" />
+                <p className="text-sm leading-relaxed">{error}</p>
+              </div>
+              <div className="space-y-3">
+                <button
+                  onClick={startCamera}
+                  className="w-full bg-vibe-blue hover:bg-vibe-blue-dark text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  Tentar Novamente
+                </button>
+                <div className="text-xs text-gray-400">
+                  {error.includes('HTTPS') && (
+                    <p>Para usar a câmera, acesse o site via HTTPS</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         ) : (
