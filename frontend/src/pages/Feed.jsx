@@ -511,10 +511,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   if (error) {
-    // Verificar se é erro de coluna não encontrada (precisa migração)
-    const needsMigration = error.includes('no such column') || error.includes('background_color') || error.includes('profile_update_type')
     // Verificar se é erro de rede/conectividade
-    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS')
+    const isNetworkError = error.includes('Network Error') || error.includes('ERR_NETWORK') || error.includes('CORS') || error.includes('conectar')
 
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
