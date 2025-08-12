@@ -88,11 +88,6 @@ export const useCamera = () => {
   const switchCamera = async () => {
     stopCamera()
     try {
-      // Verificar se estamos em um contexto seguro (HTTPS)
-      if (!isSecureContext()) {
-        throw new Error('Contexto inseguro. A câmera só funciona com HTTPS.')
-      }
-
       // Verificar se a API de câmera está disponível
       const getUserMedia = getUserMediaPolyfill()
       if (!getUserMedia) {
