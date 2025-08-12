@@ -90,6 +90,7 @@ app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
 app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(reactions_router, prefix="/api/reactions", tags=["reactions"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
+app.include_router(account_settings_router, prefix="/api/settings", tags=["account_settings"])
 
 # Mount static files (uploads)
 os.makedirs("uploads", exist_ok=True)
