@@ -90,6 +90,16 @@ const ReactionPicker = ({
     }
   }
 
+  const handleMouseLeave = () => {
+    console.log('🖱️ Mouse leave - cancelando long press')
+    setIsLongPressing(false)
+
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      setLongPressTimer(null)
+    }
+  }
+
   const handleTouchStart = (e) => {
     if (disabled) return
 
@@ -135,7 +145,7 @@ const ReactionPicker = ({
       // Se já tem reação, remover
       onReaction(null)
     } else {
-      // Se não tem reaç��o, adicionar like
+      // Se não tem reação, adicionar like
       onReaction('like')
     }
   }
