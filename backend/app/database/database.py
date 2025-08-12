@@ -7,12 +7,22 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Try to import from env.py as fallback
+try:
+    import sys
+    sys.path.append('..')
+    import env as env_config
+    print("📁 Carregando configurações do env.py")
+except ImportError:
+    env_config = None
+    print("📁 env.py não encontrado, usando variáveis de ambiente")
+
 # Database configuration
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "vibe_social")
-DB_PORT = os.getenv("DB_PORT", "3306")
+DB_HOST = os.getenv("DB_HOST") or (env_config.DB_HOST if env_config else "localhost")
+DB_USER = os.getenv("DB_USER") or (env_config.DB_USER if env_config else "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD") or (env_config.DB_PASSWORD if env_config else "")
+DB_NAME = os.getenv("DB_NAME") or (env_config.DB_NAME if env_config else "vibe_social")
+DB_PORT = os.getenv("DB_PORT") or (env_config.DB_PORT if env_config else "3306")
 
 # Construct database URL
 if DB_HOST and DB_USER and DB_PASSWORD and DB_NAME:
