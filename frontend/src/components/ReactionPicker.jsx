@@ -163,9 +163,17 @@ const ReactionPicker = ({
         onMouseLeave={handleMouseUp}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onContextMenu={(e) => e.preventDefault()} // Prevenir menu de contexto
         disabled={disabled}
+        style={{
+          WebkitTouchCallout: 'none',
+          WebkitUserSelect: 'none',
+          userSelect: 'none',
+          touchAction: 'manipulation'
+        }}
         className={`
-          hover:scale-110 transition-all duration-200 flex items-center space-x-1 
+          hover:scale-110 transition-all duration-200 flex items-center space-x-1
+          select-none outline-none focus:outline-none
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           ${userReaction ? 'text-red-500' : 'text-gray-700 hover:text-red-500'}
         `}
