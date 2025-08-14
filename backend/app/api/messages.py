@@ -369,8 +369,12 @@ async def upload_audio_message(
     db.commit()
     
     # Enviar notificação em tempo real
-    message_dict = new_message.to_dict()
-    await manager.send_message_notification(message_dict, receiver_id)
+    try:
+        from ..websocket import manager
+        message_dict = new_message.to_dict()
+        await manager.send_message_notification(message_dict, receiver_id)
+    except ImportError:
+        pass  # WebSocket não disponível
     
     return {
         "message": "Audio message sent successfully",
