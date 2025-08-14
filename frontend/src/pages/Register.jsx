@@ -44,8 +44,7 @@ const Register = () => {
       case 1:
         return formData.firstName.trim() && formData.lastName.trim()
       case 2:
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return emailRegex.test(formData.email)
+        return emailValidation.isValid && !emailValidation.isChecking && !emailValidation.error
       case 3:
         return formData.gender && formData.birthDate
       case 4:
