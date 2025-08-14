@@ -4,38 +4,34 @@ const VibeLogoSimple = ({ size = 'md', className = '', showText = true, textColo
   const sizeClasses = {
     xs: 'text-lg',
     sm: 'text-xl',
-    md: 'text-3xl',
-    lg: 'text-5xl',
-    xl: 'text-7xl'
+    md: 'text-2xl',
+    lg: 'text-4xl',
+    xl: 'text-5xl'
   }
 
-  const logoSizes = {
-    xs: 'gap-1',
-    sm: 'gap-1',
-    md: 'gap-2',
-    lg: 'gap-3',
-    xl: 'gap-4'
+  const iconSizes = {
+    xs: 'w-6 h-6',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12',
+    xl: 'w-16 h-16'
   }
 
   if (circular) {
-    // Para compatibilidade, mas agora será uma versão diferente
+    // Versão com ícone circular moderno
     return (
-      <div className={`flex items-center justify-center ${className}`}>
-        <div className={`relative ${logoSizes[size]}`}>
-          <div className="flex items-center">
-            <div className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 bg-clip-text text-transparent">
-              <h1 className={`font-black tracking-wider ${sizeClasses[size]} select-none`}>
-                Vibe
-              </h1>
-            </div>
-            <div className="ml-2 flex space-x-1">
-              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-            </div>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 opacity-20 blur-lg -z-10"></div>
+      <div className={`flex items-center gap-3 ${className}`}>
+        <div className={`${iconSizes[size]} bg-gradient-to-br from-vibe-blue to-vibe-blue-dark rounded-xl shadow-lg flex items-center justify-center relative overflow-hidden`}>
+          {/* Efeito de brilho */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+          {/* Ícone V estilizado */}
+          <div className="text-white font-bold text-sm leading-none">V</div>
         </div>
+        {showText && (
+          <h1 className={`font-bold ${sizeClasses[size]} text-gray-800 tracking-tight`}>
+            Vibe
+          </h1>
+        )}
       </div>
     )
   }
@@ -43,11 +39,15 @@ const VibeLogoSimple = ({ size = 'md', className = '', showText = true, textColo
   return (
     <div className={`flex items-center justify-center ${className}`}>
       {showText && (
-        <div className="relative">
-          <h1 className={`font-black tracking-wider ${sizeClasses[size]} ${textColor || 'bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent'} select-none`}>
+        <div className="flex items-center gap-2">
+          {/* Ícone pequeno */}
+          <div className="w-8 h-8 bg-gradient-to-br from-vibe-blue to-vibe-blue-dark rounded-lg shadow-md flex items-center justify-center">
+            <div className="w-2 h-2 bg-white rounded-full"></div>
+          </div>
+          {/* Texto Vibe */}
+          <h1 className={`font-bold ${sizeClasses[size]} ${textColor || 'text-vibe-blue'} tracking-tight`}>
             Vibe
           </h1>
-          <div className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-full"></div>
         </div>
       )}
     </div>
