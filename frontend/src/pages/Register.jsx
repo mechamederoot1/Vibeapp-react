@@ -67,11 +67,38 @@ const Register = () => {
     }
   }
 
+  const getStepErrorMessage = (step) => {
+    switch (step) {
+      case 1:
+        if (!formData.firstName.trim()) return 'Por favor, digite seu nome'
+        if (!formData.lastName.trim()) return 'Por favor, digite seu sobrenome'
+        return 'Por favor, preencha seu nome e sobrenome'
+      case 2:
+        if (!formData.email.trim()) return 'Por favor, digite seu email'
+        return 'Por favor, digite um email válido'
+      case 3:
+        if (!formData.gender) return 'Por favor, selecione seu gênero'
+        if (!formData.birthDate) return 'Por favor, digite sua data de nascimento'
+        return 'Por favor, preencha suas informações pessoais'
+      case 4:
+        if (formData.password.length < 6) return 'A senha deve ter pelo menos 6 caracteres'
+        if (formData.password !== formData.confirmPassword) return 'As senhas não coincidem'
+        if (!acceptedTerms) return 'Você precisa aceitar os termos de uso'
+        return 'Por favor, verifique todos os campos'
+      default:
+        return 'Por favor, preencha todos os campos obrigatórios'
+    }
+  }
+
   const nextStep = () => {
+    console.log(`🚀 Trying to go to next step from ${currentStep}`)
     if (validateStep(currentStep)) {
+      setError('')
       setCurrentStep(prev => Math.min(prev + 1, totalSteps))
     } else {
-      setError('Por favor, preencha todos os campos obrigatórios')
+      const errorMessage = getStepErrorMessage(currentStep)
+      console.log(`❌ Validation failed for step ${currentStep}: ${errorMessage}`)
+      setError(errorMessage)
     }
   }
 
