@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from ..database.database import get_db
 from ..models import User, Post, PostShare, Notification
 from .auth import get_current_user
-from ..websocket import manager
 
 router = APIRouter()
 
