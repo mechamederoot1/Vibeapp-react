@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from ..database.database import get_db
-from ..models import User, Post, Comment, PostReaction, CommentReaction
+from ..models import User, Post, Comment, PostReaction, CommentReaction, Notification
 from .auth import get_current_user
 from pydantic import BaseModel
 from typing import Optional
@@ -11,7 +11,7 @@ router = APIRouter()
 
 # Schemas
 class ReactionCreate(BaseModel):
-    reaction_type: str  # like, love, laugh, wow, sad, angry
+    reaction_type: str  # heart, love, laugh, wow, sad, angry
 
 class ReactionResponse(BaseModel):
     id: int
@@ -29,7 +29,7 @@ async def add_post_reaction(
 ):
     """Add or update a reaction to a post"""
     # Validate reaction type
-    valid_reactions = ["like", "love", "laugh", "wow", "sad", "angry"]
+    valid_reactions = ["heart", "love", "laugh", "wow", "sad", "angry"]
     if reaction_data.reaction_type not in valid_reactions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -65,6 +65,32 @@ async def add_post_reaction(
         db.add(new_reaction)
         db.commit()
         db.refresh(new_reaction)
+        
+        # Criar notificação se não for o próprio autor
+        if post.author_id != current_user.id:
+            notification = Notification(
+                user_id=post.author_id,
+                type="reaction",
+                title=f"{current_user.full_name} reagiu ao seu post",
+                message=f"Reagiu com {reaction_data.reaction_type}",
+                related_user_id=current_user.id,
+                related_post_id=post_id,
+                action_url=f"/posts/{post_id}"
+            )
+            db.add(notification)
+            db.commit()
+            
+            # Enviar notificação em tempo real
+            try:
+                from ..websocket import manager
+                await manager.send_reaction_notification({
+                    "type": "post_reaction",
+                    "postId": post_id,
+                    "reactionType": reaction_data.reaction_type,
+                    "user": current_user.to_public_dict()
+                }, post.author_id)
+            except ImportError:
+                pass  # WebSocket não disponível
         
         return {
             "message": "Reaction added successfully",
@@ -117,7 +143,7 @@ async def get_post_reactions(
         reaction_users[reaction_type].append({
             "id": reaction.user.id,
             "name": f"{reaction.user.first_name} {reaction.user.last_name}",
-            "avatar": reaction.user.avatar_url
+            "avatar": reaction.user.avatar
         })
     
     return {
@@ -137,7 +163,7 @@ async def add_comment_reaction(
 ):
     """Add or update a reaction to a comment"""
     # Validate reaction type
-    valid_reactions = ["like", "love", "laugh", "wow", "sad", "angry"]
+    valid_reactions = ["heart", "love", "laugh", "wow", "sad", "angry"]
     if reaction_data.reaction_type not in valid_reactions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -172,12 +198,38 @@ async def add_comment_reaction(
         )
         db.add(new_reaction)
         
-        # Update comment likes count if reaction is 'like'
-        if reaction_data.reaction_type == "like":
+        # Update comment likes count if reaction is 'heart'
+        if reaction_data.reaction_type == "heart":
             comment.likes_count += 1
         
         db.commit()
         db.refresh(new_reaction)
+        
+        # Criar notificação se não for o próprio autor
+        if comment.user_id != current_user.id:
+            notification = Notification(
+                user_id=comment.user_id,
+                type="reaction",
+                title=f"{current_user.full_name} reagiu ao seu comentário",
+                message=f"Reagiu com {reaction_data.reaction_type}",
+                related_user_id=current_user.id,
+                related_post_id=comment.post_id,
+                action_url=f"/posts/{comment.post_id}"
+            )
+            db.add(notification)
+            db.commit()
+            
+            # Enviar notificação em tempo real
+            try:
+                from ..websocket import manager
+                await manager.send_reaction_notification({
+                    "type": "comment_reaction",
+                    "commentId": comment_id,
+                    "reactionType": reaction_data.reaction_type,
+                    "user": current_user.to_public_dict()
+                }, comment.user_id)
+            except ImportError:
+                pass  # WebSocket não disponível
         
         return {
             "message": "Reaction added successfully",
@@ -198,8 +250,8 @@ async def remove_comment_reaction(
     if not reaction:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reaction not found")
     
-    # Update comment likes count if removing a 'like'
-    if reaction.reaction_type == "like":
+    # Update comment likes count if removing a 'heart'
+    if reaction.reaction_type == "heart":
         comment = db.query(Comment).filter(Comment.id == comment_id).first()
         if comment and comment.likes_count > 0:
             comment.likes_count -= 1
@@ -236,7 +288,7 @@ async def get_comment_reactions(
         reaction_users[reaction_type].append({
             "id": reaction.user.id,
             "name": f"{reaction.user.first_name} {reaction.user.last_name}",
-            "avatar": reaction.user.avatar_url
+            "avatar": reaction.user.avatar
         })
     
     return {

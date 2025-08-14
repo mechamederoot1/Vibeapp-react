@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, WebSocket, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -21,6 +21,12 @@ from app.api.stories import router as stories_router
 from app.api.reactions import router as reactions_router
 from app.api.uploads import router as uploads_router
 from app.api.account_settings import router as account_settings_router
+from app.api.messages import router as messages_router
+from app.api.shares import router as shares_router
+from app.api.notifications import router as notifications_router
+
+# Import WebSocket
+from app.websocket import websocket_endpoint
 
 # Import models to ensure they're registered
 from app.models.user import User
@@ -31,6 +37,7 @@ from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
 from app.models.notification import Notification
 from app.models.account_settings import AccountSettings
+from app.models.message import Message, Conversation, PostShare
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -96,6 +103,14 @@ app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(reactions_router, prefix="/api/reactions", tags=["reactions"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
 app.include_router(account_settings_router, prefix="/api/settings", tags=["account_settings"])
+app.include_router(messages_router, prefix="/api/messages", tags=["messages"])
+app.include_router(shares_router, prefix="/api/shares", tags=["shares"])
+app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
+
+# WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_handler(websocket: WebSocket, token: str = Query(None)):
+    await websocket_endpoint(websocket, token)
 
 # Mount static files (uploads)
 os.makedirs("uploads", exist_ok=True)

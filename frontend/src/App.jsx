@@ -6,6 +6,7 @@ import Feed from './pages/Feed'
 import Profile from './pages/Profile'
 import Explore from './pages/Explore'
 import Notifications from './pages/Notifications'
+import Messages from './pages/Messages'
 import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
 import ReactionTest from './components/ReactionTest'
@@ -135,15 +136,25 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/notifications" 
+        <Route
+          path="/notifications"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Notifications />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Messages />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/profile"

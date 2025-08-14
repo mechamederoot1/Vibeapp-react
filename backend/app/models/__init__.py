@@ -6,6 +6,7 @@ from .friendship import Friendship
 from .profile_view import ProfileView
 from .account_settings import AccountSettings
 from .story import Story, StoryView
+from .message import Message, Conversation, PostShare
 
 __all__ = [
     "User",
@@ -20,5 +21,8 @@ __all__ = [
     "ProfileView",
     "AccountSettings",
     "Story",
-    "StoryView"
+    "StoryView",
+    "Message",
+    "Conversation",
+    "PostShare"
 ]

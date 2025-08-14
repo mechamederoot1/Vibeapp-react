@@ -1,14 +1,23 @@
-import React, { useState } from 'react'
-import { Search, MessageCircle, Heart, Plus, LogOut, User } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Search, MessageCircle, Bell, Plus, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
+import NotificationsList from './NotificationsList'
+import { api } from '../services/api'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [unreadCounts, setUnreadCounts] = useState({
+    messages: 0,
+    notifications: 0
+  })
+  const { lastMessage } = useWebSocket()
 
   const handleEditPhoto = () => {
     navigate('/profile')
@@ -26,6 +35,47 @@ const Header = ({ onOpenPostModal }) => {
     console.log('Visualizar story')
     setShowAvatarDropdown(false)
   }
+
+  // Carregar contadores de mensagens e notificações não lidas
+  const loadUnreadCounts = async () => {
+    try {
+      const [messagesRes, notificationsRes] = await Promise.all([
+        api.get('/api/messages/unread-count'),
+        api.get('/api/notifications/unread-count')
+      ])
+
+      setUnreadCounts({
+        messages: messagesRes.data.unreadCount,
+        notifications: notificationsRes.data.unreadCount
+      })
+    } catch (error) {
+      console.error('Erro ao carregar contadores:', error)
+    }
+  }
+
+  // Atualizar contadores quando receber mensagens WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+
+    if (lastMessage.type === 'new_message') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        messages: prev.messages + 1
+      }))
+    }
+
+    if (lastMessage.type === 'notification') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        notifications: prev.notifications + 1
+      }))
+    }
+  }, [lastMessage])
+
+  // Carregar contadores ao montar
+  useEffect(() => {
+    loadUnreadCounts()
+  }, [])
 
   return (
     <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
@@ -49,17 +99,33 @@ const Header = ({ onOpenPostModal }) => {
           >
             <Plus size={24} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
-            <Heart size={24} className="text-gray-600" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              3
-            </span>
+
+          {/* Notificações */}
+          <button
+            onClick={() => setShowNotifications(true)}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+            title="Notificações"
+          >
+            <Bell size={24} className="text-gray-600" />
+            {unreadCounts.notifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCounts.notifications > 99 ? '99+' : unreadCounts.notifications}
+              </span>
+            )}
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
+
+          {/* Mensagens */}
+          <button
+            onClick={() => navigate('/messages')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+            title="Mensagens"
+          >
             <MessageCircle size={24} className="text-gray-600" />
-            <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              2
-            </span>
+            {unreadCounts.messages > 0 && (
+              <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCounts.messages > 99 ? '99+' : unreadCounts.messages}
+              </span>
+            )}
           </button>
 
           {/* User Avatar with Dropdown */}
@@ -95,6 +161,17 @@ const Header = ({ onOpenPostModal }) => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Notificações */}
+      {showNotifications && (
+        <NotificationsList
+          onClose={() => {
+            setShowNotifications(false)
+            // Recarregar contadores após fechar
+            loadUnreadCounts()
+          }}
+        />
+      )}
     </header>
   )
 }
