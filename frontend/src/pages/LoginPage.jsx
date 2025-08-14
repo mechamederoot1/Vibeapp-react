@@ -37,8 +37,8 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 md:p-4">
-      <div className="max-w-md w-full bg-white rounded-lg md:shadow-lg p-8 md:rounded-lg h-screen md:h-auto flex flex-col justify-center">
+    <div className="min-h-screen bg-gray-50 md:flex md:items-center md:justify-center md:p-4">
+      <div className="max-w-md w-full bg-white md:rounded-lg md:shadow-lg p-8 h-screen md:h-auto flex flex-col justify-center md:max-h-none">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-6 flex justify-center">
