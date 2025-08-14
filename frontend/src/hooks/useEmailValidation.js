@@ -69,7 +69,7 @@ export const useEmailValidation = () => {
           error: 'Erro ao verificar e-mail'
         })
       }
-    }, 500), // 500ms de delay
+    }, 300), // 300ms de delay
     []
   )
 
