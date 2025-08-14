@@ -102,26 +102,29 @@ const Register = () => {
 
     switch (step) {
       case 1:
-        const step1Valid = formData.firstName.trim() && formData.lastName.trim()
+        const step1Valid = formData.firstName.trim().length > 0 && formData.lastName.trim().length > 0
         console.log(`Step 1 validation: ${step1Valid}`, { firstName: formData.firstName, lastName: formData.lastName })
         return step1Valid
       case 2:
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        const step2Valid = emailRegex.test(formData.email.trim())
-        console.log(`Step 2 validation: ${step2Valid}`, { email: formData.email, trimmed: formData.email.trim() })
+        const email = formData.email.trim()
+        const step2Valid = email.length > 0 && emailRegex.test(email)
+        console.log(`Step 2 validation: ${step2Valid}`, { email: formData.email, trimmed: email, regexTest: emailRegex.test(email) })
         return step2Valid
       case 3:
-        const step3Valid = formData.gender && formData.birthDate
+        const step3Valid = formData.gender.length > 0 && formData.birthDate.length > 0
         console.log(`Step 3 validation: ${step3Valid}`, { gender: formData.gender, birthDate: formData.birthDate })
         return step3Valid
       case 4:
         const step4Valid = (
           formData.password.length >= 6 &&
+          formData.confirmPassword.length > 0 &&
           formData.password === formData.confirmPassword &&
           acceptedTerms
         )
         console.log(`Step 4 validation: ${step4Valid}`, {
           passwordLength: formData.password.length,
+          confirmPasswordLength: formData.confirmPassword.length,
           passwordsMatch: formData.password === formData.confirmPassword,
           acceptedTerms
         })
