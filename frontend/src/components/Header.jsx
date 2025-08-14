@@ -1,14 +1,23 @@
-import React, { useState } from 'react'
-import { Search, MessageCircle, Heart, Plus, LogOut, User } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Search, MessageCircle, Bell, Plus, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
+import NotificationsList from './NotificationsList'
+import { api } from '../services/api'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [unreadCounts, setUnreadCounts] = useState({
+    messages: 0,
+    notifications: 0
+  })
+  const { lastMessage } = useWebSocket()
 
   const handleEditPhoto = () => {
     navigate('/profile')
