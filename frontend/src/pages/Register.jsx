@@ -225,13 +225,20 @@ const Register = () => {
             <h2 className="text-2xl font-bold text-center mb-6">Qual é o seu nome?</h2>
             <div className="space-y-4">
               <div>
-                <input
-                  type="text"
-                  placeholder="Nome"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${getFieldClassName('firstName')}`}
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Nome"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className={`w-full p-4 border rounded-lg focus:outline-none transition-colors pr-12 ${getFieldClassName('firstName')}`}
+                  />
+                  {getFieldIcon('firstName') && (
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                      {getFieldIcon('firstName')}
+                    </div>
+                  )}
+                </div>
                 {getFieldError('firstName') && (
                   <p className="text-red-500 text-sm mt-1">{getFieldError('firstName')}</p>
                 )}
@@ -280,7 +287,7 @@ const Register = () => {
             <h2 className="text-2xl font-bold text-center mb-6">Informações pessoais</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">G��nero</label>
                 <select
                   value={formData.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value)}
