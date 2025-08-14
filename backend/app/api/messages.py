@@ -11,7 +11,6 @@ import uuid
 from ..database.database import get_db
 from ..models import User, Message, Conversation, Notification
 from .auth import get_current_user
-from ..websocket import manager
 
 router = APIRouter()
 
