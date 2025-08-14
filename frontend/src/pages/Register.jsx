@@ -269,11 +269,7 @@ const Register = () => {
                 <select
                   value={formData.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value)}
-                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
-                    getFieldError('gender')
-                      ? 'border-red-500 focus:border-red-500 bg-red-50'
-                      : 'border-gray-300 focus:border-vibe-blue'
-                  }`}
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${getFieldClassName('gender')}`}
                 >
                   <option value="">Selecione seu gênero</option>
                   <option value="male">Masculino</option>
