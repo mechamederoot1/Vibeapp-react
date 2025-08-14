@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import VibeLogoSimple from '../components/VibeLogoSimple'
+import EmailInput from '../components/EmailInput'
 
 const Register = () => {
   const [currentStep, setCurrentStep] = useState(1)
