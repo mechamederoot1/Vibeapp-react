@@ -81,12 +81,16 @@ async def add_post_reaction(
             db.commit()
             
             # Enviar notificação em tempo real
-            await manager.send_reaction_notification({
-                "type": "post_reaction",
-                "postId": post_id,
-                "reactionType": reaction_data.reaction_type,
-                "user": current_user.to_public_dict()
-            }, post.author_id)
+            try:
+                from ..websocket import manager
+                await manager.send_reaction_notification({
+                    "type": "post_reaction",
+                    "postId": post_id,
+                    "reactionType": reaction_data.reaction_type,
+                    "user": current_user.to_public_dict()
+                }, post.author_id)
+            except ImportError:
+                pass  # WebSocket não disponível
         
         return {
             "message": "Reaction added successfully",
