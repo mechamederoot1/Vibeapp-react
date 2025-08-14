@@ -126,12 +126,11 @@ const Register = () => {
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-center mb-6">Qual é o seu email?</h2>
-            <input
-              type="email"
-              placeholder="seu@email.com"
+            <EmailInput
               value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+              onChange={(value) => handleInputChange('email', value)}
+              placeholder="seu@email.com"
+              onValidationChange={setEmailValidation}
             />
             <p className="text-gray-500 text-sm text-center">
               Usaremos este email para enviar atualizações importantes
