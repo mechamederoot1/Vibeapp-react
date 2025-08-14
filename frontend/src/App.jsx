@@ -13,7 +13,7 @@ import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
-import { VibeLogoCircular } from './components/VibeLogoCircular'
+import { VibeLogoCircular } from './components/VibeLogoSimple'
 import DatabaseFixer from './components/DatabaseFixer'
 import LogoShowcase from './components/LogoShowcase'
 
