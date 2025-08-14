@@ -13,7 +13,12 @@ const Register = () => {
   const [showTerms, setShowTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
+  const [emailValidation, setEmailValidation] = useState({
+    isValid: false,
+    isChecking: false,
+    error: null
+  })
+
   const { register } = useAuth()
   const navigate = useNavigate()
 
