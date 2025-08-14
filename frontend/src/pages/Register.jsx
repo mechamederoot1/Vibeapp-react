@@ -29,8 +29,37 @@ const Register = () => {
   const totalSteps = 4
 
   const handleInputChange = (field, value) => {
+    console.log(`📝 Input change: ${field} = "${value}"`)
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
+  }
+
+  const getFieldError = (field) => {
+    if (!error) return null
+
+    // Retornar erro apenas se o campo está relacionado ao step atual
+    switch (currentStep) {
+      case 1:
+        if (field === 'firstName' && !formData.firstName.trim()) return 'Nome é obrigatório'
+        if (field === 'lastName' && !formData.lastName.trim()) return 'Sobrenome é obrigatório'
+        break
+      case 2:
+        if (field === 'email') {
+          if (!formData.email.trim()) return 'Email é obrigatório'
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+          if (!emailRegex.test(formData.email.trim())) return 'Email inválido'
+        }
+        break
+      case 3:
+        if (field === 'gender' && !formData.gender) return 'Gênero é obrigatório'
+        if (field === 'birthDate' && !formData.birthDate) return 'Data de nascimento é obrigatória'
+        break
+      case 4:
+        if (field === 'password' && formData.password.length < 6) return 'Mínimo 6 caracteres'
+        if (field === 'confirmPassword' && formData.password !== formData.confirmPassword) return 'Senhas não coincidem'
+        break
+    }
+    return null
   }
 
   const validateStep = (step) => {
