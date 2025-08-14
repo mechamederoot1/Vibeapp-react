@@ -103,6 +103,14 @@ app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(reactions_router, prefix="/api/reactions", tags=["reactions"])
 app.include_router(uploads_router, prefix="/api/uploads", tags=["uploads"])
 app.include_router(account_settings_router, prefix="/api/settings", tags=["account_settings"])
+app.include_router(messages_router, prefix="/api/messages", tags=["messages"])
+app.include_router(shares_router, prefix="/api/shares", tags=["shares"])
+app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
+
+# WebSocket endpoint
+@app.websocket("/ws")
+async def websocket_handler(websocket: WebSocket, token: str = Query(None)):
+    await websocket_endpoint(websocket, token)
 
 # Mount static files (uploads)
 os.makedirs("uploads", exist_ok=True)
