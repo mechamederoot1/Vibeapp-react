@@ -74,6 +74,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         )
     return user
 
+@router.get("/check-email/{email}")
+async def check_email(email: str, db: Session = Depends(get_db)):
+    """Check if email is already registered"""
+    existing_user = db.query(User).filter(User.email == email).first()
+    return {
+        "exists": existing_user is not None,
+        "available": existing_user is None
+    }
+
 @router.post("/register", response_model=Token)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     # Check if user already exists
