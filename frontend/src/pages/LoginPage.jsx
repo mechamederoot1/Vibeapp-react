@@ -42,9 +42,9 @@ const LoginPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-6 flex justify-center">
-            <VibeLogoSimple size="xl" />
+            <VibeLogoCircular size="xl" />
           </div>
-          <p className="text-gray-600 text-center">Entre na sua conta</p>
+          <p className="text-gray-600 text-center mt-4">Entre na sua conta</p>
         </div>
 
         {/* Form */}
