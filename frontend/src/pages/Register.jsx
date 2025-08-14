@@ -241,7 +241,11 @@ const Register = () => {
                 <select
                   value={formData.gender}
                   onChange={(e) => handleInputChange('gender', e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
+                    getFieldError('gender')
+                      ? 'border-red-500 focus:border-red-500 bg-red-50'
+                      : 'border-gray-300 focus:border-vibe-blue'
+                  }`}
                 >
                   <option value="">Selecione seu gênero</option>
                   <option value="male">Masculino</option>
@@ -249,6 +253,9 @@ const Register = () => {
                   <option value="other">Outro</option>
                   <option value="prefer_not_to_say">Prefiro não dizer</option>
                 </select>
+                {getFieldError('gender') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('gender')}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Data de nascimento</label>
@@ -257,8 +264,15 @@ const Register = () => {
                   value={formData.birthDate}
                   onChange={(e) => handleInputChange('birthDate', e.target.value)}
                   max={new Date(Date.now() - 13 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
+                    getFieldError('birthDate')
+                      ? 'border-red-500 focus:border-red-500 bg-red-50'
+                      : 'border-gray-300 focus:border-vibe-blue'
+                  }`}
                 />
+                {getFieldError('birthDate') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('birthDate')}</p>
+                )}
               </div>
             </div>
           </div>
@@ -439,7 +453,7 @@ const Register = () => {
                 <section>
                   <h3 className="font-semibold text-lg mb-2">3. Conteúdo do Usuário</h3>
                   <p>
-                    Voc�� é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
+                    Você é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
                   </p>
                 </section>
 
