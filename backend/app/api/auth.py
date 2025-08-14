@@ -247,3 +247,23 @@ async def debug_token(credentials: HTTPAuthorizationCredentials = Depends(securi
             "token_valid": False,
             "error": str(e)
         }
+
+async def get_user_from_websocket(token: str, db: Session = None):
+    """Função para autenticar usuário via WebSocket"""
+    if not db:
+        # Se não passou db, precisa obter uma sessão
+        from ..database.database import SessionLocal
+        db = SessionLocal()
+        should_close = True
+    else:
+        should_close = False
+
+    try:
+        user_id = verify_token(token)
+        user = db.query(User).filter(User.id == user_id).first()
+        return user
+    except Exception:
+        return None
+    finally:
+        if should_close:
+            db.close()
