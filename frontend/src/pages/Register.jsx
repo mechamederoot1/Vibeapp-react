@@ -35,28 +35,30 @@ const Register = () => {
   }
 
   const getFieldError = (field) => {
+    // Só mostrar erros se há erro ativo e o step foi validado
     if (!error) return null
 
-    // Retornar erro apenas se o campo está relacionado ao step atual
+    // Verificar se o campo específico tem erro
     switch (currentStep) {
       case 1:
-        if (field === 'firstName' && !formData.firstName.trim()) return 'Nome é obrigatório'
-        if (field === 'lastName' && !formData.lastName.trim()) return 'Sobrenome é obrigatório'
+        if (field === 'firstName' && formData.firstName.trim().length === 0) return 'Nome é obrigatório'
+        if (field === 'lastName' && formData.lastName.trim().length === 0) return 'Sobrenome é obrigatório'
         break
       case 2:
         if (field === 'email') {
-          if (!formData.email.trim()) return 'Email é obrigatório'
+          const email = formData.email.trim()
+          if (email.length === 0) return 'Email é obrigatório'
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-          if (!emailRegex.test(formData.email.trim())) return 'Email inválido'
+          if (!emailRegex.test(email)) return 'Digite um email válido (ex: nome@email.com)'
         }
         break
       case 3:
-        if (field === 'gender' && !formData.gender) return 'Gênero é obrigatório'
-        if (field === 'birthDate' && !formData.birthDate) return 'Data de nascimento é obrigatória'
+        if (field === 'gender' && formData.gender.length === 0) return 'Selecione seu gênero'
+        if (field === 'birthDate' && formData.birthDate.length === 0) return 'Digite sua data de nascimento'
         break
       case 4:
-        if (field === 'password' && formData.password.length < 6) return 'Mínimo 6 caracteres'
-        if (field === 'confirmPassword' && formData.password !== formData.confirmPassword) return 'Senhas não coincidem'
+        if (field === 'password' && formData.password.length < 6) return 'A senha deve ter pelo menos 6 caracteres'
+        if (field === 'confirmPassword' && formData.password !== formData.confirmPassword) return 'As senhas devem ser iguais'
         break
     }
     return null
