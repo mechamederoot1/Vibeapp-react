@@ -161,6 +161,17 @@ const Header = ({ onOpenPostModal }) => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Notificações */}
+      {showNotifications && (
+        <NotificationsList
+          onClose={() => {
+            setShowNotifications(false)
+            // Recarregar contadores após fechar
+            loadUnreadCounts()
+          }}
+        />
+      )}
     </header>
   )
 }
