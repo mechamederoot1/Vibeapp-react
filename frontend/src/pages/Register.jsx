@@ -72,7 +72,8 @@ const Register = () => {
         return formData.lastName.trim().length > 0
       case 'email':
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return emailRegex.test(formData.email.trim())
+        const email = formData.email.trim()
+        return email.length > 0 && emailRegex.test(email)
       case 'gender':
         return formData.gender.length > 0
       case 'birthDate':
@@ -80,7 +81,7 @@ const Register = () => {
       case 'password':
         return formData.password.length >= 6
       case 'confirmPassword':
-        return formData.password === formData.confirmPassword && formData.confirmPassword.length > 0
+        return formData.confirmPassword.length > 0 && formData.password === formData.confirmPassword
       default:
         return false
     }
