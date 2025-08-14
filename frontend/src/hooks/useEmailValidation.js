@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { api } from '../services/api'
+import { useState, useCallback } from 'react'
+import { authAPI } from '../services/api'
 
 export const useEmailValidation = () => {
   const [validationState, setValidationState] = useState({
