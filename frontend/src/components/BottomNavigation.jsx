@@ -1,16 +1,75 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, PlusCircle, Bell, User } from 'lucide-react'
+import { Home, Search, PlusCircle, Bell, User, MessageCircle } from 'lucide-react'
+import { api } from '../services/api'
+import useWebSocket from '../hooks/useWebSocket'
 
 const BottomNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { lastMessage } = useWebSocket()
+  const [unreadCounts, setUnreadCounts] = useState({
+    messages: 0,
+    notifications: 0
+  })
+
+  // Carregar contadores de mensagens e notificações não lidas
+  const loadUnreadCounts = async () => {
+    try {
+      const [messagesRes, notificationsRes] = await Promise.all([
+        api.get('/api/messages/unread-count'),
+        api.get('/api/notifications/unread-count')
+      ])
+
+      setUnreadCounts({
+        messages: messagesRes.data.unreadCount,
+        notifications: notificationsRes.data.unreadCount
+      })
+    } catch (error) {
+      console.error('Erro ao carregar contadores:', error)
+    }
+  }
+
+  // Atualizar contadores quando receber mensagens WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+
+    if (lastMessage.type === 'new_message') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        messages: prev.messages + 1
+      }))
+    }
+
+    if (lastMessage.type === 'notification') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        notifications: prev.notifications + 1
+      }))
+    }
+  }, [lastMessage])
+
+  // Carregar contadores ao montar
+  useEffect(() => {
+    loadUnreadCounts()
+  }, [])
 
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
     { path: '/explore', icon: Search, label: 'Explorar' },
     { path: '/create', icon: PlusCircle, label: 'Criar' },
-    { path: '/notifications', icon: Bell, label: 'Notificações' },
+    {
+      path: '/messages',
+      icon: MessageCircle,
+      label: 'Mensagens',
+      badge: unreadCounts.messages
+    },
+    {
+      path: '/notifications',
+      icon: Bell,
+      label: 'Notificações',
+      badge: unreadCounts.notifications
+    },
     { path: '/profile', icon: User, label: 'Perfil' },
   ]
 
