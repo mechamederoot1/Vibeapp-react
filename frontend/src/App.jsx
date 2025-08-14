@@ -186,6 +186,10 @@ const AppContent = () => {
           path="/test/reactions"
           element={<ReactionTest />}
         />
+        <Route
+          path="/logos"
+          element={<LogoShowcase />}
+        />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/feed" replace />} />
