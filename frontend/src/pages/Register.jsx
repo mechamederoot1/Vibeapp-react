@@ -62,6 +62,41 @@ const Register = () => {
     return null
   }
 
+  const isFieldValid = (field) => {
+    switch (field) {
+      case 'firstName':
+        return formData.firstName.trim().length > 0
+      case 'lastName':
+        return formData.lastName.trim().length > 0
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        return emailRegex.test(formData.email.trim())
+      case 'gender':
+        return formData.gender.length > 0
+      case 'birthDate':
+        return formData.birthDate.length > 0
+      case 'password':
+        return formData.password.length >= 6
+      case 'confirmPassword':
+        return formData.password === formData.confirmPassword && formData.confirmPassword.length > 0
+      default:
+        return false
+    }
+  }
+
+  const getFieldClassName = (field) => {
+    const hasError = getFieldError(field)
+    const isValid = isFieldValid(field)
+
+    if (hasError) {
+      return 'border-red-500 focus:border-red-500 bg-red-50'
+    } else if (isValid && formData[field]) {
+      return 'border-green-500 focus:border-green-500 bg-green-50'
+    } else {
+      return 'border-gray-300 focus:border-vibe-blue'
+    }
+  }
+
   const validateStep = (step) => {
     console.log(`🔍 Validating step ${step} with data:`, formData)
 
