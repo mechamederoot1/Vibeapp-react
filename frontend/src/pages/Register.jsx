@@ -416,7 +416,12 @@ const Register = () => {
           {currentStep < totalSteps ? (
             <button
               onClick={nextStep}
-              className="flex items-center space-x-2 bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
+              disabled={!validateStep(currentStep)}
+              className={`flex items-center space-x-2 px-6 py-2 rounded-lg transition-all ${
+                validateStep(currentStep)
+                  ? 'bg-vibe-blue text-white hover:bg-vibe-blue-dark'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               <span>Próximo</span>
               <ChevronRight size={20} />
