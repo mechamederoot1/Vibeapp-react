@@ -288,11 +288,7 @@ const Register = () => {
                   value={formData.birthDate}
                   onChange={(e) => handleInputChange('birthDate', e.target.value)}
                   max={new Date(Date.now() - 13 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
-                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
-                    getFieldError('birthDate')
-                      ? 'border-red-500 focus:border-red-500 bg-red-50'
-                      : 'border-gray-300 focus:border-vibe-blue'
-                  }`}
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${getFieldClassName('birthDate')}`}
                 />
                 {getFieldError('birthDate') && (
                   <p className="text-red-500 text-sm mt-1">{getFieldError('birthDate')}</p>
