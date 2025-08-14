@@ -46,10 +46,9 @@ const SplashScreen = ({ onComplete, duration = 5000 }) => {
       {/* Logo central */}
       <div className="relative z-10 text-center">
         <div className="animate-fade-in">
-          <VibeLogoSimple
+          <VibeLogoCircular
             size="xl"
-            className="text-white scale-110"
-            textColor="text-white"
+            className="scale-110"
           />
         </div>
 
