@@ -310,11 +310,7 @@ const Register = () => {
                     placeholder="Senha (mínimo 6 caracteres)"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`w-full p-4 border rounded-lg focus:outline-none pr-12 transition-colors ${
-                      getFieldError('password')
-                        ? 'border-red-500 focus:border-red-500 bg-red-50'
-                        : 'border-gray-300 focus:border-vibe-blue'
-                    }`}
+                    className={`w-full p-4 border rounded-lg focus:outline-none pr-12 transition-colors ${getFieldClassName('password')}`}
                   />
                   <button
                     type="button"
