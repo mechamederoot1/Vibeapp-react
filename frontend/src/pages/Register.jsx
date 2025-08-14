@@ -101,6 +101,19 @@ const Register = () => {
     }
   }
 
+  const getFieldIcon = (field) => {
+    const hasError = getFieldError(field)
+    const isValid = isFieldValid(field)
+    const fieldValue = formData[field]
+
+    if (hasError) {
+      return <AlertCircle className="text-red-500" size={20} />
+    } else if (isValid && fieldValue && fieldValue.length > 0) {
+      return <CheckCircle className="text-green-500" size={20} />
+    }
+    return null
+  }
+
   const validateStep = (step) => {
     console.log(`🔍 Validating step ${step} with data:`, formData)
 
