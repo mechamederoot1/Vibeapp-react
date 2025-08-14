@@ -13,7 +13,7 @@ import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
-import { VibeLogoCircular } from './components/VibeLogoSimple'
+import { VibeLogoCircular } from './components/VibeLogoCircular'
 import DatabaseFixer from './components/DatabaseFixer'
 import LogoShowcase from './components/LogoShowcase'
 
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-pulse mb-4">
-            <VibeLogoSimple size="lg" />
+            <VibeLogoCircular size="lg" />
           </div>
           <p className="text-gray-600">Carregando...</p>
         </div>
@@ -48,7 +48,7 @@ const PublicRoute = ({ children }) => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-pulse mb-4">
-            <VibeLogoSimple size="lg" />
+            <VibeLogoCircular size="lg" />
           </div>
           <p className="text-gray-600">Carregando...</p>
         </div>
