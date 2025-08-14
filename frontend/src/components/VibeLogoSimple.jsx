@@ -56,10 +56,33 @@ export const VibeArc = ({ size = 'md', className = '' }) => {
 // Versão com texto branco (para fundos escuros)
 export const VibeLogoWhite = ({ size = 'md', className = '' }) => {
   return (
-    <VibeLogoSimple 
-      size={size} 
-      className={className} 
-      textColor="text-white" 
+    <VibeLogoSimple
+      size={size}
+      className={className}
+      textColor="text-white"
+    />
+  )
+}
+
+// Versão circular com fundo azul
+export const VibeLogoCircular = ({ size = 'md', className = '' }) => {
+  return (
+    <VibeLogoSimple
+      size={size}
+      className={className}
+      circular={true}
+    />
+  )
+}
+
+// Versão circular apenas com o círculo (sem texto)
+export const VibeCircleOnly = ({ size = 'md', className = '' }) => {
+  return (
+    <VibeLogoSimple
+      size={size}
+      className={className}
+      circular={true}
+      showText={false}
     />
   )
 }
