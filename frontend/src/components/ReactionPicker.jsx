@@ -145,8 +145,8 @@ const ReactionPicker = ({
       // Se já tem reação, remover
       onReaction(null)
     } else {
-      // Se não tem reação, adicionar like
-      onReaction('like')
+      // Se não tem reação, adicionar heart
+      onReaction('heart')
     }
   }
 
