@@ -247,11 +247,7 @@ const Register = () => {
                 placeholder="seu@email.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
-                  getFieldError('email')
-                    ? 'border-red-500 focus:border-red-500 bg-red-50'
-                    : 'border-gray-300 focus:border-vibe-blue'
-                }`}
+                className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${getFieldClassName('email')}`}
               />
               {getFieldError('email') && (
                 <p className="text-red-500 text-sm mt-1">{getFieldError('email')}</p>
