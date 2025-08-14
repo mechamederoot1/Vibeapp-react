@@ -169,20 +169,38 @@ const Register = () => {
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-center mb-6">Qual é o seu nome?</h2>
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Nome"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
-              />
-              <input
-                type="text"
-                placeholder="Sobrenome"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
-              />
+              <div>
+                <input
+                  type="text"
+                  placeholder="Nome"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
+                    getFieldError('firstName')
+                      ? 'border-red-500 focus:border-red-500 bg-red-50'
+                      : 'border-gray-300 focus:border-vibe-blue'
+                  }`}
+                />
+                {getFieldError('firstName') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('firstName')}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  type="text"
+                  placeholder="Sobrenome"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
+                    getFieldError('lastName')
+                      ? 'border-red-500 focus:border-red-500 bg-red-50'
+                      : 'border-gray-300 focus:border-vibe-blue'
+                  }`}
+                />
+                {getFieldError('lastName') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('lastName')}</p>
+                )}
+              </div>
             </div>
           </div>
         )
