@@ -36,6 +36,47 @@ const Header = ({ onOpenPostModal }) => {
     setShowAvatarDropdown(false)
   }
 
+  // Carregar contadores de mensagens e notificações não lidas
+  const loadUnreadCounts = async () => {
+    try {
+      const [messagesRes, notificationsRes] = await Promise.all([
+        api.get('/api/messages/unread-count'),
+        api.get('/api/notifications/unread-count')
+      ])
+
+      setUnreadCounts({
+        messages: messagesRes.data.unreadCount,
+        notifications: notificationsRes.data.unreadCount
+      })
+    } catch (error) {
+      console.error('Erro ao carregar contadores:', error)
+    }
+  }
+
+  // Atualizar contadores quando receber mensagens WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+
+    if (lastMessage.type === 'new_message') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        messages: prev.messages + 1
+      }))
+    }
+
+    if (lastMessage.type === 'notification') {
+      setUnreadCounts(prev => ({
+        ...prev,
+        notifications: prev.notifications + 1
+      }))
+    }
+  }, [lastMessage])
+
+  // Carregar contadores ao montar
+  useEffect(() => {
+    loadUnreadCounts()
+  }, [])
+
   return (
     <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between w-full max-w-full">
