@@ -99,17 +99,33 @@ const Header = ({ onOpenPostModal }) => {
           >
             <Plus size={24} className="text-gray-600" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
-            <Heart size={24} className="text-gray-600" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              3
-            </span>
+
+          {/* Notificações */}
+          <button
+            onClick={() => setShowNotifications(true)}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+            title="Notificações"
+          >
+            <Bell size={24} className="text-gray-600" />
+            {unreadCounts.notifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCounts.notifications > 99 ? '99+' : unreadCounts.notifications}
+              </span>
+            )}
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors relative">
+
+          {/* Mensagens */}
+          <button
+            onClick={() => navigate('/messages')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+            title="Mensagens"
+          >
             <MessageCircle size={24} className="text-gray-600" />
-            <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              2
-            </span>
+            {unreadCounts.messages > 0 && (
+              <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCounts.messages > 99 ? '99+' : unreadCounts.messages}
+              </span>
+            )}
           </button>
 
           {/* User Avatar with Dropdown */}
