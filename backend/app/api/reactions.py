@@ -220,12 +220,16 @@ async def add_comment_reaction(
             db.commit()
             
             # Enviar notificação em tempo real
-            await manager.send_reaction_notification({
-                "type": "comment_reaction",
-                "commentId": comment_id,
-                "reactionType": reaction_data.reaction_type,
-                "user": current_user.to_public_dict()
-            }, comment.user_id)
+            try:
+                from ..websocket import manager
+                await manager.send_reaction_notification({
+                    "type": "comment_reaction",
+                    "commentId": comment_id,
+                    "reactionType": reaction_data.reaction_type,
+                    "user": current_user.to_public_dict()
+                }, comment.user_id)
+            except ImportError:
+                pass  # WebSocket não disponível
         
         return {
             "message": "Reaction added successfully",
