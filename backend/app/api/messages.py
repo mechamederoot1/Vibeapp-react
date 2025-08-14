@@ -109,8 +109,12 @@ async def send_message(
     db.refresh(notification)
     
     # Enviar notificação em tempo real
-    message_dict = new_message.to_dict()
-    await manager.send_message_notification(message_dict, message_data.receiverId)
+    try:
+        from ..websocket import manager
+        message_dict = new_message.to_dict()
+        await manager.send_message_notification(message_dict, message_data.receiverId)
+    except ImportError:
+        pass  # WebSocket não disponível
     
     return {
         "message": "Message sent successfully",
