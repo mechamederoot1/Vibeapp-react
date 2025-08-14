@@ -90,12 +90,16 @@ async def share_post(
     db.commit()
     
     # Enviar notificação em tempo real
-    await manager.send_share_notification({
-        "type": "post_share",
-        "postId": post_id,
-        "shareText": share_data.shareText,
-        "user": current_user.to_public_dict()
-    }, original_post.author_id)
+    try:
+        from ..websocket import manager
+        await manager.send_share_notification({
+            "type": "post_share",
+            "postId": post_id,
+            "shareText": share_data.shareText,
+            "user": current_user.to_public_dict()
+        }, original_post.author_id)
+    except ImportError:
+        pass  # WebSocket não disponível
     
     return {
         "message": "Post shared successfully",
