@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import VibeLogoSimple from './VibeLogoSimple'
+import { VibeLogoCircular } from './VibeLogoSimple'
 
 const SplashScreen = ({ onComplete, duration = 5000 }) => {
   const [fadeOut, setFadeOut] = useState(false)
