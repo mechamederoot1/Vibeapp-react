@@ -283,37 +283,55 @@ const Register = () => {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-center mb-6">Crie sua senha</h2>
             <div className="space-y-4">
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Senha (mínimo 6 caracteres)"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Senha (mínimo 6 caracteres)"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className={`w-full p-4 border rounded-lg focus:outline-none pr-12 transition-colors ${
+                      getFieldError('password')
+                        ? 'border-red-500 focus:border-red-500 bg-red-50'
+                        : 'border-gray-300 focus:border-vibe-blue'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                {getFieldError('password') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('password')}</p>
+                )}
               </div>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  placeholder="Confirme sua senha"
-                  value={formData.confirmPassword}
-                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+              <div>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirme sua senha"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                    className={`w-full p-4 border rounded-lg focus:outline-none pr-12 transition-colors ${
+                      getFieldError('confirmPassword')
+                        ? 'border-red-500 focus:border-red-500 bg-red-50'
+                        : 'border-gray-300 focus:border-vibe-blue'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                {getFieldError('confirmPassword') && (
+                  <p className="text-red-500 text-sm mt-1">{getFieldError('confirmPassword')}</p>
+                )}
               </div>
               
               <div className="space-y-3 mt-6">
