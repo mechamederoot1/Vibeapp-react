@@ -222,11 +222,7 @@ const Register = () => {
                   placeholder="Sobrenome"
                   value={formData.lastName}
                   onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
-                    getFieldError('lastName')
-                      ? 'border-red-500 focus:border-red-500 bg-red-50'
-                      : 'border-gray-300 focus:border-vibe-blue'
-                  }`}
+                  className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${getFieldClassName('lastName')}`}
                 />
                 {getFieldError('lastName') && (
                   <p className="text-red-500 text-sm mt-1">{getFieldError('lastName')}</p>
