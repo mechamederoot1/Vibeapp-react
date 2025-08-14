@@ -90,10 +90,11 @@ const Register = () => {
   const getFieldClassName = (field) => {
     const hasError = getFieldError(field)
     const isValid = isFieldValid(field)
+    const fieldValue = formData[field]
 
     if (hasError) {
       return 'border-red-500 focus:border-red-500 bg-red-50'
-    } else if (isValid && formData[field]) {
+    } else if (isValid && fieldValue && fieldValue.length > 0) {
       return 'border-green-500 focus:border-green-500 bg-green-50'
     } else {
       return 'border-gray-300 focus:border-vibe-blue'
