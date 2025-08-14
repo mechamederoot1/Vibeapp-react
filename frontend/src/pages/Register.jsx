@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Check, CheckCircle, AlertCircle } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import VibeLogoSimple from '../components/VibeLogoSimple'
