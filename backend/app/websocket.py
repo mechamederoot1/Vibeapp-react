@@ -2,7 +2,7 @@ from fastapi import WebSocket, WebSocketDisconnect, Depends
 from typing import Dict, List
 import json
 import asyncio
-from .auth import get_user_from_websocket
+from .api.auth import get_user_from_websocket
 from .models import User
 
 class ConnectionManager:
