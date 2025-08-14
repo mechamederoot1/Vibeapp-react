@@ -15,6 +15,7 @@ import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
 import DatabaseFixer from './components/DatabaseFixer'
+import LogoShowcase from './components/LogoShowcase'
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth()
