@@ -19,7 +19,7 @@ const ReactionPicker = ({
 
   // Definir as reações disponíveis
   const reactions = [
-    { type: 'like', emoji: '❤️', color: '#e91e63', label: 'Curtir' },
+    { type: 'heart', emoji: '❤️', color: '#e91e63', label: 'Curtir' },
     { type: 'love', emoji: '😍', color: '#e91e63', label: 'Amei' },
     { type: 'wow', emoji: '😮', color: '#f57c00', label: 'Uau' },
     { type: 'laugh', emoji: '😂', color: '#f57c00', label: 'Haha' },
