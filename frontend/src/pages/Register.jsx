@@ -209,13 +209,22 @@ const Register = () => {
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold text-center mb-6">Qual é o seu email?</h2>
-            <input
-              type="email"
-              placeholder="seu@email.com"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
-            />
+            <div>
+              <input
+                type="email"
+                placeholder="seu@email.com"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                className={`w-full p-4 border rounded-lg focus:outline-none transition-colors ${
+                  getFieldError('email')
+                    ? 'border-red-500 focus:border-red-500 bg-red-50'
+                    : 'border-gray-300 focus:border-vibe-blue'
+                }`}
+              />
+              {getFieldError('email') && (
+                <p className="text-red-500 text-sm mt-1">{getFieldError('email')}</p>
+              )}
+            </div>
             <p className="text-gray-500 text-sm text-center">
               Usaremos este email para enviar atualizações importantes
             </p>
@@ -430,7 +439,7 @@ const Register = () => {
                 <section>
                   <h3 className="font-semibold text-lg mb-2">3. Conteúdo do Usuário</h3>
                   <p>
-                    Você é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
+                    Voc�� é responsável pelo conteúdo que publica. Não permitimos spam, discurso de ódio, ou conteúdo ilegal.
                   </p>
                 </section>
 
