@@ -52,8 +52,8 @@ export const useEmailValidation = () => {
       }))
 
       try {
-        const response = await api.get(`/auth/check-email/${encodeURIComponent(email)}`)
-        
+        const response = await authAPI.checkEmail(email)
+
         setValidationState({
           isChecking: false,
           isValid: true,
