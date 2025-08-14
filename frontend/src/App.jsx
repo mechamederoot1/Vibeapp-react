@@ -136,15 +136,25 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/notifications" 
+        <Route
+          path="/notifications"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Notifications />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/messages"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Messages />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/profile"
