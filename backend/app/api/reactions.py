@@ -6,7 +6,6 @@ from ..models import User, Post, Comment, PostReaction, CommentReaction, Notific
 from .auth import get_current_user
 from pydantic import BaseModel
 from typing import Optional
-from ..websocket import manager
 
 router = APIRouter()
 
