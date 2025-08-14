@@ -246,7 +246,7 @@ const Register = () => {
       <div className="max-w-md w-full bg-white md:rounded-lg md:shadow-lg p-8 h-screen md:h-auto flex flex-col justify-center md:max-h-none">
         {/* Header */}
         <div className="text-center mb-8">
-          <VibeLogoSimple size="lg" />
+          <VibeLogoCircular size="lg" />
         </div>
 
         {/* Progress bar */}
