@@ -94,6 +94,16 @@ export const postsAPI = {
   getUserPosts: (userId, page = 1, limit = 20) => api.get(`/posts/user/${userId}?page=${page}&limit=${limit}`)
 }
 
+// Reactions endpoints
+export const reactionsAPI = {
+  addPostReaction: (postId, reactionType) => api.post(`/reactions/posts/${postId}/reactions`, { reaction_type: reactionType }),
+  removePostReaction: (postId) => api.delete(`/reactions/posts/${postId}/reactions`),
+  getPostReactions: (postId) => api.get(`/reactions/posts/${postId}/reactions`),
+  addCommentReaction: (commentId, reactionType) => api.post(`/reactions/comments/${commentId}/reactions`, { reaction_type: reactionType }),
+  removeCommentReaction: (commentId) => api.delete(`/reactions/comments/${commentId}/reactions`),
+  getCommentReactions: (commentId) => api.get(`/reactions/comments/${commentId}/reactions`)
+}
+
 // Uploads endpoints
 export const uploadsAPI = {
   uploadAvatar: (file) => {
