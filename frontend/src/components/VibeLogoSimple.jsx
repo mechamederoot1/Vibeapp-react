@@ -10,23 +10,32 @@ const VibeLogoSimple = ({ size = 'md', className = '', showText = true, textColo
   }
 
   const circularSizes = {
-    xs: 'w-16 h-16 text-xs',
-    sm: 'w-20 h-20 text-sm',
-    md: 'w-24 h-24 text-base',
-    lg: 'w-32 h-32 text-lg',
-    xl: 'w-40 h-40 text-xl'
+    xs: 'w-8 h-8',
+    sm: 'w-10 h-10',
+    md: 'w-12 h-12',
+    lg: 'w-16 h-16',
+    xl: 'w-20 h-20'
+  }
+
+  const textSizes = {
+    xs: 'text-sm',
+    sm: 'text-base',
+    md: 'text-lg',
+    lg: 'text-2xl',
+    xl: 'text-3xl'
   }
 
   if (circular) {
     return (
-      <div className={`relative flex items-center justify-center ${className}`}>
+      <div className={`flex items-center gap-3 ${className}`}>
         <div className={`rounded-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark shadow-lg flex items-center justify-center ${circularSizes[size]}`}>
-          {showText && (
-            <h1 className={`font-bold tracking-tight text-white ${circularSizes[size].split(' ')[2]}`}>
-              Vibe
-            </h1>
-          )}
+          <div className="w-2 h-2 bg-white rounded-full"></div>
         </div>
+        {showText && (
+          <h1 className={`font-bold tracking-tight text-gray-800 ${textSizes[size]}`}>
+            Vibe
+          </h1>
+        )}
       </div>
     )
   }
