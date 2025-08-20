@@ -147,11 +147,12 @@ async def health_check_simple():
 # Error handlers
 @app.exception_handler(404)
 async def not_found_handler(request, exc):
-    return HTTPException(status_code=404, detail="Endpoint not found")
+    return {"detail": "Endpoint not found"}
 
 @app.exception_handler(500)
 async def internal_error_handler(request, exc):
-    return HTTPException(status_code=500, detail="Internal server error")
+    print(f"Internal server error: {exc}")
+    return {"detail": "Internal server error"}
 
 if __name__ == "__main__":
     uvicorn.run(
