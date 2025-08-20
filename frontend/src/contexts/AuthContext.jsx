@@ -28,8 +28,43 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data)
         } catch (error) {
           console.error('❌ Auth init error:', error)
+          // Em modo de desenvolvimento, criar um usuário fake
+          if (import.meta.env.DEV) {
+            console.log('🔧 Creating demo user for development')
+            setUser({
+              id: 'demo-user',
+              firstName: 'Usuário',
+              lastName: 'Demo',
+              email: 'demo@vibe.com',
+              username: 'usuario',
+              avatar: null,
+              cover: null,
+              bio: 'Olá! Bem-vindo ao meu perfil no Vibe Social! 🎉',
+              verified: true
+            })
+            setToken('demo-token')
+            localStorage.setItem('token', 'demo-token')
+            setLoading(false)
+            return
+          }
           logout()
         }
+      } else if (import.meta.env.DEV) {
+        // Em modo de desenvolvimento, criar um usuário fake automaticamente
+        console.log('🔧 Creating demo user for development (no token)')
+        setUser({
+          id: 'demo-user',
+          firstName: 'Usuário',
+          lastName: 'Demo',
+          email: 'demo@vibe.com',
+          username: 'usuario',
+          avatar: null,
+          cover: null,
+          bio: 'Olá! Bem-vindo ao meu perfil no Vibe Social! 🎉',
+          verified: true
+        })
+        setToken('demo-token')
+        localStorage.setItem('token', 'demo-token')
       }
       setLoading(false)
     }
