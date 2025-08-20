@@ -231,6 +231,16 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
           )}
         </div>
       </div>
+
+      {/* Add to Highlight Modal */}
+      <AddToHighlightModal
+        isOpen={showHighlightModal}
+        onClose={handleHighlightModalClose}
+        onAddToHighlight={onAddToHighlight}
+        onCreateHighlight={onCreateHighlight}
+        highlights={highlights}
+        storyId={currentStory?.id}
+      />
     </div>
   )
 }
