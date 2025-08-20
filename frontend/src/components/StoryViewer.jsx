@@ -3,11 +3,12 @@ import { X, ChevronLeft, ChevronRight, Eye, Heart, Send, Star, Plus } from 'luci
 import { storiesAPI } from '../services/api'
 import AddToHighlightModal from './AddToHighlightModal'
 
-const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentUser }) => {
+const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentUser, highlights = [], onAddToHighlight, onCreateHighlight }) => {
   const [currentIndex, setCurrentIndex] = useState(initialStoryIndex)
   const [progress, setProgress] = useState(0)
   const [isPaused, setPaused] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showHighlightModal, setShowHighlightModal] = useState(false)
 
   const currentStory = stories[currentIndex]
   const STORY_DURATION = 5000 // 5 segundos por story
