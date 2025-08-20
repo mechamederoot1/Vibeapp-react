@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight, Eye, Heart, Send } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Eye, Heart, Send, Star, Plus } from 'lucide-react'
 import { storiesAPI } from '../services/api'
+import AddToHighlightModal from './AddToHighlightModal'
 
 const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentUser }) => {
   const [currentIndex, setCurrentIndex] = useState(initialStoryIndex)
