@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, WebSocket, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from datetime import datetime
 import uvicorn
@@ -70,13 +71,13 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5173",
         "http://192.168.1.109:3000",
-        "http://192.168.1.39:3000",  # Added the IP from logs
+        "http://192.168.1.39:3000",
+        "http://192.168.1.130:3000",  # Add the specific IP from the error
         "http://127.0.0.1:3000",
-        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
-        "*"
-    ],  # React dev server
+        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -144,14 +145,7 @@ async def health_check():
 async def health_check_simple():
     return {"status": "ok"}
 
-# Error handlers
-@app.exception_handler(404)
-async def not_found_handler(request, exc):
-    return HTTPException(status_code=404, detail="Endpoint not found")
-
-@app.exception_handler(500)
-async def internal_error_handler(request, exc):
-    return HTTPException(status_code=500, detail="Internal server error")
+# Basic error handling is handled by FastAPI automatically
 
 if __name__ == "__main__":
     uvicorn.run(

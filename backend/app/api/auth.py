@@ -76,48 +76,72 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 @router.post("/register", response_model=Token)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    # Check if user already exists
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+    try:
+        # Check if user already exists
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+
+        # Create new user
+        birth_date = None
+        if user_data.birthDate:
+            try:
+                birth_date = datetime.strptime(user_data.birthDate, "%Y-%m-%d").date()
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid birth date format. Use YYYY-MM-DD"
+                )
+
+        new_user = User(
+            email=user_data.email,
+            first_name=user_data.firstName,
+            last_name=user_data.lastName,
+            gender=user_data.gender,
+            birth_date=birth_date
         )
-    
-    # Create new user
-    new_user = User(
-        email=user_data.email,
-        first_name=user_data.firstName,
-        last_name=user_data.lastName,
-        gender=user_data.gender,
-        birth_date=datetime.strptime(user_data.birthDate, "%Y-%m-%d").date() if user_data.birthDate else None
-    )
-    new_user.set_password(user_data.password)
-    
-    # Generate username from name if not provided
-    base_username = f"{user_data.firstName.lower()}.{user_data.lastName.lower()}"
-    username = base_username
-    counter = 1
-    while db.query(User).filter(User.username == username).first():
-        username = f"{base_username}{counter}"
-        counter += 1
-    new_user.username = username
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": str(new_user.id)}, expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": new_user.to_dict()
-    }
+        new_user.set_password(user_data.password)
+
+        # Generate username from name if not provided
+        base_username = f"{user_data.firstName.lower()}.{user_data.lastName.lower()}"
+        username = base_username
+        counter = 1
+        while db.query(User).filter(User.username == username).first():
+            username = f"{base_username}{counter}"
+            counter += 1
+        new_user.username = username
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        # Create access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": str(new_user.id)}, expires_delta=access_token_expires
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": new_user.to_dict()
+        }
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as they are
+        raise
+    except Exception as e:
+        # Log the error and return a generic 500 error
+        print(f"❌ Registration error: {str(e)}")
+        print(f"❌ Error type: {type(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal server error during registration: {str(e)}"
+        )
 
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin, db: Session = Depends(get_db)):

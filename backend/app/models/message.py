@@ -104,7 +104,7 @@ class PostShare(Base):
     
     # Relacionamentos
     user = relationship("User", back_populates="shared_posts")
-    original_post = relationship("Post", back_populates="shares")
+    original_post = relationship("Post", back_populates="post_shares")
 
     def to_dict(self):
         return {
