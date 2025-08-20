@@ -100,11 +100,15 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     try {
+      console.log('🔄 AuthContext: Updating profile with data:', profileData)
       const { usersAPI } = await import('../services/api')
       const response = await usersAPI.updateProfile(profileData)
+      console.log('✅ AuthContext: Profile updated successfully:', response.data)
       setUser(response.data)
       return { success: true }
     } catch (error) {
+      console.error('❌ AuthContext: Error updating profile:', error)
+      console.error('❌ Error details:', error.response?.data)
       return {
         success: false,
         error: error.response?.data?.detail || 'Erro ao atualizar perfil'
