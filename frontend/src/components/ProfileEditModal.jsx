@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone } from 'lucide-react'
+import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
@@ -22,6 +22,10 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     phone: user?.phone || '',
     birthDate: user?.birthDate || '',
     gender: user?.gender || '',
+    work: user?.work || '',
+    education: user?.education || '',
+    relationship: user?.relationship || '',
+    currentCity: user?.currentCity || '',
     avatar: user?.avatar || '',
     coverPhoto: user?.coverPhoto || ''
   })
@@ -293,6 +297,70 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
                   <option value="male">Masculino</option>
                   <option value="female">Feminino</option>
                   <option value="other">Outro</option>
+                  <option value="prefer_not_to_say">Prefiro não dizer</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Professional and Social Info */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Briefcase size={16} className="inline mr-1" />
+                  Trabalho
+                </label>
+                <input
+                  type="text"
+                  value={formData.work}
+                  onChange={(e) => handleInputChange('work', e.target.value)}
+                  placeholder="Ex: Designer na Empresa XYZ"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <GraduationCap size={16} className="inline mr-1" />
+                  Formação
+                </label>
+                <input
+                  type="text"
+                  value={formData.education}
+                  onChange={(e) => handleInputChange('education', e.target.value)}
+                  placeholder="Ex: Design Digital - UFPE"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <MapPin size={16} className="inline mr-1" />
+                  Cidade atual
+                </label>
+                <input
+                  type="text"
+                  value={formData.currentCity}
+                  onChange={(e) => handleInputChange('currentCity', e.target.value)}
+                  placeholder="Ex: São Paulo, SP"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Heart size={16} className="inline mr-1" />
+                  Relacionamento
+                </label>
+                <select
+                  value={formData.relationship}
+                  onChange={(e) => handleInputChange('relationship', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
+                >
+                  <option value="">Selecione</option>
+                  <option value="single">Solteiro(a)</option>
+                  <option value="in_a_relationship">Em um relacionamento</option>
+                  <option value="married">Casado(a)</option>
+                  <option value="its_complicated">É complicado</option>
                   <option value="prefer_not_to_say">Prefiro não dizer</option>
                 </select>
               </div>

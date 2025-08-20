@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
-  MessageCircle as MessageCircleIcon, Share, Repeat2
+  MessageCircle as MessageCircleIcon, Share, Repeat2, MapPin, Briefcase,
+  GraduationCap, Globe, Calendar, Heart as HeartIcon
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI } from '../services/api'
@@ -59,14 +60,16 @@ const Profile = () => {
     profileViewsCount: 0
   })
   const [userPosts, setUserPosts] = useState([])
+  const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [privacySettings, setPrivacySettings] = useState({
-    showVisitors: false,
+    showVisitors: true,
     showFriends: true,
     profileVisibility: 'public'
   })
+  const [viewAsVisitor, setViewAsVisitor] = useState(false)
 
   // Load user data
   useEffect(() => {
@@ -75,16 +78,209 @@ const Profile = () => {
 
       // Modo offline/demo - não fazer chamadas de API
       if (import.meta.env.DEV) {
-        console.log('🔧 Modo demo - usando dados padrão para o perfil')
+        console.log('🔧 Modo demo - usando dados mock para visualização do perfil')
+
+        // Mock user stats
         setUserStats({
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          profileViewsCount: 0,
-          friendsCount: 0
+          followersCount: 1524,
+          followingCount: 247,
+          postsCount: 89,
+          profileViewsCount: 3420,
+          friendsCount: 156
         })
-        setUserPosts([])
-        setProfileVisitors([])
+
+        // Mock profile data enhancement
+        setProfileData(prev => ({
+          ...prev,
+          name: 'Marina Santos',
+          username: 'marina_santos',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n��� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          isVerified: true,
+          avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+          coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
+          location: 'Recife, Pernambuco, Brasil',
+          website: 'marina-santos.design',
+          work: 'UX Designer na TechCorp',
+          education: 'Design Digital - UFPE',
+          relationship: 'Em um relacionamento com João Silva',
+          currentCity: 'Recife, PE'
+        }))
+
+        // Mock posts with variety
+        const mockPosts = [
+          {
+            id: '1',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Finalizando mais um projeto incrível! 🎨 Esse dashboard foi um desafio e tanto, mas o resultado ficou lindo. Obrigada ao time por toda colaboração! 💜',
+            imageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=600&h=400&fit=crop',
+            createdAt: '2024-01-15T10:30:00Z',
+            likes: 89,
+            comments: 12,
+            shares: 5,
+            isLiked: true,
+            type: 'image'
+          },
+          {
+            id: '2',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Sessão de fotos em família no fim de semana! ❤️ Momentos especiais assim que fazem a vida valer a pena. #família #momentos #gratidão',
+            imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=400&fit=crop',
+            createdAt: '2024-01-14T16:45:00Z',
+            likes: 156,
+            comments: 24,
+            shares: 8,
+            isLiked: false,
+            type: 'image'
+          },
+          {
+            id: '3',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭✨',
+            createdAt: '2024-01-13T09:15:00Z',
+            likes: 73,
+            comments: 18,
+            shares: 12,
+            isLiked: true,
+            type: 'text'
+          },
+          {
+            id: '4',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já está sendo planejado!',
+            imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
+            createdAt: '2024-01-12T14:20:00Z',
+            likes: 234,
+            comments: 31,
+            shares: 19,
+            isLiked: true,
+            type: 'image'
+          },
+          {
+            id: '5',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Alguém mais viciado em café? ☕ Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
+            imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=400&fit=crop',
+            createdAt: '2024-01-11T11:30:00Z',
+            likes: 92,
+            comments: 15,
+            shares: 3,
+            isLiked: false,
+            type: 'image'
+          },
+          {
+            id: '6',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Aproveitando o sábado para relaxar na praia! 🏖️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
+            imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
+            createdAt: '2024-01-10T17:00:00Z',
+            likes: 187,
+            comments: 22,
+            shares: 6,
+            isLiked: true,
+            type: 'image'
+          }
+        ]
+
+        setUserPosts(mockPosts)
+
+        // Mock stories/highlights
+        const mockStories = [
+          {
+            id: '1',
+            title: 'Trabalho',
+            imageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop&crop=face',
+            createdAt: '2024-01-14T10:00:00Z'
+          },
+          {
+            id: '2',
+            title: 'Viagens',
+            imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop',
+            createdAt: '2024-01-13T15:30:00Z'
+          },
+          {
+            id: '3',
+            title: 'Momentos',
+            imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop&crop=face',
+            createdAt: '2024-01-12T18:45:00Z'
+          },
+          {
+            id: '4',
+            title: 'Eventos',
+            imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=100&h=100&fit=crop',
+            createdAt: '2024-01-11T12:20:00Z'
+          }
+        ]
+
+        setUserStories(mockStories)
+
+        // Mock profile visitors
+        const mockVisitors = [
+          {
+            id: '1',
+            username: 'joao_silva',
+            name: 'João Silva',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-15T10:30:00Z',
+            isFriend: true,
+            isMutualFriend: false
+          },
+          {
+            id: '2',
+            username: 'ana_costa',
+            name: 'Ana Costa',
+            avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-15T09:15:00Z',
+            isFriend: false,
+            isMutualFriend: true
+          },
+          {
+            id: '3',
+            username: 'carlos_dev',
+            name: 'Carlos Developer',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-14T16:45:00Z',
+            isFriend: true,
+            isMutualFriend: false
+          }
+        ]
+
+        setProfileVisitors(mockVisitors)
         setLoading(false)
         return
       }
@@ -422,6 +618,19 @@ const Profile = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h2 className="text-xl font-bold">{profileData.username}</h2>
+        <div className="flex items-center justify-center flex-1">
+          <button
+            onClick={() => setViewAsVisitor(!viewAsVisitor)}
+            className={`px-3 py-1 rounded-full text-sm transition-colors ${
+              viewAsVisitor
+                ? 'bg-vibe-blue text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Eye size={16} className="inline mr-1" />
+            Ver como
+          </button>
+        </div>
         <div className="flex items-center space-x-3">
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <MoreHorizontal size={24} className="text-gray-600" />
@@ -461,7 +670,7 @@ const Profile = () => {
                 handleCoverClick()
               }}
               disabled={uploading.cover}
-              title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
+              title={uploading.cover ? "Fazendo upload..." : "Op��ões da capa"}
             >
               <Camera size={20} />
             </button>
@@ -581,6 +790,87 @@ const Profile = () => {
           </p>
         </div>
 
+        {/* Botões de Ação */}
+        <div className="flex space-x-2 mb-6">
+          {viewAsVisitor ? (
+            /* Botões para visitante */
+            <>
+              <button className="btn-primary flex-1">
+                <UserPlus size={20} className="mr-2" />
+                Adicionar
+              </button>
+              <button className="btn-secondary px-4">
+                <MessageCircle size={20} />
+              </button>
+            </>
+          ) : (
+            /* Botões para dono do perfil - sem mensagem */
+            <>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="btn-primary flex-1"
+              >
+                Editar Perfil
+              </button>
+              <button
+                onClick={() => setShowConnections(true)}
+                className="btn-secondary px-4 flex items-center space-x-2"
+              >
+                <Users size={20} />
+                <span className="hidden sm:inline">Conexões</span>
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Informações Pessoais */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <Users size={18} className="mr-2" />
+            Informações Pessoais
+          </h3>
+          <div className="space-y-3">
+            {profileData.work && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.work}</span>
+              </div>
+            )}
+            {profileData.education && (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.education}</span>
+              </div>
+            )}
+            {profileData.currentCity && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.currentCity}</span>
+              </div>
+            )}
+            {profileData.relationship && (
+              <div className="flex items-center text-sm text-gray-600">
+                <HeartIcon size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.relationship}</span>
+              </div>
+            )}
+            {profileData.website && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Globe size={16} className="mr-3 text-gray-500" />
+                <a
+                  href={`https://${profileData.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-vibe-blue hover:underline"
+                >
+                  {profileData.website}
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+
         {/* Erro de upload */}
         {uploadError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -607,29 +897,11 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Botões de Ação */}
-        <div className="flex space-x-2 mb-6">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="btn-primary flex-1"
-          >
-            Editar Perfil
-          </button>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="btn-secondary px-4 flex items-center space-x-2"
-          >
-            <Users size={20} />
-            <span className="hidden sm:inline">Conexões</span>
-          </button>
-          <button className="btn-secondary px-4">
-            <MessageCircle size={20} />
-          </button>
-        </div>
 
 
-        {/* Seção de Visitas Recentes */}
-        <div className="mb-6">
+        {/* Seção de Visitas Recentes - só aparece para o dono do perfil */}
+        {!viewAsVisitor && (
+          <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
             <button
               onClick={() => setVisitorsExpanded(!visitorsExpanded)}
@@ -659,34 +931,63 @@ const Profile = () => {
               </div>
             </button>
 
-            {visitorsExpanded && privacySettings.showVisitors && (
+            {visitorsExpanded && (
               <div className="px-3 pb-3">
                 {profileVisitors.length > 0 ? (
-                  <>
-                    {/* Avatares dos visitantes lado a lado */}
-                    <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                      {profileVisitors.slice(0, 5).map((visitorData, index) => (
-                        <AvatarWithStory
-                          key={index}
-                          user={{
-                            id: visitorData.user.id,
-                            name: visitorData.user.fullName,
-                            username: visitorData.user.username,
-                            avatar: visitorData.user.avatar,
-                            hasStory: false // Real stories would come from another API
-                          }}
-                          size="sm"
-                          className="flex-shrink-0"
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => setShowVisitors(true)}
-                      className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                    >
-                      Ver todos os visitantes
-                    </button>
-                  </>
+                  <div className="flex space-x-3 overflow-x-auto pb-2">
+                    {profileVisitors.slice(0, 8).map((visitor) => {
+                      // Calcular tempo relativo
+                      const now = new Date()
+                      const visitTime = new Date(visitor.visitTime)
+                      const diffInMinutes = Math.floor((now - visitTime) / (1000 * 60))
+
+                      let timeText = ''
+                      if (diffInMinutes < 1) {
+                        timeText = 'agora'
+                      } else if (diffInMinutes < 60) {
+                        timeText = `há ${diffInMinutes}min`
+                      } else if (diffInMinutes < 1440) { // menos que 24 horas
+                        const hours = Math.floor(diffInMinutes / 60)
+                        timeText = `há ${hours}h`
+                      } else {
+                        const days = Math.floor(diffInMinutes / 1440)
+                        timeText = `há ${days}d`
+                      }
+
+                      return (
+                        <div key={visitor.id} className="flex-shrink-0 w-20 text-center">
+                          <div className="w-16 h-16 rounded-full border-2 border-gray-200 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                            {visitor.avatar ? (
+                              <img
+                                src={visitor.avatar}
+                                alt={visitor.name}
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-semibold">
+                                  {visitor.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-600 block truncate mb-1">{visitor.name.split(' ')[0]}</span>
+                          <span className="text-xs text-gray-400 block">{timeText}</span>
+                        </div>
+                      )
+                    })}
+                    {profileVisitors.length > 8 && (
+                      <div className="flex-shrink-0 w-20 text-center">
+                        <button
+                          onClick={() => setShowVisitors(true)}
+                          className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex flex-col items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer mb-2 mx-auto"
+                        >
+                          <span className="text-gray-400 text-sm font-semibold">+{profileVisitors.length - 8}</span>
+                        </button>
+                        <span className="text-xs text-gray-600">Ver mais</span>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center py-4">
                     <Eye size={24} className="text-gray-400 mx-auto mb-2" />
@@ -707,6 +1008,7 @@ const Profile = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Stories/Highlights */}
         <div className="mb-6">
@@ -719,10 +1021,25 @@ const Profile = () => {
               <span className="text-xs text-gray-600">Novo</span>
             </div>
 
-            {/* Mensagem quando não há destaques */}
-            <div className="flex-1 flex items-center justify-center py-4">
-              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
-            </div>
+            {/* Destaques dos stories */}
+            {userStories && userStories.length > 0 ? (
+              userStories.map((story) => (
+                <div key={story.id} className="flex-shrink-0 w-20 text-center">
+                  <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                    <img
+                      src={story.imageUrl}
+                      alt={story.title}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-600">{story.title}</span>
+                </div>
+              ))
+            ) : (
+              <div className="flex-1 flex items-center justify-center py-4">
+                <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -905,7 +1222,7 @@ const Profile = () => {
                 </button>
               </div>
 
-              {/* Conteúdo do Post */}
+              {/* Conte��do do Post */}
               {post.content && (
                 <div className="px-4 pb-3">
                   <p className="text-gray-800">{post.content}</p>
