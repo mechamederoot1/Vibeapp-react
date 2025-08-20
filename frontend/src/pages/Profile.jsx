@@ -745,6 +745,87 @@ const Profile = () => {
           </p>
         </div>
 
+        {/* Informações Pessoais */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <Users size={18} className="mr-2" />
+            Informações Pessoais
+          </h3>
+          <div className="space-y-3">
+            {profileData.work && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.work}</span>
+              </div>
+            )}
+            {profileData.education && (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.education}</span>
+              </div>
+            )}
+            {profileData.currentCity && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.currentCity}</span>
+              </div>
+            )}
+            {profileData.relationship && (
+              <div className="flex items-center text-sm text-gray-600">
+                <HeartIcon size={16} className="mr-3 text-gray-500" />
+                <span>{profileData.relationship}</span>
+              </div>
+            )}
+            {profileData.website && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Globe size={16} className="mr-3 text-gray-500" />
+                <a
+                  href={`https://${profileData.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-vibe-blue hover:underline"
+                >
+                  {profileData.website}
+                </a>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Destaques */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+            <Bookmark size={18} className="mr-2" />
+            Destaques
+          </h3>
+          <div className="flex space-x-3 overflow-x-auto pb-2">
+            <div className="flex-shrink-0 w-20 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mb-2 mx-auto">
+                <Briefcase size={24} className="text-white" />
+              </div>
+              <span className="text-xs text-gray-600">Trabalho</span>
+            </div>
+            <div className="flex-shrink-0 w-20 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mb-2 mx-auto">
+                <Camera size={24} className="text-white" />
+              </div>
+              <span className="text-xs text-gray-600">Viagens</span>
+            </div>
+            <div className="flex-shrink-0 w-20 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center mb-2 mx-auto">
+                <Heart size={24} className="text-white" />
+              </div>
+              <span className="text-xs text-gray-600">Momentos</span>
+            </div>
+            <div className="flex-shrink-0 w-20 text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-400 rounded-full flex items-center justify-center mb-2 mx-auto">
+                <GraduationCap size={24} className="text-white" />
+              </div>
+              <span className="text-xs text-gray-600">Formação</span>
+            </div>
+          </div>
+        </div>
+
         {/* Erro de upload */}
         {uploadError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -885,7 +966,7 @@ const Profile = () => {
 
             {/* Mensagem quando não há destaques */}
             <div className="flex-1 flex items-center justify-center py-4">
-              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicion��-los aqui!</p>
             </div>
           </div>
         </div>
