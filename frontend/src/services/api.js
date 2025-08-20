@@ -136,6 +136,18 @@ export const storiesAPI = {
   getUserStories: (userId, limit = 10) => api.get(`/stories/user/${userId}?limit=${limit}`),
 }
 
+// Friendships endpoints
+export const friendshipsAPI = {
+  sendFriendRequest: (friendId) => api.post('/friendships/requests', { friend_id: friendId }),
+  getReceivedRequests: () => api.get('/friendships/requests/received'),
+  getSentRequests: () => api.get('/friendships/requests/sent'),
+  acceptFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/accept`),
+  rejectFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/reject`),
+  removeFriend: (userId) => api.delete(`/friendships/users/${userId}`),
+  getUserFriends: (userId, limit = 50) => api.get(`/friendships/users/${userId}/friends?limit=${limit}`),
+  getFriendshipStatus: (userId) => api.get(`/friendships/users/${userId}/friendship-status`)
+}
+
 // Development endpoints
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),
