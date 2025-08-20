@@ -1109,27 +1109,80 @@ const Profile = () => {
               Informações Pessoais
             </h3>
             {!viewAsVisitor && (
-              <button
-                onClick={openPersonalInfoEditor}
-                className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
-              >
-                Editar
-              </button>
+              <div className="flex space-x-2">
+                <button
+                  onClick={openMultipleWorkEducationModal}
+                  className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors flex items-center space-x-1"
+                >
+                  <Plus size={14} />
+                  <span>Experiências</span>
+                </button>
+                <button
+                  onClick={openPersonalInfoEditor}
+                  className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+                >
+                  Editar
+                </button>
+              </div>
             )}
           </div>
           <div className="space-y-3">
-            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
+            {/* Experiências de Trabalho */}
+            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo && (
+              <div className="space-y-2">
+                {personalInfo.workExperiences.slice(0, 3).map((work, index) => (
+                  <div key={work.id || index} className="flex items-center text-sm text-gray-600">
+                    <Briefcase size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+                    <span>{work.displayText}</span>
+                  </div>
+                ))}
+                {personalInfo.workExperiences.length > 3 && (
+                  <button
+                    onClick={openMultipleWorkEducationModal}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium ml-7"
+                  >
+                    Ver mais {personalInfo.workExperiences.length - 3} experiências
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Formação Acadêmica */}
+            {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo && (
+              <div className="space-y-2">
+                {personalInfo.educationEntries.slice(0, 2).map((education, index) => (
+                  <div key={education.id || index} className="flex items-center text-sm text-gray-600">
+                    <GraduationCap size={16} className="mr-3 text-gray-500 flex-shrink-0" />
+                    <span>{education.displayText}</span>
+                  </div>
+                ))}
+                {personalInfo.educationEntries.length > 2 && (
+                  <button
+                    onClick={openMultipleWorkEducationModal}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium ml-7"
+                  >
+                    Ver mais {personalInfo.educationEntries.length - 2} formações
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Experiência de trabalho antiga (fallback) */}
+            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (!personalInfo.workExperiences || personalInfo.workExperiences.length === 0) && (
               <div className="flex items-center text-sm text-gray-600">
                 <Briefcase size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.work.displayText}</span>
               </div>
             )}
-            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
+
+            {/* Educação antiga (fallback) */}
+            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (!personalInfo.educationEntries || personalInfo.educationEntries.length === 0) && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.education.displayText}</span>
               </div>
             )}
+
             {personalInfo?.location?.displayText && personalInfo.privacy?.showLocationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin size={16} className="mr-3 text-gray-500" />
@@ -1160,8 +1213,8 @@ const Profile = () => {
 
             {/* Se não há informações para mostrar */}
             {(!personalInfo ||
-              (!personalInfo.work?.displayText || !personalInfo.privacy?.showWorkInfo) &&
-              (!personalInfo.education?.displayText || !personalInfo.privacy?.showEducationInfo) &&
+              ((!personalInfo.work?.displayText && (!personalInfo.workExperiences || personalInfo.workExperiences.length === 0)) || !personalInfo.privacy?.showWorkInfo) &&
+              ((!personalInfo.education?.displayText && (!personalInfo.educationEntries || personalInfo.educationEntries.length === 0)) || !personalInfo.privacy?.showEducationInfo) &&
               (!personalInfo.location?.displayText || !personalInfo.privacy?.showLocationInfo) &&
               (!personalInfo.relationship?.displayText || !personalInfo.privacy?.showRelationshipInfo) &&
               (!personalInfo.contact?.websitePersonal || !personalInfo.privacy?.showContactInfo)
@@ -1171,12 +1224,21 @@ const Profile = () => {
                   {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
                 </p>
                 {!viewAsVisitor && (
-                  <button
-                    onClick={openPersonalInfoEditor}
-                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
-                  >
-                    Adicionar informações
-                  </button>
+                  <div className="mt-2 space-x-2">
+                    <button
+                      onClick={openMultipleWorkEducationModal}
+                      className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+                    >
+                      Adicionar experiências
+                    </button>
+                    <span className="text-gray-400">•</span>
+                    <button
+                      onClick={openPersonalInfoEditor}
+                      className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+                    >
+                      Outras informações
+                    </button>
+                  </div>
                 )}
               </div>
             )}
