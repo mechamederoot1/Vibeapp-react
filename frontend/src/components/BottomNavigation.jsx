@@ -71,7 +71,6 @@ const BottomNavigation = () => {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
-    { path: '/explore', icon: Search, label: 'Explorar' },
     { path: '/create', icon: PlusCircle, label: 'Criar' },
     {
       path: '/messages',
