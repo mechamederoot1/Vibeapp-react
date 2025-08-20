@@ -53,6 +53,9 @@ class User(Base):
     received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
     shared_posts = relationship("PostShare", back_populates="user")
 
+    # Informações pessoais detalhadas
+    personal_info = relationship("PersonalInfo", back_populates="user", uselist=False)
+
     def set_password(self, password: str):
         """Hash and set the password"""
         salt = bcrypt.gensalt()
