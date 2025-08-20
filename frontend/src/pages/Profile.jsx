@@ -77,12 +77,28 @@ const Profile = () => {
         setLoading(true)
 
         // Load user stats
-        const statsResponse = await usersAPI.getUserStats(user.id)
-        setUserStats(statsResponse.data)
+        try {
+          const statsResponse = await usersAPI.getUserStats(user.id)
+          setUserStats(statsResponse.data)
+        } catch (error) {
+          console.error('Error loading user stats:', error)
+          // Use default stats
+          setUserStats({
+            followersCount: 0,
+            followingCount: 0,
+            postsCount: 0,
+            profileViewsCount: 0
+          })
+        }
 
         // Load user posts
-        const postsResponse = await postsAPI.getUserPosts(user.id)
-        setUserPosts(postsResponse.data.posts || [])
+        try {
+          const postsResponse = await postsAPI.getUserPosts(user.id)
+          setUserPosts(postsResponse.data.posts || [])
+        } catch (error) {
+          console.error('Error loading user posts:', error)
+          setUserPosts([])
+        }
 
         // Load profile visitors (only if user wants to show them)
         if (privacySettings.showVisitors) {
@@ -92,6 +108,7 @@ const Profile = () => {
           } catch (error) {
             // User might not have permission to see visitors
             console.log('Could not load visitors:', error.response?.data?.detail)
+            setProfileVisitors([])
           }
         }
 
