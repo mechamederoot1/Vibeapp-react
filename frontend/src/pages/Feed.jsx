@@ -573,6 +573,25 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleAddToHighlight = async (highlightId, storyId) => {
+    try {
+      await highlightsAPI.addStory(highlightId, storyId)
+      console.log('Story adicionado ao destaque!')
+    } catch (error) {
+      console.error('Erro ao adicionar story ao destaque:', error)
+    }
+  }
+
+  const handleCreateHighlight = async (highlightData) => {
+    try {
+      const response = await highlightsAPI.create(highlightData)
+      setHighlights(prev => [...prev, response.data.highlight])
+      console.log('Destaque criado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao criar destaque:', error)
+    }
+  }
+
   useEffect(() => {
     loadFeed()
     loadStories()
