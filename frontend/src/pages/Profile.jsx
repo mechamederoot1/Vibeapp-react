@@ -900,8 +900,9 @@ const Profile = () => {
 
 
 
-        {/* Seção de Visitas Recentes */}
-        <div className="mb-6">
+        {/* Seção de Visitas Recentes - só aparece para o dono do perfil */}
+        {!viewAsVisitor && (
+          <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
             <button
               onClick={() => setVisitorsExpanded(!visitorsExpanded)}
@@ -979,6 +980,7 @@ const Profile = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* Stories/Highlights */}
         <div className="mb-6">
