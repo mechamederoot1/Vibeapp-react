@@ -90,6 +90,25 @@ async def update_user_profile(
             current_user.birth_date = datetime.strptime(value, "%Y-%m-%d").date()
         elif field == "gender":
             current_user.gender = value
+        elif field == "currentCity":
+            # Update location if currentCity is provided
+            current_user.location = value
+        elif field == "relationship":
+            # Store relationship status (could be extended to a separate table later)
+            current_user.relationship_status = value if hasattr(current_user, 'relationship_status') else None
+        elif field == "work":
+            # Store work info (could be extended to work experience table later)
+            current_user.work = value if hasattr(current_user, 'work') else None
+        elif field == "education":
+            # Store education info (could be extended to education table later)
+            current_user.education = value if hasattr(current_user, 'education') else None
+        elif field == "full_name":
+            current_user.full_name = value
+        # Legacy fields for backward compatibility
+        elif field == "avatar_url":
+            current_user.avatar = value
+        elif field == "cover_url":
+            current_user.cover_photo = value
     
     current_user.updated_at = datetime.utcnow()
     db.commit()
