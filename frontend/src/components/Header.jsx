@@ -127,18 +127,13 @@ const Header = ({ onOpenPostModal }) => {
             )}
           </button>
 
-          {/* Mensagens */}
+          {/* Pesquisar */}
           <button
-            onClick={() => navigate('/messages')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-            title="Mensagens"
+            onClick={() => navigate('/search')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            title="Pesquisar amigos"
           >
-            <MessageCircle size={24} className="text-gray-600" />
-            {unreadCounts.messages > 0 && (
-              <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {unreadCounts.messages > 99 ? '99+' : unreadCounts.messages}
-              </span>
-            )}
+            <Search size={24} className="text-gray-600" />
           </button>
 
           {/* User Avatar with Dropdown */}
