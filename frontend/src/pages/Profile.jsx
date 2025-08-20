@@ -109,7 +109,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n��� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -1805,6 +1805,15 @@ const Profile = () => {
         onClose={handleClosePostModal}
         post={selectedPost}
         onPostUpdate={handlePostUpdate}
+      />
+
+      {/* Multiple Work Education Modal */}
+      <MultipleWorkEducationModal
+        isOpen={showMultipleWorkEducationModal}
+        onClose={() => setShowMultipleWorkEducationModal(false)}
+        personalInfo={personalInfo}
+        onSave={handleMultipleWorkEducationSave}
+        loading={personalInfoLoading}
       />
     </div>
   )
