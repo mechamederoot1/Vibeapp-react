@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Eye, MessageCircle, UserPlus, ChevronLeft, Clock } from 'lucide-react'
+import { Eye, MessageCircle, ChevronLeft, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import FriendshipButton from '../components/FriendshipButton'
 
 const Visits = () => {
   const navigate = useNavigate()
