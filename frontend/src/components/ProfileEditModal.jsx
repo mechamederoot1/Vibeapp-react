@@ -43,6 +43,82 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setSuccess('')
   }
 
+  // Work Experience Functions
+  const addWorkExperience = () => {
+    const newWork = {
+      id: null,
+      company: '',
+      position: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      isCurrent: false,
+      orderIndex: formData.workExperiences.length
+    }
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: [...prev.workExperiences, newWork]
+    }))
+  }
+
+  const removeWorkExperience = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: prev.workExperiences.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateWorkExperience = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: prev.workExperiences.map((work, i) =>
+        i === index ? { ...work, [field]: value } : work
+      )
+    }))
+  }
+
+  // Education Functions
+  const addEducation = () => {
+    const newEducation = {
+      id: null,
+      institution: '',
+      degree: '',
+      field: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      isCurrent: false,
+      orderIndex: formData.educationEntries.length
+    }
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: [...prev.educationEntries, newEducation]
+    }))
+  }
+
+  const removeEducation = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: prev.educationEntries.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateEducation = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: prev.educationEntries.map((education, i) =>
+        i === index ? { ...education, [field]: value } : education
+      )
+    }))
+  }
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
   const handleImageUpload = (field, file) => {
     if (file) {
       const reader = new FileReader()
