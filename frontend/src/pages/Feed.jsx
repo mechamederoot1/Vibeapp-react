@@ -452,6 +452,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     } catch (error) {
       console.error('Error loading feed:', error)
       setError('Erro ao carregar feed')
+      setPosts([]) // Set empty array as fallback
     } finally {
       setLoading(false)
     }
