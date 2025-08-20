@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
-import NotificationsList from './NotificationsList'
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 
