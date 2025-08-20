@@ -173,19 +173,11 @@ const ProfileVisitors = ({ onClose }) => {
                   <button className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors">
                     <MessageCircle size={18} />
                   </button>
-                  
-                  {!visitor.isFriend ? (
-                    <button className="bg-vibe-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vibe-blue-dark transition-colors">
-                      <div className="flex items-center space-x-1">
-                        <UserPlus size={16} />
-                        <span>Adicionar</span>
-                      </div>
-                    </button>
-                  ) : (
-                    <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                      Amigos
-                    </button>
-                  )}
+
+                  <FriendshipButton
+                    userId={visitor.id}
+                    username={visitor.username}
+                  />
                 </div>
               </div>
             </div>
