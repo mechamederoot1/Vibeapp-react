@@ -37,8 +37,8 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center p-4 md:p-8">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6 md:p-8 min-h-[100vh] md:min-h-auto flex flex-col justify-center">
+    <div className="auth-container p-4 md:p-8">
+      <div className="auth-card max-w-md rounded-lg md:rounded-lg p-6 md:p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-6 flex justify-center">
