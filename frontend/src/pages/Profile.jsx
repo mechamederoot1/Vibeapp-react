@@ -90,18 +90,29 @@ const Profile = () => {
   const reloadPersonalInfo = useCallback(async () => {
     try {
       console.log('🔄 Reloading personal info...')
+
+      // Load personal info
       const personalInfoResponse = await personalInfoAPI.get()
-      const newPersonalInfo = personalInfoResponse.data.personalInfo || null
+      let newPersonalInfo = personalInfoResponse.data.personalInfo || {}
+
+      // Load work experiences and education separately
+      try {
+        const workResponse = await workExperienceAPI.getAll()
+        const educationResponse = await educationAPI.getAll()
+
+        newPersonalInfo.workExperiences = workResponse.data || []
+        newPersonalInfo.educationEntries = educationResponse.data || []
+
+        console.log('💼 Work experiences loaded:', newPersonalInfo.workExperiences.length)
+        console.log('🎓 Education entries loaded:', newPersonalInfo.educationEntries.length)
+      } catch (error) {
+        console.error('Error loading work/education data:', error)
+        newPersonalInfo.workExperiences = []
+        newPersonalInfo.educationEntries = []
+      }
+
       setPersonalInfo(newPersonalInfo)
       console.log('✅ Personal info reloaded successfully:', newPersonalInfo)
-
-      // Also show work experiences and education if available
-      if (newPersonalInfo?.workExperiences) {
-        console.log('💼 Work experiences found:', newPersonalInfo.workExperiences.length)
-      }
-      if (newPersonalInfo?.educationEntries) {
-        console.log('🎓 Education entries found:', newPersonalInfo.educationEntries.length)
-      }
     } catch (error) {
       console.error('❌ Error reloading personal info:', error)
     }
