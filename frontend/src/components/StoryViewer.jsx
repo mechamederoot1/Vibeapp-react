@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { X, ChevronLeft, ChevronRight, Eye, Heart, Send } from 'lucide-react'
+import { X, ChevronLeft, ChevronRight, Eye, Heart, Send, Star, Plus } from 'lucide-react'
 import { storiesAPI } from '../services/api'
+import AddToHighlightModal from './AddToHighlightModal'
 
-const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentUser }) => {
+const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentUser, highlights = [], onAddToHighlight, onCreateHighlight }) => {
   const [currentIndex, setCurrentIndex] = useState(initialStoryIndex)
   const [progress, setProgress] = useState(0)
   const [isPaused, setPaused] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showHighlightModal, setShowHighlightModal] = useState(false)
 
   const currentStory = stories[currentIndex]
   const STORY_DURATION = 5000 // 5 segundos por story
@@ -64,8 +66,22 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
   const handleClose = () => {
     setCurrentIndex(0)
     setProgress(0)
+    setShowHighlightModal(false)
     onClose()
   }
+
+  const handleAddToHighlight = () => {
+    setPaused(true)
+    setShowHighlightModal(true)
+  }
+
+  const handleHighlightModalClose = () => {
+    setShowHighlightModal(false)
+    setPaused(false)
+  }
+
+  // Check if this is the current user's story
+  const isOwnStory = currentUser && currentStory?.author?.id === currentUser.id
 
   if (!isOpen || !currentStory) return null
 
@@ -113,9 +129,20 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
             </p>
           </div>
         </div>
-        <button onClick={handleClose} className="text-white p-2">
-          <X size={24} />
-        </button>
+        <div className="flex items-center space-x-2">
+          {isOwnStory && (
+            <button
+              onClick={handleAddToHighlight}
+              className="text-white p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+              title="Adicionar aos destaques"
+            >
+              <Star size={20} />
+            </button>
+          )}
+          <button onClick={handleClose} className="text-white p-2">
+            <X size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Story content */}
@@ -204,6 +231,16 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
           )}
         </div>
       </div>
+
+      {/* Add to Highlight Modal */}
+      <AddToHighlightModal
+        isOpen={showHighlightModal}
+        onClose={handleHighlightModalClose}
+        onAddToHighlight={onAddToHighlight}
+        onCreateHighlight={onCreateHighlight}
+        highlights={highlights}
+        storyId={currentStory?.id}
+      />
     </div>
   )
 }

@@ -25,6 +25,8 @@ from app.api.messages import router as messages_router
 from app.api.shares import router as shares_router
 from app.api.notifications import router as notifications_router
 from app.api.friendships import router as friendships_router
+from app.api.personal_info import router as personal_info_router
+from app.api.highlights import router as highlights_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
@@ -39,6 +41,8 @@ from app.models.profile_view import ProfileView
 from app.models.notification import Notification
 from app.models.account_settings import AccountSettings
 from app.models.message import Message, Conversation, PostShare
+from app.models.personal_info import PersonalInfo
+from app.models.highlight import Highlight, HighlightStory
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -108,6 +112,8 @@ app.include_router(messages_router, prefix="/api/messages", tags=["messages"])
 app.include_router(shares_router, prefix="/api/shares", tags=["shares"])
 app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(friendships_router, prefix="/api/friendships", tags=["friendships"])
+app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
+app.include_router(highlights_router, prefix="/api", tags=["highlights"])
 
 # WebSocket endpoint
 @app.websocket("/ws")

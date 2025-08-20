@@ -6,7 +6,7 @@ import {
   GraduationCap, Globe, Calendar, Heart as HeartIcon
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI, uploadsAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -20,6 +20,9 @@ import CoverModal from '../components/CoverModal'
 import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
+import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
+import CreateHighlightModal from '../components/CreateHighlightModal'
+import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
@@ -50,6 +53,16 @@ const Profile = () => {
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+
+  // Estados para informações pessoais
+  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
+  const [personalInfo, setPersonalInfo] = useState(null)
+  const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
+
+  // Estados para destaques
+  const [highlights, setHighlights] = useState([])
+  const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
+  const [highlightsLoading, setHighlightsLoading] = useState(false)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -281,6 +294,94 @@ const Profile = () => {
         ]
 
         setProfileVisitors(mockVisitors)
+
+        // Mock personal info
+        const mockPersonalInfo = {
+          work: {
+            company: 'TechCorp',
+            position: 'UX Designer',
+            description: 'Responsável pelo design de experiência do usuário em produtos digitais',
+            startDate: '2022-01-01',
+            endDate: null,
+            isCurrent: true,
+            displayText: 'UX Designer na TechCorp'
+          },
+          education: {
+            institution: 'UFPE',
+            degree: 'Design Digital',
+            field: 'Design e Tecnologia',
+            startDate: '2018-03-01',
+            endDate: '2021-12-15',
+            isCurrent: false,
+            displayText: 'Design Digital - UFPE'
+          },
+          location: {
+            currentCity: 'Recife, PE',
+            hometown: 'São Paulo, SP',
+            country: 'Brasil',
+            displayText: 'Recife, PE'
+          },
+          relationship: {
+            status: 'in_relationship',
+            partnerName: 'João Silva',
+            anniversary: '2020-02-14',
+            displayText: 'Em um relacionamento com João Silva'
+          },
+          contact: {
+            websitePersonal: 'marina-santos.design',
+            websiteProfessional: null,
+            phoneMobile: null,
+            phoneWork: null
+          },
+          additional: {
+            languages: 'Português, Inglês, Espanhol',
+            interests: 'Design, Tecnologia, Fotografia, Viagens',
+            aboutMe: 'Apaixonada por criar experiências digitais que fazem a diferença na vida das pessoas.'
+          },
+          privacy: {
+            showWorkInfo: true,
+            showEducationInfo: true,
+            showLocationInfo: true,
+            showRelationshipInfo: true,
+            showContactInfo: false
+          }
+        }
+
+        setPersonalInfo(mockPersonalInfo)
+
+        // Mock highlights
+        const mockHighlights = [
+          {
+            id: 1,
+            title: 'Trabalho',
+            coverImageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop',
+            storiesCount: 8,
+            orderIndex: 0
+          },
+          {
+            id: 2,
+            title: 'Viagens',
+            coverImageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop',
+            storiesCount: 15,
+            orderIndex: 1
+          },
+          {
+            id: 3,
+            title: 'Momentos',
+            coverImageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop',
+            storiesCount: 12,
+            orderIndex: 2
+          },
+          {
+            id: 4,
+            title: 'Eventos',
+            coverImageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=100&h=100&fit=crop',
+            storiesCount: 5,
+            orderIndex: 3
+          }
+        ]
+
+        setHighlights(mockHighlights)
         setLoading(false)
         return
       }
@@ -323,6 +424,24 @@ const Profile = () => {
             console.log('Could not load visitors:', error.response?.data?.detail)
             setProfileVisitors([])
           }
+        }
+
+        // Load personal info
+        try {
+          const personalInfoResponse = await personalInfoAPI.get()
+          setPersonalInfo(personalInfoResponse.data.personalInfo || null)
+        } catch (error) {
+          console.error('Error loading personal info:', error)
+          setPersonalInfo(null)
+        }
+
+        // Load highlights
+        try {
+          const highlightsResponse = await highlightsAPI.get()
+          setHighlights(highlightsResponse.data.highlights || [])
+        } catch (error) {
+          console.error('Error loading highlights:', error)
+          setHighlights([])
         }
 
       } catch (error) {
@@ -523,6 +642,71 @@ const Profile = () => {
     }
   }
 
+  // Funções para informações pessoais
+  const handlePersonalInfoSave = async (data) => {
+    setPersonalInfoLoading(true)
+    try {
+      const response = await personalInfoAPI.update(data)
+      setPersonalInfo(response.data.personalInfo)
+      setUploadSuccess('Informações pessoais atualizadas com sucesso!')
+
+      // Limpar mensagem após um tempo
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao salvar informações pessoais:', error)
+      setUploadError('Erro ao salvar informações pessoais. Tente novamente.')
+    } finally {
+      setPersonalInfoLoading(false)
+    }
+  }
+
+  const openPersonalInfoEditor = () => {
+    setShowPersonalInfoModal(true)
+  }
+
+  // Funções para destaques
+  const handleCreateHighlight = async (highlightData) => {
+    setHighlightsLoading(true)
+    try {
+      const response = await highlightsAPI.create(highlightData)
+      setHighlights(prev => [...prev, response.data.highlight])
+      setUploadSuccess('Destaque criado com sucesso!')
+
+      // Limpar mensagem após um tempo
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao criar destaque:', error)
+      setUploadError('Erro ao criar destaque. Tente novamente.')
+    } finally {
+      setHighlightsLoading(false)
+    }
+  }
+
+  const handleAddToHighlight = async (highlightId, storyId) => {
+    try {
+      await highlightsAPI.addStory(highlightId, storyId)
+      // Reload highlights to get updated counts
+      const highlightsResponse = await highlightsAPI.get()
+      setHighlights(highlightsResponse.data.highlights || [])
+      setUploadSuccess('Story adicionado ao destaque!')
+
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao adicionar story ao destaque:', error)
+      setUploadError('Erro ao adicionar story ao destaque.')
+    }
+  }
+
+  const openCreateHighlight = () => {
+    setShowCreateHighlightModal(true)
+  }
+
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
@@ -661,7 +845,7 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Botão de opções da capa */}
+          {/* Bot��o de opções da capa */}
           <div className="absolute top-4 right-4">
             <button
               className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
@@ -825,46 +1009,81 @@ const Profile = () => {
 
         {/* Informações Pessoais */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-            <Users size={18} className="mr-2" />
-            Informações Pessoais
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800 flex items-center">
+              <Users size={18} className="mr-2" />
+              Informações Pessoais
+            </h3>
+            {!viewAsVisitor && (
+              <button
+                onClick={openPersonalInfoEditor}
+                className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+              >
+                Editar
+              </button>
+            )}
+          </div>
           <div className="space-y-3">
-            {profileData.work && (
+            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.work}</span>
+                <span>{personalInfo.work.displayText}</span>
               </div>
             )}
-            {profileData.education && (
+            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.education}</span>
+                <span>{personalInfo.education.displayText}</span>
               </div>
             )}
-            {profileData.currentCity && (
+            {personalInfo?.location?.displayText && personalInfo.privacy?.showLocationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.currentCity}</span>
+                <span>{personalInfo.location.displayText}</span>
               </div>
             )}
-            {profileData.relationship && (
+            {personalInfo?.relationship?.displayText && personalInfo.privacy?.showRelationshipInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <HeartIcon size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.relationship}</span>
+                <span>{personalInfo.relationship.displayText}</span>
               </div>
             )}
-            {profileData.website && (
+            {personalInfo?.contact?.websitePersonal && personalInfo.privacy?.showContactInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Globe size={16} className="mr-3 text-gray-500" />
                 <a
-                  href={`https://${profileData.website}`}
+                  href={personalInfo.contact.websitePersonal.startsWith('http')
+                    ? personalInfo.contact.websitePersonal
+                    : `https://${personalInfo.contact.websitePersonal}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-vibe-blue hover:underline"
                 >
-                  {profileData.website}
+                  {personalInfo.contact.websitePersonal}
                 </a>
+              </div>
+            )}
+
+            {/* Se não há informações para mostrar */}
+            {(!personalInfo ||
+              (!personalInfo.work?.displayText || !personalInfo.privacy?.showWorkInfo) &&
+              (!personalInfo.education?.displayText || !personalInfo.privacy?.showEducationInfo) &&
+              (!personalInfo.location?.displayText || !personalInfo.privacy?.showLocationInfo) &&
+              (!personalInfo.relationship?.displayText || !personalInfo.privacy?.showRelationshipInfo) &&
+              (!personalInfo.contact?.websitePersonal || !personalInfo.privacy?.showContactInfo)
+            ) && (
+              <div className="text-center py-3">
+                <p className="text-gray-500 text-sm">
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
+                </p>
+                {!viewAsVisitor && (
+                  <button
+                    onClick={openPersonalInfoEditor}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
+                  >
+                    Adicionar informações
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1012,32 +1231,59 @@ const Profile = () => {
 
         {/* Stories/Highlights */}
         <div className="mb-6">
-          <div className="flex space-x-4 overflow-x-auto pb-2">
+          <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
             {/* Adicionar novo destaque */}
-            <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer">
-                <span className="text-gray-400 text-2xl">+</span>
+            {!viewAsVisitor && (
+              <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+                <button
+                  onClick={openCreateHighlight}
+                  className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer"
+                  disabled={highlightsLoading}
+                >
+                  <span className="text-gray-400 text-2xl">+</span>
+                </button>
+                <span className="text-xs text-gray-600">Novo</span>
               </div>
-              <span className="text-xs text-gray-600">Novo</span>
-            </div>
+            )}
 
-            {/* Destaques dos stories */}
-            {userStories && userStories.length > 0 ? (
-              userStories.map((story) => (
-                <div key={story.id} className="flex-shrink-0 w-20 text-center">
-                  <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
-                    <img
-                      src={story.imageUrl}
-                      alt={story.title}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  </div>
-                  <span className="text-xs text-gray-600">{story.title}</span>
+            {/* Destaques existentes */}
+            {highlights && highlights.length > 0 ? (
+              highlights.map((highlight) => (
+                <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
+                  <button className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                    {highlight.coverImageUrl ? (
+                      <img
+                        src={highlight.coverImageUrl}
+                        alt={highlight.title}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500 text-xs font-bold">
+                          {highlight.title.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                  <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
+                  <span className="text-xs text-gray-400">{highlight.storiesCount} stories</span>
                 </div>
               ))
+            ) : !viewAsVisitor ? (
+              <div className="flex-1 flex items-center justify-center py-4">
+                <div className="text-center">
+                  <p className="text-gray-500 text-sm mb-2">Nenhum destaque ainda.</p>
+                  <button
+                    onClick={openCreateHighlight}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+                  >
+                    Criar seu primeiro destaque
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="flex-1 flex items-center justify-center py-4">
-                <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+                <p className="text-gray-500 text-sm">Este usuário não possui destaques.</p>
               </div>
             )}
           </div>
@@ -1346,6 +1592,22 @@ const Profile = () => {
           onClose={() => setShowEditModal(false)}
         />
       )}
+
+      {/* Modal de Informações Pessoais */}
+      <PersonalInfoEditModal
+        isOpen={showPersonalInfoModal}
+        onClose={() => setShowPersonalInfoModal(false)}
+        personalInfo={personalInfo}
+        onSave={handlePersonalInfoSave}
+      />
+
+      {/* Modal de Criar Destaque */}
+      <CreateHighlightModal
+        isOpen={showCreateHighlightModal}
+        onClose={() => setShowCreateHighlightModal(false)}
+        onSave={handleCreateHighlight}
+        userStories={userStories}
+      />
 
       {/* Novos modais avançados */}
       <AvatarEditor

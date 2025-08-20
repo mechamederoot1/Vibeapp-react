@@ -148,6 +148,35 @@ export const friendshipsAPI = {
   getFriendshipStatus: (userId) => api.get(`/friendships/users/${userId}/friendship-status`)
 }
 
+// Personal Info endpoints
+export const personalInfoAPI = {
+  get: (userId = null) => {
+    const url = userId ? `/personal-info?user_id=${userId}` : '/personal-info'
+    return api.get(url)
+  },
+  update: (data) => api.put('/personal-info', data),
+  delete: () => api.delete('/personal-info'),
+  updatePrivacy: (privacy) => api.put('/personal-info/privacy', privacy)
+}
+
+// Highlights endpoints
+export const highlightsAPI = {
+  get: (userId = null) => {
+    const url = userId ? `/highlights?user_id=${userId}` : '/highlights'
+    return api.get(url)
+  },
+  getDetails: (highlightId) => api.get(`/highlights/${highlightId}`),
+  create: (data) => api.post('/highlights', data),
+  update: (highlightId, data) => api.put(`/highlights/${highlightId}`, data),
+  delete: (highlightId) => api.delete(`/highlights/${highlightId}`),
+  addStory: (highlightId, storyId, orderIndex = null) => api.post(`/highlights/${highlightId}/stories`, {
+    storyId,
+    orderIndex
+  }),
+  removeStory: (highlightId, storyId) => api.delete(`/highlights/${highlightId}/stories/${storyId}`),
+  getStories: (highlightId) => api.get(`/highlights/${highlightId}/stories`)
+}
+
 // Development endpoints
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),

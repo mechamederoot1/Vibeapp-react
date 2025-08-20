@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI, storiesAPI } from '../services/api'
+import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
@@ -443,6 +443,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [currentUserStories, setCurrentUserStories] = useState([])
   const [stories, setStories] = useState([])
   const [initialStoryIndex, setInitialStoryIndex] = useState(0)
+  const [highlights, setHighlights] = useState([])
 
   const loadFeed = async () => {
     // Modo offline/demo - não fazer chamadas de API
@@ -572,6 +573,25 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleAddToHighlight = async (highlightId, storyId) => {
+    try {
+      await highlightsAPI.addStory(highlightId, storyId)
+      console.log('Story adicionado ao destaque!')
+    } catch (error) {
+      console.error('Erro ao adicionar story ao destaque:', error)
+    }
+  }
+
+  const handleCreateHighlight = async (highlightData) => {
+    try {
+      const response = await highlightsAPI.create(highlightData)
+      setHighlights(prev => [...prev, response.data.highlight])
+      console.log('Destaque criado com sucesso!')
+    } catch (error) {
+      console.error('Erro ao criar destaque:', error)
+    }
+  }
+
   useEffect(() => {
     loadFeed()
     loadStories()
@@ -697,6 +717,9 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         stories={currentUserStories}
         initialStoryIndex={initialStoryIndex}
         currentUser={user}
+        highlights={highlights}
+        onAddToHighlight={handleAddToHighlight}
+        onCreateHighlight={handleCreateHighlight}
       />
     </>
   )

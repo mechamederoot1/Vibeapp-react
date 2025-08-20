@@ -36,6 +36,9 @@ def migrate_database():
         print("- profile_views (visualizações de perfil)")
         print("- account_settings (configurações de conta)")
         print("- shares (compartilhamentos legados)")
+        print("- personal_info (informações pessoais)")
+        print("- highlights (destaques de stories)")
+        print("- highlight_stories (stories nos destaques)")
         
     except Exception as e:
         print(f"❌ Erro durante a migração: {e}")
