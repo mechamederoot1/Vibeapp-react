@@ -592,6 +592,30 @@ const Profile = () => {
     }
   }
 
+  // Funções para informações pessoais
+  const handlePersonalInfoSave = async (data) => {
+    setPersonalInfoLoading(true)
+    try {
+      const response = await personalInfoAPI.update(data)
+      setPersonalInfo(response.data.personalInfo)
+      setUploadSuccess('Informações pessoais atualizadas com sucesso!')
+
+      // Limpar mensagem após um tempo
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao salvar informações pessoais:', error)
+      setUploadError('Erro ao salvar informações pessoais. Tente novamente.')
+    } finally {
+      setPersonalInfoLoading(false)
+    }
+  }
+
+  const openPersonalInfoEditor = () => {
+    setShowPersonalInfoModal(true)
+  }
+
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
