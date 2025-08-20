@@ -85,12 +85,22 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         )
     
     # Create new user
+    birth_date = None
+    if user_data.birthDate:
+        try:
+            birth_date = datetime.strptime(user_data.birthDate, "%Y-%m-%d").date()
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid birth date format. Use YYYY-MM-DD"
+            )
+
     new_user = User(
         email=user_data.email,
         first_name=user_data.firstName,
         last_name=user_data.lastName,
         gender=user_data.gender,
-        birth_date=datetime.strptime(user_data.birthDate, "%Y-%m-%d").date() if user_data.birthDate else None
+        birth_date=birth_date
     )
     new_user.set_password(user_data.password)
     
