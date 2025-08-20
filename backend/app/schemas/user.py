@@ -13,11 +13,25 @@ class UserCreate(UserBase):
     password: str
 
 class UserUpdate(BaseModel):
+    firstName: Optional[str] = None
+    lastName: Optional[str] = None
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     bio: Optional[str] = None
     location: Optional[str] = None
-    avatar_url: Optional[str] = None
-    cover_url: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
+    birthDate: Optional[str] = None  # Format: YYYY-MM-DD
+    gender: Optional[str] = None
+    avatar: Optional[str] = None
+    coverPhoto: Optional[str] = None
+    currentCity: Optional[str] = None
+    relationship: Optional[str] = None
+    work: Optional[str] = None
+    education: Optional[str] = None
+    avatar_url: Optional[str] = None  # Legacy field
+    cover_url: Optional[str] = None   # Legacy field
     is_private: Optional[bool] = None
     show_profile_visitors: Optional[bool] = None
 
