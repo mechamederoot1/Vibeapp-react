@@ -144,7 +144,7 @@ const Profile = () => {
     if (user) {
       setProfileData(prev => ({
         ...prev,
-        username: user.username || user.email?.split('@')[0] || 'usuario',
+        username: user.username || (user.email ? user.email.split('@')[0] : 'usuario'),
         name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Usuário',
         bio: user.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
         isVerified: user.isVerified || false,
