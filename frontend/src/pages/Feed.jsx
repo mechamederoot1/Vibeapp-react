@@ -443,6 +443,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [currentUserStories, setCurrentUserStories] = useState([])
   const [stories, setStories] = useState([])
   const [initialStoryIndex, setInitialStoryIndex] = useState(0)
+  const [highlights, setHighlights] = useState([])
 
   const loadFeed = async () => {
     // Modo offline/demo - não fazer chamadas de API
