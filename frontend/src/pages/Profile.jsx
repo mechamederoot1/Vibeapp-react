@@ -508,7 +508,7 @@ const Profile = () => {
 
         {/* Stats */}
         <div className="flex justify-center items-center space-x-6 mb-6">
-          <div className="text-center min-w-[80px] flex flex-col items-center">
+          <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
