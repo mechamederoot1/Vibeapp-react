@@ -1601,6 +1601,14 @@ const Profile = () => {
         onSave={handlePersonalInfoSave}
       />
 
+      {/* Modal de Criar Destaque */}
+      <CreateHighlightModal
+        isOpen={showCreateHighlightModal}
+        onClose={() => setShowCreateHighlightModal(false)}
+        onSave={handleCreateHighlight}
+        userStories={userStories}
+      />
+
       {/* Novos modais avançados */}
       <AvatarEditor
         isOpen={showAvatarEditor}
