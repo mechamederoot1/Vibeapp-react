@@ -12,7 +12,6 @@ const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
     notifications: 0
