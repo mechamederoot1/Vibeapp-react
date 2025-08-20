@@ -52,6 +52,11 @@ const Profile = () => {
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
 
+  // Estados para informações pessoais
+  const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
+  const [personalInfo, setPersonalInfo] = useState(null)
+  const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     friendsCount: 0,
@@ -662,7 +667,7 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Botão de opções da capa */}
+          {/* Bot��o de opções da capa */}
           <div className="absolute top-4 right-4">
             <button
               className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
