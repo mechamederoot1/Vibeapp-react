@@ -898,25 +898,6 @@ const Profile = () => {
           </div>
         )}
 
-        {/* Botões de Ação */}
-        <div className="flex space-x-2 mb-6">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="btn-primary flex-1"
-          >
-            Editar Perfil
-          </button>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="btn-secondary px-4 flex items-center space-x-2"
-          >
-            <Users size={20} />
-            <span className="hidden sm:inline">Conexões</span>
-          </button>
-          <button className="btn-secondary px-4">
-            <MessageCircle size={20} />
-          </button>
-        </div>
 
 
         {/* Seção de Visitas Recentes */}
