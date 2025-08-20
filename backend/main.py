@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, WebSocket, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from datetime import datetime
 import uvicorn
