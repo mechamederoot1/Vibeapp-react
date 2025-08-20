@@ -1475,6 +1475,14 @@ const Profile = () => {
         />
       )}
 
+      {/* Modal de Informações Pessoais */}
+      <PersonalInfoEditModal
+        isOpen={showPersonalInfoModal}
+        onClose={() => setShowPersonalInfoModal(false)}
+        personalInfo={personalInfo}
+        onSave={handlePersonalInfoSave}
+      />
+
       {/* Novos modais avançados */}
       <AvatarEditor
         isOpen={showAvatarEditor}
