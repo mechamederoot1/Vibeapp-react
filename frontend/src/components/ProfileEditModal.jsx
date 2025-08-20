@@ -341,7 +341,14 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
       setTimeout(() => {
         onClose()
-      }, 1500)
+
+        // Force a page refresh to ensure all data is updated
+        // This is especially important in demo mode with localStorage
+        if (window.location.hostname === 'localhost' || !api) {
+          console.log('🔄 Refreshing page to show updated profile data')
+          window.location.reload()
+        }
+      }, 2000)
 
     } catch (error) {
       console.error('Error saving profile:', error)
@@ -520,7 +527,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin size={16} className="inline mr-1" />
-                  Localizaç��o
+                  Localização
                 </label>
                 <input
                   type="text"
