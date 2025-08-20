@@ -102,9 +102,17 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
     setLoading(true)
     try {
       await onSave(formData)
+      console.log('✅ Personal info saved successfully')
+
+      // Trigger global refresh if available
+      if (typeof window !== 'undefined' && window.refreshProfileData) {
+        await window.refreshProfileData()
+      }
+
       onClose()
     } catch (error) {
-      console.error('Erro ao salvar informações pessoais:', error)
+      console.error('❌ Error saving personal info:', error)
+      // You could show an error message here if needed
     } finally {
       setLoading(false)
     }
