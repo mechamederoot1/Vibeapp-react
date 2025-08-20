@@ -385,6 +385,15 @@ const Profile = () => {
           }
         }
 
+        // Load personal info
+        try {
+          const personalInfoResponse = await personalInfoAPI.get()
+          setPersonalInfo(personalInfoResponse.data.personalInfo || null)
+        } catch (error) {
+          console.error('Error loading personal info:', error)
+          setPersonalInfo(null)
+        }
+
       } catch (error) {
         console.error('Error loading user data:', error)
       } finally {
