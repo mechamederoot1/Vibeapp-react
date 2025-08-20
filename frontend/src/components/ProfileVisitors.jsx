@@ -1,7 +1,10 @@
 import React, { useState } from 'react'
-import { X, Eye, MessageCircle, UserPlus, Clock, MapPin } from 'lucide-react'
+import { X, Eye, MessageCircle, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import FriendshipButton from './FriendshipButton'
 
 const ProfileVisitors = ({ onClose }) => {
+  const navigate = useNavigate()
   const [filter, setFilter] = useState('all') // all, today, week, month
 
   const mockVisitors = [
@@ -10,77 +13,63 @@ const ProfileVisitors = ({ onClose }) => {
       username: 'ana_costa',
       name: 'Ana Costa',
       avatar: 'https://picsum.photos/100/100?random=visitor1',
-      visitTime: '2 horas atrás',
-      visitCount: 3,
-      location: 'São Paulo, SP',
-      isFollowing: false,
-      isMutualFollow: false
+      visitTime: 'há 2 horas',
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 2,
       username: 'joao_silva',
       name: 'João Silva',
       avatar: 'https://picsum.photos/100/100?random=visitor2',
-      visitTime: '4 horas atrás',
-      visitCount: 1,
-      location: 'Rio de Janeiro, RJ',
-      isFollowing: true,
-      isMutualFollow: true
+      visitTime: 'há 4 horas',
+      isFriend: true,
+      isMutualFriend: true
     },
     {
       id: 3,
       username: 'maria_santos',
       name: 'Maria Santos',
       avatar: 'https://picsum.photos/100/100?random=visitor3',
-      visitTime: '6 horas atrás',
-      visitCount: 5,
-      location: 'Belo Horizonte, MG',
-      isFollowing: false,
-      isMutualFollow: false
+      visitTime: 'há 6 horas',
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 4,
       username: 'pedro_oliveira',
       name: 'Pedro Oliveira',
       avatar: 'https://picsum.photos/100/100?random=visitor4',
-      visitTime: '1 dia atrás',
-      visitCount: 2,
-      location: 'Salvador, BA',
-      isFollowing: false,
-      isMutualFollow: false
+      visitTime: 'há 1 dia',
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 5,
       username: 'sofia_lima',
       name: 'Sofia Lima',
       avatar: 'https://picsum.photos/100/100?random=visitor5',
-      visitTime: '2 dias atrás',
-      visitCount: 7,
-      location: 'Brasília, DF',
-      isFollowing: true,
-      isMutualFollow: false
+      visitTime: 'há 2 dias',
+      isFriend: true,
+      isMutualFriend: false
     },
     {
       id: 6,
       username: 'carlos_pereira',
       name: 'Carlos Pereira',
       avatar: 'https://picsum.photos/100/100?random=visitor6',
-      visitTime: '3 dias atrás',
-      visitCount: 1,
-      location: 'Porto Alegre, RS',
-      isFollowing: false,
-      isMutualFollow: false
+      visitTime: 'há 3 dias',
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 7,
       username: 'lucia_martins',
       name: 'Lúcia Martins',
       avatar: 'https://picsum.photos/100/100?random=visitor7',
-      visitTime: '1 semana atrás',
-      visitCount: 4,
-      location: 'Recife, PE',
-      isFollowing: true,
-      isMutualFollow: true
+      visitTime: 'há 1 semana',
+      isFriend: true,
+      isMutualFriend: true
     }
   ]
 
@@ -97,9 +86,9 @@ const ProfileVisitors = ({ onClose }) => {
     return mockVisitors
   }
 
-  const formatVisitCount = (count) => {
-    if (count === 1) return '1 visualização'
-    return `${count} visualizações`
+  const handleProfileClick = (username) => {
+    navigate(`/profile/${username}`)
+    onClose()
   }
 
   return (
@@ -150,7 +139,7 @@ const ProfileVisitors = ({ onClose }) => {
                       alt={visitor.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
-                    {visitor.isMutualFollow && (
+                    {visitor.isMutualFriend && (
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white">
                         <span className="text-white text-xs">✓</span>
                       </div>
@@ -159,32 +148,23 @@ const ProfileVisitors = ({ onClose }) => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
-                      <p className="font-semibold truncate">{visitor.name}</p>
-                      {visitor.isMutualFollow && (
+                      <button
+                        onClick={() => handleProfileClick(visitor.username)}
+                        className="font-semibold truncate hover:text-vibe-blue transition-colors text-left"
+                      >
+                        {visitor.name}
+                      </button>
+                      {visitor.isMutualFriend && (
                         <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">
-                          Seguindo mutuamente
+                          Amigos
                         </span>
                       )}
                     </div>
                     <p className="text-gray-600 text-sm">@{visitor.username}</p>
-                    
-                    <div className="flex items-center space-x-4 mt-1">
-                      <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                        <Clock size={12} />
-                        <span>{visitor.visitTime}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                        <Eye size={12} />
-                        <span>{formatVisitCount(visitor.visitCount)}</span>
-                      </div>
+                    <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
+                      <Clock size={12} />
+                      <span>{visitor.visitTime}</span>
                     </div>
-                    
-                    {visitor.location && (
-                      <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
-                        <MapPin size={12} />
-                        <span>{visitor.location}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
                 
@@ -193,19 +173,11 @@ const ProfileVisitors = ({ onClose }) => {
                   <button className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors">
                     <MessageCircle size={18} />
                   </button>
-                  
-                  {!visitor.isFollowing ? (
-                    <button className="bg-vibe-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vibe-blue-dark transition-colors">
-                      <div className="flex items-center space-x-1">
-                        <UserPlus size={16} />
-                        <span>Seguir</span>
-                      </div>
-                    </button>
-                  ) : (
-                    <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                      Seguindo
-                    </button>
-                  )}
+
+                  <FriendshipButton
+                    userId={visitor.id}
+                    username={visitor.username}
+                  />
                 </div>
               </div>
             </div>

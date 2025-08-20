@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, PlusCircle, Bell, User, MessageCircle } from 'lucide-react'
+import { Home, Search, PlusCircle, Eye, User, MessageCircle } from 'lucide-react'
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 
@@ -10,7 +10,7 @@ const BottomNavigation = () => {
   const { lastMessage } = useWebSocket()
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
-    notifications: 0
+    visits: 0
   })
 
   // Carregar contadores de mensagens e notificações não lidas
@@ -20,27 +20,27 @@ const BottomNavigation = () => {
       console.log('🔧 Modo demo - usando valores padrão para contadores')
       setUnreadCounts({
         messages: 0,
-        notifications: 0
+        visits: 0
       })
       return
     }
 
     try {
-      const [messagesRes, notificationsRes] = await Promise.all([
+      const [messagesRes, visitsRes] = await Promise.all([
         api.get('/api/messages/unread-count'),
-        api.get('/api/notifications/unread-count')
+        api.get('/api/profile/recent-visits-count')
       ])
 
       setUnreadCounts({
         messages: messagesRes.data.unreadCount,
-        notifications: notificationsRes.data.unreadCount
+        visits: visitsRes.data.newVisitsCount || 0
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
       // Fallback: definir valores padrão para não quebrar a interface
       setUnreadCounts({
         messages: 0,
-        notifications: 0
+        visits: 0
       })
     }
   }
@@ -56,10 +56,10 @@ const BottomNavigation = () => {
       }))
     }
 
-    if (lastMessage.type === 'notification') {
+    if (lastMessage.type === 'profile_visit') {
       setUnreadCounts(prev => ({
         ...prev,
-        notifications: prev.notifications + 1
+        visits: prev.visits + 1
       }))
     }
   }, [lastMessage])
@@ -79,10 +79,10 @@ const BottomNavigation = () => {
       badge: unreadCounts.messages
     },
     {
-      path: '/notifications',
-      icon: Bell,
-      label: 'Notificações',
-      badge: unreadCounts.notifications
+      path: '/visits',
+      icon: Eye,
+      label: 'Visitas',
+      badge: unreadCounts.visits
     },
     { path: '/profile', icon: User, label: 'Perfil' },
   ]
@@ -103,8 +103,8 @@ const BottomNavigation = () => {
                 if (item.path === '/messages') {
                   setUnreadCounts(prev => ({ ...prev, messages: 0 }))
                 }
-                if (item.path === '/notifications') {
-                  setUnreadCounts(prev => ({ ...prev, notifications: 0 }))
+                if (item.path === '/visits') {
+                  setUnreadCounts(prev => ({ ...prev, visits: 0 }))
                 }
               }}
               className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors relative ${

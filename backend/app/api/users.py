@@ -8,6 +8,7 @@ from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.profile_view import ProfileView
 from .auth import get_current_user
+from ..utils.privacy import can_view_profile, filter_user_data
 
 router = APIRouter()
 
@@ -109,7 +110,14 @@ async def get_user_by_id(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
+    # Verificar se o usuário atual pode ver este perfil
+    if not can_view_profile(db, current_user.id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Este perfil é privado"
+        )
+
     # Record profile view if it's not the current user
     if user_id != current_user.id:
         # Check if view already exists today
@@ -119,7 +127,7 @@ async def get_user_by_id(
             ProfileView.profile_owner_id == user_id,
             ProfileView.created_at >= today
         ).first()
-        
+
         if not existing_view:
             # Create new profile view
             profile_view = ProfileView(
@@ -128,8 +136,10 @@ async def get_user_by_id(
             )
             db.add(profile_view)
             db.commit()
-    
-    return user.to_public_dict()
+
+    # Filtrar dados baseado na privacidade
+    user_data = user.to_public_dict()
+    return filter_user_data(db, current_user.id, user_data)
 
 @router.get("/{user_id}/stats")
 async def get_user_stats(
