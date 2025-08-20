@@ -280,18 +280,88 @@ export const personalInfoAPI = {
 
 // Work Experience endpoints
 export const workExperienceAPI = {
-  getAll: () => api.get('/work-experience'),
-  create: (workData) => api.post('/work-experience', workData),
-  update: (id, workData) => api.put(`/work-experience/${id}`, workData),
-  delete: (id) => api.delete(`/work-experience/${id}`)
+  getAll: () => {
+    if (!api) {
+      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
+      return Promise.resolve({ data: workExperiences })
+    }
+    return api.get('/work-experience')
+  },
+  create: (workData) => {
+    if (!api) {
+      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
+      const newWork = { ...workData, id: Date.now(), displayText: `${workData.position} na ${workData.company}` }
+      workExperiences.push(newWork)
+      localStorage.setItem('workExperiences', JSON.stringify(workExperiences))
+      return Promise.resolve({ data: newWork })
+    }
+    return api.post('/work-experience', workData)
+  },
+  update: (id, workData) => {
+    if (!api) {
+      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
+      const index = workExperiences.findIndex(w => w.id == id)
+      if (index !== -1) {
+        workExperiences[index] = { ...workExperiences[index], ...workData, displayText: `${workData.position} na ${workData.company}` }
+        localStorage.setItem('workExperiences', JSON.stringify(workExperiences))
+        return Promise.resolve({ data: workExperiences[index] })
+      }
+      return Promise.reject(new Error('Work experience not found'))
+    }
+    return api.put(`/work-experience/${id}`, workData)
+  },
+  delete: (id) => {
+    if (!api) {
+      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
+      const filtered = workExperiences.filter(w => w.id != id)
+      localStorage.setItem('workExperiences', JSON.stringify(filtered))
+      return Promise.resolve({ message: 'Work experience deleted' })
+    }
+    return api.delete(`/work-experience/${id}`)
+  }
 }
 
 // Education endpoints
 export const educationAPI = {
-  getAll: () => api.get('/education'),
-  create: (educationData) => api.post('/education', educationData),
-  update: (id, educationData) => api.put(`/education/${id}`, educationData),
-  delete: (id) => api.delete(`/education/${id}`)
+  getAll: () => {
+    if (!api) {
+      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
+      return Promise.resolve({ data: educationEntries })
+    }
+    return api.get('/education')
+  },
+  create: (educationData) => {
+    if (!api) {
+      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
+      const newEducation = { ...educationData, id: Date.now(), displayText: `${educationData.degree} - ${educationData.institution}` }
+      educationEntries.push(newEducation)
+      localStorage.setItem('educationEntries', JSON.stringify(educationEntries))
+      return Promise.resolve({ data: newEducation })
+    }
+    return api.post('/education', educationData)
+  },
+  update: (id, educationData) => {
+    if (!api) {
+      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
+      const index = educationEntries.findIndex(e => e.id == id)
+      if (index !== -1) {
+        educationEntries[index] = { ...educationEntries[index], ...educationData, displayText: `${educationData.degree} - ${educationData.institution}` }
+        localStorage.setItem('educationEntries', JSON.stringify(educationEntries))
+        return Promise.resolve({ data: educationEntries[index] })
+      }
+      return Promise.reject(new Error('Education entry not found'))
+    }
+    return api.put(`/education/${id}`, educationData)
+  },
+  delete: (id) => {
+    if (!api) {
+      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
+      const filtered = educationEntries.filter(e => e.id != id)
+      localStorage.setItem('educationEntries', JSON.stringify(filtered))
+      return Promise.resolve({ message: 'Education entry deleted' })
+    }
+    return api.delete(`/education/${id}`)
+  }
 }
 
 // Highlights endpoints
