@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart } from 'lucide-react'
+import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart, Plus, Trash2, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
@@ -27,7 +27,14 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     relationship: user?.relationship || '',
     currentCity: user?.currentCity || '',
     avatar: user?.avatar || '',
-    coverPhoto: user?.coverPhoto || ''
+    coverPhoto: user?.coverPhoto || '',
+    workExperiences: [],
+    educationEntries: []
+  })
+
+  const [expandedSections, setExpandedSections] = useState({
+    work: false,
+    education: false
   })
 
   const handleInputChange = (field, value) => {
