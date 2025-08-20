@@ -31,6 +31,9 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL:', API_BASE_URL)
 console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
+if (!API_BASE_URL) {
+  console.log('📦 MODO DEMO ATIVADO: Usando localStorage como banco de dados')
+}
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
