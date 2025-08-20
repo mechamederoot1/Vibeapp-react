@@ -233,7 +233,25 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         return
       }
 
-      // 2. Save work experiences
+      // 2. Delete removed work experiences
+      for (const workId of deletedItems.workExperiences) {
+        try {
+          await workExperienceAPI.delete(workId)
+        } catch (error) {
+          console.error('Error deleting work experience:', error)
+        }
+      }
+
+      // Delete removed education entries
+      for (const educationId of deletedItems.educationEntries) {
+        try {
+          await educationAPI.delete(educationId)
+        } catch (error) {
+          console.error('Error deleting education entry:', error)
+        }
+      }
+
+      // 3. Save work experiences
       for (const work of formData.workExperiences) {
         if (work.company && work.position) {
           if (work.id) {
@@ -262,7 +280,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         }
       }
 
-      // 3. Save education entries
+      // 4. Save education entries
       for (const education of formData.educationEntries) {
         if (education.institution && education.degree) {
           if (education.id) {
