@@ -225,6 +225,13 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setLoading(true)
     setError('')
 
+    console.log('💾 Starting save process...')
+    console.log('📋 Form data to save:', {
+      workExperiences: formData.workExperiences,
+      educationEntries: formData.educationEntries,
+      deletedItems
+    })
+
     try {
       // 1. Update basic profile information
       const profileResult = await updateProfile(formData)
