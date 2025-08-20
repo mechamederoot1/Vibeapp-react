@@ -709,6 +709,98 @@ const Profile = () => {
     setShowCreateHighlightModal(true)
   }
 
+  // Funções para múltiplas experiências de trabalho e educação
+  const handleMultipleWorkEducationSave = async (data) => {
+    setPersonalInfoLoading(true)
+    try {
+      // Salvar experiências de trabalho
+      if (data.workExperiences) {
+        for (const work of data.workExperiences) {
+          if (work.id) {
+            // Atualizar existente
+            await workExperienceAPI.update(work.id, {
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          } else if (work.company && work.position) {
+            // Criar novo
+            await workExperienceAPI.create({
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          }
+        }
+      }
+
+      // Salvar formações acadêmicas
+      if (data.educationEntries) {
+        for (const education of data.educationEntries) {
+          if (education.id) {
+            // Atualizar existente
+            await educationAPI.update(education.id, {
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          } else if (education.institution && education.degree) {
+            // Criar novo
+            await educationAPI.create({
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          }
+        }
+      }
+
+      // Atualizar configurações de privacidade se fornecidas
+      if (data.privacy) {
+        await personalInfoAPI.updatePrivacy(data.privacy)
+      }
+
+      // Recarregar informações pessoais
+      const response = await personalInfoAPI.get()
+      setPersonalInfo(response.data.personalInfo)
+
+      setUploadSuccess('Experiências profissionais e formação atualizadas com sucesso!')
+      setShowMultipleWorkEducationModal(false)
+
+      // Limpar mensagem após um tempo
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao salvar experiências:', error)
+      setUploadError('Erro ao salvar experiências. Tente novamente.')
+    } finally {
+      setPersonalInfoLoading(false)
+    }
+  }
+
+  const openMultipleWorkEducationModal = () => {
+    setShowMultipleWorkEducationModal(true)
+  }
+
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
