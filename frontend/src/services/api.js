@@ -87,13 +87,85 @@ const addInterceptors = (apiInstance) => {
 addInterceptors(api)
 addInterceptors(uploadApi)
 
-// Auth endpoints
+// Demo authentication functions for Builder.io environment
+const createDemoAuthResponse = (userData) => {
+  const user = {
+    id: Date.now(),
+    email: userData?.email || 'demo@example.com',
+    firstName: userData?.firstName || 'Demo',
+    lastName: userData?.lastName || 'User',
+    fullName: `${userData?.firstName || 'Demo'} ${userData?.lastName || 'User'}`,
+    username: userData?.email?.split('@')[0] || 'demo_user',
+    bio: 'Usuário demo - Bem-vindo ao Vibe Social! ✨',
+    avatar: null,
+    coverPhoto: null,
+    isVerified: false,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    birthDate: userData?.birthDate || null,
+    gender: userData?.gender || null
+  }
+
+  return {
+    data: {
+      access_token: 'demo_token_' + Date.now(),
+      token_type: 'bearer',
+      user
+    }
+  }
+}
+
+// Auth endpoints with Builder.io demo mode support
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData),
-  me: () => api.get('/auth/me'),
-  logout: () => api.post('/auth/logout'),
-  createDemoUser: () => api.post('/auth/create-demo-user')
+  login: async (email, password) => {
+    if (!API_BASE_URL) {
+      console.log('🎭 Modo demo - Login simulado')
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      return createDemoAuthResponse({ email })
+    }
+    return api.post('/auth/login', { email, password })
+  },
+
+  register: async (userData) => {
+    if (!API_BASE_URL) {
+      console.log('🎭 Modo demo - Registro simulado')
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      return createDemoAuthResponse(userData)
+    }
+    return api.post('/auth/register', userData)
+  },
+
+  me: async () => {
+    if (!API_BASE_URL) {
+      console.log('🎭 Modo demo - Perfil simulado')
+      const token = localStorage.getItem('token')
+      if (!token || !token.startsWith('demo_token_')) {
+        throw new Error('Not authenticated')
+      }
+      return createDemoAuthResponse()
+    }
+    return api.get('/auth/me')
+  },
+
+  logout: async () => {
+    if (!API_BASE_URL) {
+      console.log('🎭 Modo demo - Logout simulado')
+      return { data: { message: 'Logout successful' } }
+    }
+    return api.post('/auth/logout')
+  },
+
+  createDemoUser: async () => {
+    if (!API_BASE_URL) {
+      console.log('🎭 Modo demo - Demo user criado')
+      return createDemoAuthResponse({
+        email: 'demo@vibesocial.com',
+        firstName: 'Demo',
+        lastName: 'User'
+      })
+    }
+    return api.post('/auth/create-demo-user')
+  }
 }
 
 // Users endpoints
