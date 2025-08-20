@@ -90,7 +90,7 @@ const Profile = () => {
       if (!user?.id) return
 
       // Modo offline/demo - não fazer chamadas de API
-      if (import.meta.env.DEV) {
+      if (false) {
         console.log('🔧 Modo demo - usando dados mock para visualização do perfil')
 
         // Mock user stats
