@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
@@ -26,6 +27,7 @@ import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
@@ -1480,7 +1482,7 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
+                  <p className="text-gray-500 text-sm">@{profileData.username} ��� {new Date(post.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
