@@ -1635,14 +1635,6 @@ const Profile = () => {
         onSave={handlePersonalInfoSave}
       />
 
-      {/* Modal de Múltiplas Experiências */}
-      <MultipleWorkEducationModal
-        isOpen={showMultipleWorkEducationModal}
-        onClose={() => setShowMultipleWorkEducationModal(false)}
-        personalInfo={personalInfo}
-        onSave={handleMultipleWorkEducationSave}
-        loading={personalInfoLoading}
-      />
 
       {/* Modal de Criar Destaque */}
       <CreateHighlightModal
