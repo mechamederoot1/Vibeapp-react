@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Save, Briefcase, GraduationCap, MapPin, Heart, Globe, Phone, Eye, EyeOff, User, Calendar } from 'lucide-react'
+import { X, Save, Briefcase, GraduationCap, MapPin, Heart, Globe, Phone, Eye, EyeOff, User, Calendar, Plus, Trash2 } from 'lucide-react'
 
 const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
   const [formData, setFormData] = useState({
