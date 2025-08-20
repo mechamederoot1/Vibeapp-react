@@ -73,6 +73,22 @@ const Profile = () => {
     const loadUserData = async () => {
       if (!user?.id) return
 
+      // Modo offline/demo - não fazer chamadas de API
+      if (import.meta.env.DEV) {
+        console.log('🔧 Modo demo - usando dados padrão para o perfil')
+        setUserStats({
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+          profileViewsCount: 0,
+          friendsCount: 0
+        })
+        setUserPosts([])
+        setProfileVisitors([])
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
 
@@ -87,7 +103,8 @@ const Profile = () => {
             followersCount: 0,
             followingCount: 0,
             postsCount: 0,
-            profileViewsCount: 0
+            profileViewsCount: 0,
+            friendsCount: 0
           })
         }
 
@@ -333,7 +350,7 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-    console.log('🖼️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
+    console.log('��️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
     setShowCoverDropdown(!showCoverDropdown)
   }
 
