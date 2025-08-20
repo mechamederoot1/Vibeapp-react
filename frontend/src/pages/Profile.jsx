@@ -962,10 +962,25 @@ const Profile = () => {
               <span className="text-xs text-gray-600">Novo</span>
             </div>
 
-            {/* Mensagem quando não há destaques */}
-            <div className="flex-1 flex items-center justify-center py-4">
-              <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicion��-los aqui!</p>
-            </div>
+            {/* Destaques dos stories */}
+            {userStories && userStories.length > 0 ? (
+              userStories.map((story) => (
+                <div key={story.id} className="flex-shrink-0 w-20 text-center">
+                  <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                    <img
+                      src={story.imageUrl}
+                      alt={story.title}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-600">{story.title}</span>
+                </div>
+              ))
+            ) : (
+              <div className="flex-1 flex items-center justify-center py-4">
+                <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
