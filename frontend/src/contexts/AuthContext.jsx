@@ -19,6 +19,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       console.log('🔧 Auth init - token:', token ? `${token.substring(0, 20)}...` : 'null')
+
+      // Clear any demo data on startup
+      localStorage.removeItem('currentUser')
+      localStorage.removeItem('personalInfo')
+      localStorage.removeItem('workExperiences')
+      localStorage.removeItem('educationEntries')
+
       if (token) {
         try {
           api.defaults.headers.Authorization = `Bearer ${token}`
