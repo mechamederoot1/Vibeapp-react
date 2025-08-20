@@ -507,21 +507,21 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center space-x-6 mb-6">
-          <div className="text-center min-w-[60px]">
+        <div className="flex justify-center items-center space-x-6 mb-6">
+          <div className="text-center min-w-[80px] flex flex-col items-center">
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
           <button
             onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
           <button
             onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
             <p className="text-gray-600 text-sm">Seguindo</p>
