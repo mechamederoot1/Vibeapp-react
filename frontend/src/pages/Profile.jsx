@@ -20,6 +20,7 @@ import CoverModal from '../components/CoverModal'
 import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
+import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
