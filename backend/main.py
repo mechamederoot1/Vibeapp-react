@@ -25,6 +25,7 @@ from app.api.messages import router as messages_router
 from app.api.shares import router as shares_router
 from app.api.notifications import router as notifications_router
 from app.api.friendships import router as friendships_router
+from app.api.personal_info import router as personal_info_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
