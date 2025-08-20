@@ -107,13 +107,18 @@ const Profile = () => {
     }
   }
 
-  // Add global refresh function
+  // Add global refresh functions
   useEffect(() => {
     window.refreshProfileData = reloadPersonalInfo
+    window.updateUserContext = (updatedUser) => {
+      console.log('🔄 Updating user context with:', updatedUser)
+      setUser(updatedUser)
+    }
     return () => {
       delete window.refreshProfileData
+      delete window.updateUserContext
     }
-  }, [])
+  }, [setUser])
 
   // Load user data
   useEffect(() => {
