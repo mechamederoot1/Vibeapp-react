@@ -70,13 +70,13 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5173",
         "http://192.168.1.109:3000",
-        "http://192.168.1.39:3000",  # Added the IP from logs
+        "http://192.168.1.39:3000",
+        "http://192.168.1.130:3000",  # Add the specific IP from the error
         "http://127.0.0.1:3000",
-        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
-        "*"
-    ],  # React dev server
+        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
