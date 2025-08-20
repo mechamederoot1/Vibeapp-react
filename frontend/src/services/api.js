@@ -32,13 +32,14 @@ const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL:', API_BASE_URL)
 console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
 
-const api = axios.create({
+// Cria instância da API apenas se não estiver no modo demo
+const api = API_BASE_URL ? axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds for general requests
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
-})
+}) : null
 
 // Create special instance for uploads with longer timeout
 const uploadApi = axios.create({
