@@ -25,5 +25,6 @@ __all__ = [
     "StoryView",
     "Message",
     "Conversation",
-    "PostShare"
+    "PostShare",
+    "PersonalInfo"
 ]
