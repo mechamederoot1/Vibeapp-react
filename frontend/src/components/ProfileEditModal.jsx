@@ -188,7 +188,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
       setError('Nome e sobrenome são obrigatórios')
       return
@@ -202,17 +202,88 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setLoading(true)
     setError('')
 
-    const result = await updateProfile(formData)
-    
-    if (result.success) {
-      setSuccess('Perfil atualizado com sucesso!')
+    try {
+      // 1. Update basic profile information
+      const profileResult = await updateProfile(formData)
+
+      if (!profileResult.success) {
+        setError(profileResult.error)
+        setLoading(false)
+        return
+      }
+
+      // 2. Save work experiences
+      for (const work of formData.workExperiences) {
+        if (work.company && work.position) {
+          if (work.id) {
+            // Update existing
+            await workExperienceAPI.update(work.id, {
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          } else {
+            // Create new
+            await workExperienceAPI.create({
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          }
+        }
+      }
+
+      // 3. Save education entries
+      for (const education of formData.educationEntries) {
+        if (education.institution && education.degree) {
+          if (education.id) {
+            // Update existing
+            await educationAPI.update(education.id, {
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          } else {
+            // Create new
+            await educationAPI.create({
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          }
+        }
+      }
+
+      setSuccess('Perfil e experiências atualizados com sucesso!')
       setTimeout(() => {
         onClose()
+        // Refresh the page to show updated info
+        window.location.reload()
       }, 1500)
-    } else {
-      setError(result.error)
+
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      setError('Erro ao salvar o perfil. Tente novamente.')
     }
-    
+
     setLoading(false)
   }
 
@@ -616,7 +687,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
                   {formData.educationEntries.map((education, index) => (
                     <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-gray-900">Formação {index + 1}</h4>
+                        <h4 className="font-medium text-gray-900">Formaç��o {index + 1}</h4>
                         <button
                           type="button"
                           onClick={() => removeEducation(index)}
