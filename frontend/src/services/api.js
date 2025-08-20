@@ -181,38 +181,12 @@ export const friendshipsAPI = {
 // Personal Info endpoints
 export const personalInfoAPI = {
   get: (userId = null) => {
-    if (!api) {
-      console.log('🔄 API not available - using fallback for personalInfo')
-      const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}')
-      return Promise.resolve({ data: { personalInfo } })
-    }
     const url = userId ? `/personal-info?user_id=${userId}` : '/personal-info'
     return api.get(url)
   },
-  update: (data) => {
-    if (!api) {
-      console.log('📦 FALLBACK: Saving personal info to localStorage:', data)
-      localStorage.setItem('personalInfo', JSON.stringify(data))
-      return Promise.resolve({ data: { personalInfo: data } })
-    }
-    return api.put('/personal-info', data)
-  },
-  delete: () => {
-    if (!api) {
-      localStorage.removeItem('personalInfo')
-      return Promise.resolve({ message: 'Personal info deleted' })
-    }
-    return api.delete('/personal-info')
-  },
-  updatePrivacy: (privacy) => {
-    if (!api) {
-      const personalInfo = JSON.parse(localStorage.getItem('personalInfo') || '{}')
-      personalInfo.privacy = privacy
-      localStorage.setItem('personalInfo', JSON.stringify(personalInfo))
-      return Promise.resolve({ data: { privacy } })
-    }
-    return api.put('/personal-info/privacy', privacy)
-  }
+  update: (data) => api.put('/personal-info', data),
+  delete: () => api.delete('/personal-info'),
+  updatePrivacy: (privacy) => api.put('/personal-info/privacy', privacy)
 }
 
 // Work Experience endpoints
