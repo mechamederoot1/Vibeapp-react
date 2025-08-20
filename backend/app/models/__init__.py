@@ -7,6 +7,7 @@ from .profile_view import ProfileView
 from .account_settings import AccountSettings
 from .story import Story, StoryView
 from .message import Message, Conversation, PostShare
+from .personal_info import PersonalInfo
 
 __all__ = [
     "User",
