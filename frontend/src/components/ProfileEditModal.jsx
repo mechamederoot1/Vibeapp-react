@@ -252,30 +252,28 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
       }
 
       // 3. Save work experiences
+      console.log('💼 Saving work experiences:', formData.workExperiences)
       for (const work of formData.workExperiences) {
         if (work.company && work.position) {
+          const workData = {
+            company: work.company,
+            position: work.position,
+            description: work.description,
+            start_date: work.startDate,
+            end_date: work.endDate,
+            is_current: work.isCurrent,
+            order_index: work.orderIndex
+          }
+
           if (work.id) {
             // Update existing
-            await workExperienceAPI.update(work.id, {
-              company: work.company,
-              position: work.position,
-              description: work.description,
-              start_date: work.startDate,
-              end_date: work.endDate,
-              is_current: work.isCurrent,
-              order_index: work.orderIndex
-            })
+            console.log(`✏️ Updating work experience ${work.id}:`, workData)
+            await workExperienceAPI.update(work.id, workData)
           } else {
             // Create new
-            await workExperienceAPI.create({
-              company: work.company,
-              position: work.position,
-              description: work.description,
-              start_date: work.startDate,
-              end_date: work.endDate,
-              is_current: work.isCurrent,
-              order_index: work.orderIndex
-            })
+            console.log('➕ Creating new work experience:', workData)
+            const result = await workExperienceAPI.create(workData)
+            console.log('✅ Work experience created:', result.data)
           }
         }
       }
