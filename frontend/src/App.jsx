@@ -93,15 +93,25 @@ const AppContent = () => {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/explore" 
+        <Route
+          path="/explore"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Explore />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/search"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Search />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/notifications"
