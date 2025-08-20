@@ -3,22 +3,24 @@ import { X, Save, Briefcase, GraduationCap, MapPin, Heart, Globe, Phone, Eye, Ey
 
 const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
   const [formData, setFormData] = useState({
-    work: {
+    work: [{
+      id: Date.now(),
       company: '',
       position: '',
       description: '',
       startDate: '',
       endDate: '',
       isCurrent: true
-    },
-    education: {
+    }],
+    education: [{
+      id: Date.now() + 1,
       institution: '',
       degree: '',
       field: '',
       startDate: '',
       endDate: '',
       isCurrent: false
-    },
+    }],
     location: {
       currentCity: '',
       hometown: '',
