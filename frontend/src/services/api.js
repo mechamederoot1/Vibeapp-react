@@ -191,45 +191,10 @@ export const personalInfoAPI = {
 
 // Work Experience endpoints
 export const workExperienceAPI = {
-  getAll: () => {
-    if (!api) {
-      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
-      return Promise.resolve({ data: workExperiences })
-    }
-    return api.get('/work-experience')
-  },
-  create: (workData) => {
-    if (!api) {
-      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
-      const newWork = { ...workData, id: Date.now(), displayText: `${workData.position} na ${workData.company}` }
-      workExperiences.push(newWork)
-      localStorage.setItem('workExperiences', JSON.stringify(workExperiences))
-      return Promise.resolve({ data: newWork })
-    }
-    return api.post('/work-experience', workData)
-  },
-  update: (id, workData) => {
-    if (!api) {
-      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
-      const index = workExperiences.findIndex(w => w.id == id)
-      if (index !== -1) {
-        workExperiences[index] = { ...workExperiences[index], ...workData, displayText: `${workData.position} na ${workData.company}` }
-        localStorage.setItem('workExperiences', JSON.stringify(workExperiences))
-        return Promise.resolve({ data: workExperiences[index] })
-      }
-      return Promise.reject(new Error('Work experience not found'))
-    }
-    return api.put(`/work-experience/${id}`, workData)
-  },
-  delete: (id) => {
-    if (!api) {
-      const workExperiences = JSON.parse(localStorage.getItem('workExperiences') || '[]')
-      const filtered = workExperiences.filter(w => w.id != id)
-      localStorage.setItem('workExperiences', JSON.stringify(filtered))
-      return Promise.resolve({ message: 'Work experience deleted' })
-    }
-    return api.delete(`/work-experience/${id}`)
-  }
+  getAll: () => api.get('/work-experience'),
+  create: (workData) => api.post('/work-experience', workData),
+  update: (id, workData) => api.put(`/work-experience/${id}`, workData),
+  delete: (id) => api.delete(`/work-experience/${id}`)
 }
 
 // Education endpoints
