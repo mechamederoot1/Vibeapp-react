@@ -136,29 +136,37 @@ export const usersAPI = {
   },
   getUserById: (userId) => {
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using fallback for getUserById')
+      return fallbackStorage.getProfile() // Use same profile data
     }
     return api.get(`/users/${userId}`)
   },
   getUserStats: (userId) => {
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using fallback for getUserStats')
+      return Promise.resolve({
+        data: {
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+          profileViewsCount: 0,
+          friendsCount: 0
+        }
+      })
     }
     return api.get(`/users/${userId}/stats`)
   },
   getProfileVisitors: (userId, limit = 10) => {
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using fallback for getProfileVisitors')
+      return Promise.resolve({ data: [] })
     }
     return api.get(`/users/${userId}/visitors?limit=${limit}`)
   },
   searchUsers: (query, limit = 20) => {
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using fallback for searchUsers')
+      return Promise.resolve({ data: [] })
     }
     return api.get(`/users/search?q=${query}&limit=${limit}`)
   }
