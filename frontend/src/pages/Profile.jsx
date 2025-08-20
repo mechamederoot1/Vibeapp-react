@@ -935,26 +935,47 @@ const Profile = () => {
               <div className="px-3 pb-3">
                 {profileVisitors.length > 0 ? (
                   <div className="flex space-x-3 overflow-x-auto pb-2">
-                    {profileVisitors.slice(0, 8).map((visitor) => (
-                      <div key={visitor.id} className="flex-shrink-0 w-20 text-center">
-                        <div className="w-16 h-16 rounded-full border-2 border-gray-200 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
-                          {visitor.avatar ? (
-                            <img
-                              src={visitor.avatar}
-                              alt={visitor.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
-                              <span className="text-gray-600 text-sm font-semibold">
-                                {visitor.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                          )}
+                    {profileVisitors.slice(0, 8).map((visitor) => {
+                      // Calcular tempo relativo
+                      const now = new Date()
+                      const visitTime = new Date(visitor.visitTime)
+                      const diffInMinutes = Math.floor((now - visitTime) / (1000 * 60))
+
+                      let timeText = ''
+                      if (diffInMinutes < 1) {
+                        timeText = 'agora'
+                      } else if (diffInMinutes < 60) {
+                        timeText = `há ${diffInMinutes}min`
+                      } else if (diffInMinutes < 1440) { // menos que 24 horas
+                        const hours = Math.floor(diffInMinutes / 60)
+                        timeText = `há ${hours}h`
+                      } else {
+                        const days = Math.floor(diffInMinutes / 1440)
+                        timeText = `há ${days}d`
+                      }
+
+                      return (
+                        <div key={visitor.id} className="flex-shrink-0 w-20 text-center">
+                          <div className="w-16 h-16 rounded-full border-2 border-gray-200 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                            {visitor.avatar ? (
+                              <img
+                                src={visitor.avatar}
+                                alt={visitor.name}
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+                                <span className="text-gray-600 text-sm font-semibold">
+                                  {visitor.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-600 block truncate mb-1">{visitor.name.split(' ')[0]}</span>
+                          <span className="text-xs text-gray-400 block">{timeText}</span>
                         </div>
-                        <span className="text-xs text-gray-600 block truncate">{visitor.name.split(' ')[0]}</span>
-                      </div>
-                    ))}
+                      )
+                    })}
                     {profileVisitors.length > 8 && (
                       <div className="flex-shrink-0 w-20 text-center">
                         <button
