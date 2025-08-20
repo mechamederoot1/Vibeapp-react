@@ -666,6 +666,47 @@ const Profile = () => {
     setShowPersonalInfoModal(true)
   }
 
+  // Funções para destaques
+  const handleCreateHighlight = async (highlightData) => {
+    setHighlightsLoading(true)
+    try {
+      const response = await highlightsAPI.create(highlightData)
+      setHighlights(prev => [...prev, response.data.highlight])
+      setUploadSuccess('Destaque criado com sucesso!')
+
+      // Limpar mensagem após um tempo
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao criar destaque:', error)
+      setUploadError('Erro ao criar destaque. Tente novamente.')
+    } finally {
+      setHighlightsLoading(false)
+    }
+  }
+
+  const handleAddToHighlight = async (highlightId, storyId) => {
+    try {
+      await highlightsAPI.addStory(highlightId, storyId)
+      // Reload highlights to get updated counts
+      const highlightsResponse = await highlightsAPI.get()
+      setHighlights(highlightsResponse.data.highlights || [])
+      setUploadSuccess('Story adicionado ao destaque!')
+
+      setTimeout(() => {
+        setUploadSuccess(null)
+      }, 3000)
+    } catch (error) {
+      console.error('Erro ao adicionar story ao destaque:', error)
+      setUploadError('Erro ao adicionar story ao destaque.')
+    }
+  }
+
+  const openCreateHighlight = () => {
+    setShowCreateHighlightModal(true)
+  }
+
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
