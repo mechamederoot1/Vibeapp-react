@@ -113,6 +113,7 @@ app.include_router(shares_router, prefix="/api/shares", tags=["shares"])
 app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(friendships_router, prefix="/api/friendships", tags=["friendships"])
 app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
+app.include_router(highlights_router, prefix="/api", tags=["highlights"])
 
 # WebSocket endpoint
 @app.websocket("/ws")
