@@ -1,8 +1,21 @@
 import axios from 'axios'
 
-// Configuração base da API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+// Configuração base da API - detecta automaticamente o IP da rede
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
 
+  // Em produção/builder.io, usa a URL do frontend mas com porta 8000
+  if (!import.meta.env.DEV || window.location.hostname !== 'localhost') {
+    const hostname = window.location.hostname
+    return `http://${hostname}:8000/api`
+  }
+
+  return 'http://localhost:8000/api'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL:', API_BASE_URL)
 
 const api = axios.create({
