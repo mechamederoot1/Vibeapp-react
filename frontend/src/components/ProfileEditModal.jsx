@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone } from 'lucide-react'
+import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
