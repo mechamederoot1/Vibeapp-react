@@ -218,6 +218,36 @@ const Profile = () => {
 
         setUserPosts(mockPosts)
 
+        // Mock stories/highlights
+        const mockStories = [
+          {
+            id: '1',
+            title: 'Trabalho',
+            imageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop&crop=face',
+            createdAt: '2024-01-14T10:00:00Z'
+          },
+          {
+            id: '2',
+            title: 'Viagens',
+            imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop',
+            createdAt: '2024-01-13T15:30:00Z'
+          },
+          {
+            id: '3',
+            title: 'Momentos',
+            imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop&crop=face',
+            createdAt: '2024-01-12T18:45:00Z'
+          },
+          {
+            id: '4',
+            title: 'Eventos',
+            imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=100&h=100&fit=crop',
+            createdAt: '2024-01-11T12:20:00Z'
+          }
+        ]
+
+        setUserStories(mockStories)
+
         // Mock profile visitors
         const mockVisitors = [
           {
@@ -626,7 +656,7 @@ const Profile = () => {
                 handleCoverClick()
               }}
               disabled={uploading.cover}
-              title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
+              title={uploading.cover ? "Fazendo upload..." : "Op��ões da capa"}
             >
               <Camera size={20} />
             </button>
