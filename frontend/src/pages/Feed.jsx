@@ -717,6 +717,9 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         stories={currentUserStories}
         initialStoryIndex={initialStoryIndex}
         currentUser={user}
+        highlights={highlights}
+        onAddToHighlight={handleAddToHighlight}
+        onCreateHighlight={handleCreateHighlight}
       />
     </>
   )
