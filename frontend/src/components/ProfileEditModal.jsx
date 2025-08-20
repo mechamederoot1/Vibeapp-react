@@ -22,6 +22,10 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     phone: user?.phone || '',
     birthDate: user?.birthDate || '',
     gender: user?.gender || '',
+    work: user?.work || '',
+    education: user?.education || '',
+    relationship: user?.relationship || '',
+    currentCity: user?.currentCity || '',
     avatar: user?.avatar || '',
     coverPhoto: user?.coverPhoto || ''
   })
