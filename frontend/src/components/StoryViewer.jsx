@@ -129,9 +129,20 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
             </p>
           </div>
         </div>
-        <button onClick={handleClose} className="text-white p-2">
-          <X size={24} />
-        </button>
+        <div className="flex items-center space-x-2">
+          {isOwnStory && (
+            <button
+              onClick={handleAddToHighlight}
+              className="text-white p-2 bg-black bg-opacity-50 rounded-full hover:bg-opacity-70 transition-all"
+              title="Adicionar aos destaques"
+            >
+              <Star size={20} />
+            </button>
+          )}
+          <button onClick={handleClose} className="text-white p-2">
+            <X size={24} />
+          </button>
+        </div>
       </div>
 
       {/* Story content */}
