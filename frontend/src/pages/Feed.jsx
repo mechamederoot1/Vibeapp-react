@@ -467,6 +467,13 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   const loadStories = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando stories vazias')
+      setStories([])
+      return
+    }
+
     try {
       const response = await storiesAPI.getStories()
       setStories(response.data.storiesByAuthor || [])
