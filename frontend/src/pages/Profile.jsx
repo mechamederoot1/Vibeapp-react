@@ -348,6 +348,40 @@ const Profile = () => {
         }
 
         setPersonalInfo(mockPersonalInfo)
+
+        // Mock highlights
+        const mockHighlights = [
+          {
+            id: 1,
+            title: 'Trabalho',
+            coverImageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop',
+            storiesCount: 8,
+            orderIndex: 0
+          },
+          {
+            id: 2,
+            title: 'Viagens',
+            coverImageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop',
+            storiesCount: 15,
+            orderIndex: 1
+          },
+          {
+            id: 3,
+            title: 'Momentos',
+            coverImageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop',
+            storiesCount: 12,
+            orderIndex: 2
+          },
+          {
+            id: 4,
+            title: 'Eventos',
+            coverImageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=100&h=100&fit=crop',
+            storiesCount: 5,
+            orderIndex: 3
+          }
+        ]
+
+        setHighlights(mockHighlights)
         setLoading(false)
         return
       }
@@ -641,7 +675,7 @@ const Profile = () => {
 
   const handleViewStory = () => {
     // TODO: implementar visualização de story
-    console.log('Visualizar story do usuário')
+    console.log('Visualizar story do usu��rio')
     setShowAvatarDropdown(false)
   }
 
