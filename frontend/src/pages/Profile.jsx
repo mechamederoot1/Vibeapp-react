@@ -69,6 +69,7 @@ const Profile = () => {
     showFriends: true,
     profileVisibility: 'public'
   })
+  const [viewAsVisitor, setViewAsVisitor] = useState(false)
 
   // Load user data
   useEffect(() => {
