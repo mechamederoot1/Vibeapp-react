@@ -121,6 +121,61 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     }))
   }
 
+  // Load existing work experience and education data when modal opens
+  React.useEffect(() => {
+    const loadExistingData = async () => {
+      if (!isOpen) return
+
+      setDataLoading(true)
+      try {
+        // Load existing work experiences
+        const workResponse = await workExperienceAPI.getAll()
+        const workExperiences = workResponse.data || []
+
+        // Load existing education entries
+        const educationResponse = await educationAPI.getAll()
+        const educationEntries = educationResponse.data || []
+
+        // Load personal info for other fields
+        const personalInfoResponse = await personalInfoAPI.get()
+        const personalInfo = personalInfoResponse.data.personalInfo || {}
+
+        setFormData(prev => ({
+          ...prev,
+          workExperiences: workExperiences.map(work => ({
+            id: work.id,
+            company: work.company || '',
+            position: work.position || '',
+            description: work.description || '',
+            startDate: work.startDate || '',
+            endDate: work.endDate || '',
+            isCurrent: work.isCurrent || false,
+            orderIndex: work.orderIndex || 0
+          })),
+          educationEntries: educationEntries.map(education => ({
+            id: education.id,
+            institution: education.institution || '',
+            degree: education.degree || '',
+            field: education.field || '',
+            description: education.description || '',
+            startDate: education.startDate || '',
+            endDate: education.endDate || '',
+            isCurrent: education.isCurrent || false,
+            orderIndex: education.orderIndex || 0
+          }))
+        }))
+
+        console.log('✅ Loaded existing data:', { workExperiences, educationEntries })
+      } catch (error) {
+        console.error('❌ Error loading existing data:', error)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    loadExistingData()
+  }, [isOpen])
+
   const handleImageUpload = (field, file) => {
     if (file) {
       const reader = new FileReader()
