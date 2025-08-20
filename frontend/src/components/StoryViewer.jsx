@@ -66,8 +66,22 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
   const handleClose = () => {
     setCurrentIndex(0)
     setProgress(0)
+    setShowHighlightModal(false)
     onClose()
   }
+
+  const handleAddToHighlight = () => {
+    setPaused(true)
+    setShowHighlightModal(true)
+  }
+
+  const handleHighlightModalClose = () => {
+    setShowHighlightModal(false)
+    setPaused(false)
+  }
+
+  // Check if this is the current user's story
+  const isOwnStory = currentUser && currentStory?.author?.id === currentUser.id
 
   if (!isOpen || !currentStory) return null
 
