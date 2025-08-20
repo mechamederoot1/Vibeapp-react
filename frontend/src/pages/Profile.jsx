@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
   MessageCircle as MessageCircleIcon, Share, Repeat2, MapPin, Briefcase,
-  GraduationCap, Globe, Calendar, Heart as HeartIcon
+  GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI } from '../services/api'
@@ -26,6 +27,7 @@ import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [showFriends, setShowFriends] = useState(false)
@@ -107,7 +109,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n��� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -707,6 +709,7 @@ const Profile = () => {
     setShowCreateHighlightModal(true)
   }
 
+
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
     console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
@@ -1024,18 +1027,42 @@ const Profile = () => {
             )}
           </div>
           <div className="space-y-3">
-            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
+            {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
+            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo ? (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase size={16} className="mr-3 text-gray-500" />
+                <span>{personalInfo.workExperiences[0].displayText}</span>
+                {personalInfo.workExperiences.length > 1 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    +{personalInfo.workExperiences.length - 1} mais
+                  </span>
+                )}
+              </div>
+            ) : personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Briefcase size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.work.displayText}</span>
               </div>
             )}
-            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
+
+            {/* Formação acadêmica - primeira das múltiplas ou campo simples */}
+            {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo ? (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap size={16} className="mr-3 text-gray-500" />
+                <span>{personalInfo.educationEntries[0].displayText}</span>
+                {personalInfo.educationEntries.length > 1 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    +{personalInfo.educationEntries.length - 1} mais
+                  </span>
+                )}
+              </div>
+            ) : personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.education.displayText}</span>
               </div>
             )}
+
             {personalInfo?.location?.displayText && personalInfo.privacy?.showLocationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin size={16} className="mr-3 text-gray-500" />
@@ -1066,19 +1093,19 @@ const Profile = () => {
 
             {/* Se não há informações para mostrar */}
             {(!personalInfo ||
-              (!personalInfo.work?.displayText || !personalInfo.privacy?.showWorkInfo) &&
-              (!personalInfo.education?.displayText || !personalInfo.privacy?.showEducationInfo) &&
+              ((!personalInfo.work?.displayText && (!personalInfo.workExperiences || personalInfo.workExperiences.length === 0)) || !personalInfo.privacy?.showWorkInfo) &&
+              ((!personalInfo.education?.displayText && (!personalInfo.educationEntries || personalInfo.educationEntries.length === 0)) || !personalInfo.privacy?.showEducationInfo) &&
               (!personalInfo.location?.displayText || !personalInfo.privacy?.showLocationInfo) &&
               (!personalInfo.relationship?.displayText || !personalInfo.privacy?.showRelationshipInfo) &&
               (!personalInfo.contact?.websitePersonal || !personalInfo.privacy?.showContactInfo)
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação dispon��vel.'}
                 </p>
                 {!viewAsVisitor && (
                   <button
-                    onClick={openPersonalInfoEditor}
+                    onClick={() => setShowEditModal(true)}
                     className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
                   >
                     Adicionar informações
@@ -1455,7 +1482,7 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
+                  <p className="text-gray-500 text-sm">@{profileData.username} ��� {new Date(post.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
@@ -1601,6 +1628,7 @@ const Profile = () => {
         onSave={handlePersonalInfoSave}
       />
 
+
       {/* Modal de Criar Destaque */}
       <CreateHighlightModal
         isOpen={showCreateHighlightModal}
@@ -1650,6 +1678,7 @@ const Profile = () => {
         post={selectedPost}
         onPostUpdate={handlePostUpdate}
       />
+
     </div>
   )
 }

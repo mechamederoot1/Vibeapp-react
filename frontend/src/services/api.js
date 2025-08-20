@@ -186,6 +186,22 @@ export const personalInfoAPI = {
   updatePrivacy: (privacy) => api.put('/personal-info/privacy', privacy)
 }
 
+// Work Experience endpoints
+export const workExperienceAPI = {
+  getAll: () => api.get('/work-experience'),
+  create: (workData) => api.post('/work-experience', workData),
+  update: (id, workData) => api.put(`/work-experience/${id}`, workData),
+  delete: (id) => api.delete(`/work-experience/${id}`)
+}
+
+// Education endpoints
+export const educationAPI = {
+  getAll: () => api.get('/education'),
+  create: (educationData) => api.post('/education', educationData),
+  update: (id, educationData) => api.put(`/education/${id}`, educationData),
+  delete: (id) => api.delete(`/education/${id}`)
+}
+
 // Highlights endpoints
 export const highlightsAPI = {
   get: (userId = null) => {

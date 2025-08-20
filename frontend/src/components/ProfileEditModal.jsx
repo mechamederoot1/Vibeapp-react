@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react'
-import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart } from 'lucide-react'
+import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart, Plus, Trash2, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { workExperienceAPI, educationAPI, personalInfoAPI } from '../services/api'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
   const { user, updateProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [dataLoading, setDataLoading] = useState(false)
   
   const avatarInputRef = useRef(null)
   const coverInputRef = useRef(null)
@@ -27,7 +29,19 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     relationship: user?.relationship || '',
     currentCity: user?.currentCity || '',
     avatar: user?.avatar || '',
-    coverPhoto: user?.coverPhoto || ''
+    coverPhoto: user?.coverPhoto || '',
+    workExperiences: [],
+    educationEntries: []
+  })
+
+  const [expandedSections, setExpandedSections] = useState({
+    work: false,
+    education: false
+  })
+
+  const [deletedItems, setDeletedItems] = useState({
+    workExperiences: [],
+    educationEntries: []
   })
 
   const handleInputChange = (field, value) => {
@@ -35,6 +49,153 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setError('')
     setSuccess('')
   }
+
+  // Work Experience Functions
+  const addWorkExperience = () => {
+    const newWork = {
+      id: null,
+      company: '',
+      position: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      isCurrent: false,
+      orderIndex: formData.workExperiences.length
+    }
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: [...prev.workExperiences, newWork]
+    }))
+  }
+
+  const removeWorkExperience = (index) => {
+    const workToRemove = formData.workExperiences[index]
+    if (workToRemove.id) {
+      // Track for deletion if it has an ID (exists in backend)
+      setDeletedItems(prev => ({
+        ...prev,
+        workExperiences: [...prev.workExperiences, workToRemove.id]
+      }))
+    }
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: prev.workExperiences.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateWorkExperience = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      workExperiences: prev.workExperiences.map((work, i) =>
+        i === index ? { ...work, [field]: value } : work
+      )
+    }))
+  }
+
+  // Education Functions
+  const addEducation = () => {
+    const newEducation = {
+      id: null,
+      institution: '',
+      degree: '',
+      field: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      isCurrent: false,
+      orderIndex: formData.educationEntries.length
+    }
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: [...prev.educationEntries, newEducation]
+    }))
+  }
+
+  const removeEducation = (index) => {
+    const educationToRemove = formData.educationEntries[index]
+    if (educationToRemove.id) {
+      // Track for deletion if it has an ID (exists in backend)
+      setDeletedItems(prev => ({
+        ...prev,
+        educationEntries: [...prev.educationEntries, educationToRemove.id]
+      }))
+    }
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: prev.educationEntries.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateEducation = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      educationEntries: prev.educationEntries.map((education, i) =>
+        i === index ? { ...education, [field]: value } : education
+      )
+    }))
+  }
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
+  // Load existing work experience and education data when modal opens
+  React.useEffect(() => {
+    const loadExistingData = async () => {
+      if (!isOpen) return
+
+      setDataLoading(true)
+      try {
+        // Load existing work experiences
+        const workResponse = await workExperienceAPI.getAll()
+        const workExperiences = workResponse.data || []
+
+        // Load existing education entries
+        const educationResponse = await educationAPI.getAll()
+        const educationEntries = educationResponse.data || []
+
+        // Load personal info for other fields
+        const personalInfoResponse = await personalInfoAPI.get()
+        const personalInfo = personalInfoResponse.data.personalInfo || {}
+
+        setFormData(prev => ({
+          ...prev,
+          workExperiences: workExperiences.map(work => ({
+            id: work.id,
+            company: work.company || '',
+            position: work.position || '',
+            description: work.description || '',
+            startDate: work.startDate || '',
+            endDate: work.endDate || '',
+            isCurrent: work.isCurrent || false,
+            orderIndex: work.orderIndex || 0
+          })),
+          educationEntries: educationEntries.map(education => ({
+            id: education.id,
+            institution: education.institution || '',
+            degree: education.degree || '',
+            field: education.field || '',
+            description: education.description || '',
+            startDate: education.startDate || '',
+            endDate: education.endDate || '',
+            isCurrent: education.isCurrent || false,
+            orderIndex: education.orderIndex || 0
+          }))
+        }))
+
+        console.log('✅ Loaded existing data:', { workExperiences, educationEntries })
+      } catch (error) {
+        console.error('❌ Error loading existing data:', error)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+
+    loadExistingData()
+  }, [isOpen])
 
   const handleImageUpload = (field, file) => {
     if (file) {
@@ -48,7 +209,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
       setError('Nome e sobrenome são obrigatórios')
       return
@@ -62,17 +223,106 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setLoading(true)
     setError('')
 
-    const result = await updateProfile(formData)
-    
-    if (result.success) {
-      setSuccess('Perfil atualizado com sucesso!')
+    try {
+      // 1. Update basic profile information
+      const profileResult = await updateProfile(formData)
+
+      if (!profileResult.success) {
+        setError(profileResult.error)
+        setLoading(false)
+        return
+      }
+
+      // 2. Delete removed work experiences
+      for (const workId of deletedItems.workExperiences) {
+        try {
+          await workExperienceAPI.delete(workId)
+        } catch (error) {
+          console.error('Error deleting work experience:', error)
+        }
+      }
+
+      // Delete removed education entries
+      for (const educationId of deletedItems.educationEntries) {
+        try {
+          await educationAPI.delete(educationId)
+        } catch (error) {
+          console.error('Error deleting education entry:', error)
+        }
+      }
+
+      // 3. Save work experiences
+      for (const work of formData.workExperiences) {
+        if (work.company && work.position) {
+          if (work.id) {
+            // Update existing
+            await workExperienceAPI.update(work.id, {
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          } else {
+            // Create new
+            await workExperienceAPI.create({
+              company: work.company,
+              position: work.position,
+              description: work.description,
+              start_date: work.startDate,
+              end_date: work.endDate,
+              is_current: work.isCurrent,
+              order_index: work.orderIndex
+            })
+          }
+        }
+      }
+
+      // 4. Save education entries
+      for (const education of formData.educationEntries) {
+        if (education.institution && education.degree) {
+          if (education.id) {
+            // Update existing
+            await educationAPI.update(education.id, {
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          } else {
+            // Create new
+            await educationAPI.create({
+              institution: education.institution,
+              degree: education.degree,
+              field: education.field,
+              description: education.description,
+              start_date: education.startDate,
+              end_date: education.endDate,
+              is_current: education.isCurrent,
+              order_index: education.orderIndex
+            })
+          }
+        }
+      }
+
+      setSuccess('Perfil e experiências atualizados com sucesso!')
       setTimeout(() => {
         onClose()
+        // Refresh the page to show updated info
+        window.location.reload()
       }, 1500)
-    } else {
-      setError(result.error)
+
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      setError('Erro ao salvar o perfil. Tente novamente.')
     }
-    
+
     setLoading(false)
   }
 
@@ -302,34 +552,273 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Professional and Social Info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Briefcase size={16} className="inline mr-1" />
-                  Trabalho
-                </label>
+            {/* Professional Info - Work Experience */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Briefcase size={20} className="text-vibe-blue" />
+                  <h3 className="font-semibold text-gray-900">Experiência Profissional</h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={addWorkExperience}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm bg-vibe-blue text-white rounded-lg hover:bg-vibe-blue-dark"
+                  >
+                    <Plus size={14} />
+                    <span>Adicionar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('work')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedSections.work ? '−' : '+'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Simple work field (legacy) */}
+              <div className="mb-4">
                 <input
                   type="text"
                   value={formData.work}
                   onChange={(e) => handleInputChange('work', e.target.value)}
-                  placeholder="Ex: Designer na Empresa XYZ"
+                  placeholder="Ex: Designer na Empresa XYZ (campo rápido)"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">Campo rápido - ou use a seção expandida abaixo</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <GraduationCap size={16} className="inline mr-1" />
-                  Formação
-                </label>
+
+              {/* Expanded work experiences */}
+              {expandedSections.work && (
+                <div className="space-y-4">
+                  {formData.workExperiences.map((work, index) => (
+                    <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900">Experiência {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeWorkExperience(index)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={work.company}
+                            onChange={(e) => updateWorkExperience(index, 'company', e.target.value)}
+                            placeholder="Empresa"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={work.position}
+                            onChange={(e) => updateWorkExperience(index, 'position', e.target.value)}
+                            placeholder="Cargo"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={work.startDate}
+                            onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={work.endDate}
+                            onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
+                            disabled={work.isCurrent}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none disabled:bg-gray-100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={work.isCurrent}
+                            onChange={(e) => {
+                              updateWorkExperience(index, 'isCurrent', e.target.checked)
+                              if (e.target.checked) {
+                                updateWorkExperience(index, 'endDate', '')
+                              }
+                            }}
+                            className="w-4 h-4 text-vibe-blue border-gray-300 rounded focus:ring-vibe-blue"
+                          />
+                          <span className="text-sm text-gray-700">Trabalho atual</span>
+                        </label>
+                      </div>
+
+                      <div className="mt-3">
+                        <textarea
+                          value={work.description}
+                          onChange={(e) => updateWorkExperience(index, 'description', e.target.value)}
+                          placeholder="Descrição das responsabilidades..."
+                          rows={2}
+                          className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none resize-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {formData.workExperiences.length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma experiência adicionada. Clique em "Adicionar" para começar.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Education Info */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <GraduationCap size={20} className="text-vibe-blue" />
+                  <h3 className="font-semibold text-gray-900">Formação Acadêmica</h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={addEducation}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm bg-vibe-blue text-white rounded-lg hover:bg-vibe-blue-dark"
+                  >
+                    <Plus size={14} />
+                    <span>Adicionar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('education')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedSections.education ? '−' : '+'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Simple education field (legacy) */}
+              <div className="mb-4">
                 <input
                   type="text"
                   value={formData.education}
                   onChange={(e) => handleInputChange('education', e.target.value)}
-                  placeholder="Ex: Design Digital - UFPE"
+                  placeholder="Ex: Design Digital - UFPE (campo rápido)"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">Campo rápido - ou use a seção expandida abaixo</p>
               </div>
+
+              {/* Expanded education entries */}
+              {expandedSections.education && (
+                <div className="space-y-4">
+                  {formData.educationEntries.map((education, index) => (
+                    <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900">Formação {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeEducation(index)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={education.institution}
+                            onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                            placeholder="Instituição"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={education.degree}
+                            onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                            placeholder="Curso/Título"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <input
+                            type="text"
+                            value={education.field}
+                            onChange={(e) => updateEducation(index, 'field', e.target.value)}
+                            placeholder="Área de estudo"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={education.startDate}
+                            onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={education.endDate}
+                            onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
+                            disabled={education.isCurrent}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none disabled:bg-gray-100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={education.isCurrent}
+                            onChange={(e) => {
+                              updateEducation(index, 'isCurrent', e.target.checked)
+                              if (e.target.checked) {
+                                updateEducation(index, 'endDate', '')
+                              }
+                            }}
+                            className="w-4 h-4 text-vibe-blue border-gray-300 rounded focus:ring-vibe-blue"
+                          />
+                          <span className="text-sm text-gray-700">Cursando atualmente</span>
+                        </label>
+                      </div>
+
+                      <div className="mt-3">
+                        <textarea
+                          value={education.description}
+                          onChange={(e) => updateEducation(index, 'description', e.target.value)}
+                          placeholder="Descrição, especializações, projetos..."
+                          rows={2}
+                          className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none resize-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {formData.educationEntries.length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma formação adicionada. Clique em "Adicionar" para começar.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

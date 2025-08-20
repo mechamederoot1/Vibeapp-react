@@ -28,6 +28,8 @@ from app.api.notifications import router as notifications_router
 from app.api.friendships import router as friendships_router
 from app.api.personal_info import router as personal_info_router
 from app.api.highlights import router as highlights_router
+from app.api.work_experience import router as work_experience_router
+from app.api.education import router as education_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
@@ -44,6 +46,8 @@ from app.models.account_settings import AccountSettings
 from app.models.message import Message, Conversation, PostShare
 from app.models.personal_info import PersonalInfo
 from app.models.highlight import Highlight, HighlightStory
+from app.models.work_experience import WorkExperience
+from app.models.education import Education
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,18 +68,33 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# Configure CORS - allow all local network IPs for development
+def get_cors_origins():
+    origins = [
         "http://localhost:3000",
         "http://localhost:5173",
-        "http://192.168.1.109:3000",
-        "http://192.168.1.39:3000",
-        "http://192.168.1.130:3000",  # Add the specific IP from the error
         "http://127.0.0.1:3000",
+        "http://127.0.0.1:5173",
         "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
-    ],
+    ]
+
+    # Add common local network ranges for mobile development
+    # This allows access from mobile devices on the same network
+    for i in range(1, 255):
+        origins.extend([
+            f"http://192.168.1.{i}:3000",
+            f"http://192.168.1.{i}:5173",
+            f"http://192.168.0.{i}:3000",
+            f"http://192.168.0.{i}:5173",
+            f"http://10.0.0.{i}:3000",
+            f"http://10.0.0.{i}:5173"
+        ])
+
+    return origins
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -115,6 +134,8 @@ app.include_router(notifications_router, prefix="/api/notifications", tags=["not
 app.include_router(friendships_router, prefix="/api/friendships", tags=["friendships"])
 app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
 app.include_router(highlights_router, prefix="/api", tags=["highlights"])
+app.include_router(work_experience_router, prefix="/api", tags=["work_experience"])
+app.include_router(education_router, prefix="/api", tags=["education"])
 
 # WebSocket endpoint
 @app.websocket("/ws")
