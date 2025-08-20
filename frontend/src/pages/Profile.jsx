@@ -934,31 +934,47 @@ const Profile = () => {
             {visitorsExpanded && privacySettings.showVisitors && (
               <div className="px-3 pb-3">
                 {profileVisitors.length > 0 ? (
-                  <>
-                    {/* Avatares dos visitantes lado a lado */}
-                    <div className="flex space-x-3 overflow-x-auto pb-2 mb-3">
-                      {profileVisitors.slice(0, 5).map((visitorData, index) => (
-                        <AvatarWithStory
-                          key={index}
-                          user={{
-                            id: visitorData.user.id,
-                            name: visitorData.user.fullName,
-                            username: visitorData.user.username,
-                            avatar: visitorData.user.avatar,
-                            hasStory: false // Real stories would come from another API
-                          }}
-                          size="sm"
-                          className="flex-shrink-0"
-                        />
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => setShowVisitors(true)}
-                      className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-white rounded-lg"
-                    >
-                      Ver todos os visitantes
-                    </button>
-                  </>
+                  <div className="space-y-3">
+                    {profileVisitors.slice(0, 6).map((visitor) => (
+                      <div key={visitor.id} className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg cursor-pointer">
+                        <div className="w-10 h-10 rounded-full border-2 border-gray-200 p-0.5">
+                          {visitor.avatar ? (
+                            <img
+                              src={visitor.avatar}
+                              alt={visitor.name}
+                              className="w-full h-full rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+                              <span className="text-gray-600 text-sm font-semibold">
+                                {visitor.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-900 text-sm">{visitor.name}</p>
+                          <p className="text-gray-500 text-xs">@{visitor.username}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-gray-400 text-xs">
+                            {new Date(visitor.visitTime).toLocaleDateString('pt-BR', {
+                              day: 'numeric',
+                              month: 'short'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {profileVisitors.length > 6 && (
+                      <button
+                        onClick={() => setShowVisitors(true)}
+                        className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-gray-50 rounded-lg"
+                      >
+                        Ver todos os visitantes ({profileVisitors.length})
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center py-4">
                     <Eye size={24} className="text-gray-400 mx-auto mb-2" />
