@@ -157,6 +157,16 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/friends"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Friends />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/settings"
           element={
             <ProtectedRoute>
