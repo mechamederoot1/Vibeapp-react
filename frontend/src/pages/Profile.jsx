@@ -86,6 +86,25 @@ const Profile = () => {
   })
   const [viewAsVisitor, setViewAsVisitor] = useState(false)
 
+  // Function to reload personal info data
+  const reloadPersonalInfo = async () => {
+    try {
+      const personalInfoResponse = await personalInfoAPI.get()
+      setPersonalInfo(personalInfoResponse.data.personalInfo || null)
+      console.log('✅ Personal info reloaded successfully')
+    } catch (error) {
+      console.error('Error reloading personal info:', error)
+    }
+  }
+
+  // Add global refresh function
+  useEffect(() => {
+    window.refreshProfileData = reloadPersonalInfo
+    return () => {
+      delete window.refreshProfileData
+    }
+  }, [])
+
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
