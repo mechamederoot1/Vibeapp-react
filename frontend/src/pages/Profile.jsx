@@ -435,6 +435,15 @@ const Profile = () => {
           setPersonalInfo(null)
         }
 
+        // Load highlights
+        try {
+          const highlightsResponse = await highlightsAPI.get()
+          setHighlights(highlightsResponse.data.highlights || [])
+        } catch (error) {
+          console.error('Error loading highlights:', error)
+          setHighlights([])
+        }
+
       } catch (error) {
         console.error('Error loading user data:', error)
       } finally {
@@ -675,7 +684,7 @@ const Profile = () => {
 
   const handleViewStory = () => {
     // TODO: implementar visualização de story
-    console.log('Visualizar story do usu��rio')
+    console.log('Visualizar story do usuário')
     setShowAvatarDropdown(false)
   }
 
