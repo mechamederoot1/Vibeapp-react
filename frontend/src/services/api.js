@@ -148,6 +148,17 @@ export const friendshipsAPI = {
   getFriendshipStatus: (userId) => api.get(`/friendships/users/${userId}/friendship-status`)
 }
 
+// Personal Info endpoints
+export const personalInfoAPI = {
+  get: (userId = null) => {
+    const url = userId ? `/personal-info?user_id=${userId}` : '/personal-info'
+    return api.get(url)
+  },
+  update: (data) => api.put('/personal-info', data),
+  delete: () => api.delete('/personal-info'),
+  updatePrivacy: (privacy) => api.put('/personal-info/privacy', privacy)
+}
+
 // Development endpoints
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),
