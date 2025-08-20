@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Eye, MessageCircle, UserPlus, ChevronLeft } from 'lucide-react'
+import { Eye, MessageCircle, UserPlus, ChevronLeft, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Visits = () => {
@@ -12,6 +12,7 @@ const Visits = () => {
       username: 'ana_costa',
       name: 'Ana Costa',
       avatar: 'https://picsum.photos/100/100?random=visitor1',
+      visitTime: 'há 2 horas',
       isFriend: false,
       isMutualFriend: false
     },
@@ -20,6 +21,7 @@ const Visits = () => {
       username: 'joao_silva',
       name: 'João Silva',
       avatar: 'https://picsum.photos/100/100?random=visitor2',
+      visitTime: 'há 4 horas',
       isFriend: true,
       isMutualFriend: true
     },
@@ -28,6 +30,7 @@ const Visits = () => {
       username: 'maria_santos',
       name: 'Maria Santos',
       avatar: 'https://picsum.photos/100/100?random=visitor3',
+      visitTime: 'há 6 horas',
       isFriend: false,
       isMutualFriend: false
     },
@@ -36,6 +39,7 @@ const Visits = () => {
       username: 'pedro_oliveira',
       name: 'Pedro Oliveira',
       avatar: 'https://picsum.photos/100/100?random=visitor4',
+      visitTime: 'há 1 dia',
       isFriend: false,
       isMutualFriend: false
     },
@@ -44,6 +48,7 @@ const Visits = () => {
       username: 'sofia_lima',
       name: 'Sofia Lima',
       avatar: 'https://picsum.photos/100/100?random=visitor5',
+      visitTime: 'há 2 dias',
       isFriend: true,
       isMutualFriend: false
     },
@@ -52,6 +57,7 @@ const Visits = () => {
       username: 'carlos_pereira',
       name: 'Carlos Pereira',
       avatar: 'https://picsum.photos/100/100?random=visitor6',
+      visitTime: 'há 3 dias',
       isFriend: false,
       isMutualFriend: false
     },
@@ -60,6 +66,7 @@ const Visits = () => {
       username: 'lucia_martins',
       name: 'Lúcia Martins',
       avatar: 'https://picsum.photos/100/100?random=visitor7',
+      visitTime: 'há 1 semana',
       isFriend: true,
       isMutualFriend: true
     }
@@ -158,6 +165,10 @@ const Visits = () => {
                     )}
                   </div>
                   <p className="text-gray-600 text-sm">@{visitor.username}</p>
+                  <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
+                    <Clock size={12} />
+                    <span>{visitor.visitTime}</span>
+                  </div>
                 </div>
               </div>
               
