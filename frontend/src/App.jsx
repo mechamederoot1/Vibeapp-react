@@ -65,9 +65,19 @@ const AppContent = () => {
         />
 
         {/* Protected Routes */}
-        <Route 
-          path="/" 
-          element={<Navigate to="/feed" replace />}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Feed
+                  isPostModalOpen={isPostModalOpen}
+                  onClosePostModal={handleClosePostModal}
+                  onOpenPostModal={handleOpenPostModal}
+                />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/feed" 
