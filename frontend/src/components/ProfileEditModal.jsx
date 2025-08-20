@@ -317,11 +317,6 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
       setSuccess('Perfil e experiências atualizados com sucesso!')
 
-      // Notify parent component to refresh data
-      if (typeof window !== 'undefined' && window.refreshProfileData) {
-        await window.refreshProfileData()
-      }
-
       // Force a re-fetch of user profile to ensure UI is updated
       try {
         const { usersAPI } = await import('../services/api')
@@ -336,12 +331,13 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         console.error('Error fetching updated user profile:', error)
       }
 
+      // Notify parent component to refresh personal info data
+      if (typeof window !== 'undefined' && window.refreshProfileData) {
+        await window.refreshProfileData()
+      }
+
       setTimeout(() => {
         onClose()
-        // Reload as fallback if other mechanisms fail
-        if (typeof window === 'undefined' || !window.refreshProfileData) {
-          window.location.reload()
-        }
       }, 1500)
 
     } catch (error) {
@@ -840,7 +836,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
                   {formData.educationEntries.length === 0 && (
                     <p className="text-center text-gray-500 py-4">
-                      Nenhuma formação adicionada. Clique em "Adicionar" para começar.
+                      Nenhuma formação adicionada. Clique em "Adicionar" para come��ar.
                     </p>
                   )}
                 </div>
