@@ -44,6 +44,8 @@ from app.models.account_settings import AccountSettings
 from app.models.message import Message, Conversation, PostShare
 from app.models.personal_info import PersonalInfo
 from app.models.highlight import Highlight, HighlightStory
+from app.models.work_experience import WorkExperience
+from app.models.education import Education
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
