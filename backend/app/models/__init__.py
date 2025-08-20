@@ -8,6 +8,7 @@ from .account_settings import AccountSettings
 from .story import Story, StoryView
 from .message import Message, Conversation, PostShare
 from .personal_info import PersonalInfo
+from .highlight import Highlight, HighlightStory
 
 __all__ = [
     "User",
