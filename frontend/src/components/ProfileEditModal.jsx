@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart, Plus, Trash2, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { workExperienceAPI, educationAPI, personalInfoAPI } from '../services/api'
+import { workExperienceAPI, educationAPI, personalInfoAPI, api } from '../services/api'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
   const { user, updateProfile } = useAuth()
@@ -318,7 +318,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         }
       }
 
-      setSuccess('✅ Perfil e experiências atualizados com sucesso! As informações foram salvas e serão exibidas no seu perfil.')
+      setSuccess('✅ Perfil e experiências atualizados com sucesso! As informações foram salvas e ser��o exibidas no seu perfil.')
 
       // Force a re-fetch of user profile to ensure UI is updated
       try {
