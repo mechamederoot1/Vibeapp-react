@@ -124,15 +124,15 @@ const Profile = () => {
 
   // Use real user data from auth context, fallback to defaults
   const [profileData, setProfileData] = useState({
-    username: user?.username || user?.email?.split('@')[0] || 'usuario',
+    username: user?.username || (user?.email ? user.email.split('@')[0] : 'usuario'),
     name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
     bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
     isVerified: user?.isVerified || false,
-    followers: userStats.followersCount.toString(),
-    following: userStats.followingCount.toString(),
-    posts: userStats.postsCount.toString(),
-    profileViews: userStats.profileViewsCount.toString(),
-    friends: userStats.friendsCount.toString(),
+    followers: '0',
+    following: '0',
+    posts: '0',
+    profileViews: '0',
+    friends: '0',
     avatar: user?.avatar,
     coverPhoto: user?.coverPhoto,
     location: user?.location,
