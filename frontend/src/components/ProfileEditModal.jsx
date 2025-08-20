@@ -279,32 +279,29 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
       }
 
       // 4. Save education entries
+      console.log('🎓 Saving education entries:', formData.educationEntries)
       for (const education of formData.educationEntries) {
         if (education.institution && education.degree) {
+          const educationData = {
+            institution: education.institution,
+            degree: education.degree,
+            field: education.field,
+            description: education.description,
+            start_date: education.startDate,
+            end_date: education.endDate,
+            is_current: education.isCurrent,
+            order_index: education.orderIndex
+          }
+
           if (education.id) {
             // Update existing
-            await educationAPI.update(education.id, {
-              institution: education.institution,
-              degree: education.degree,
-              field: education.field,
-              description: education.description,
-              start_date: education.startDate,
-              end_date: education.endDate,
-              is_current: education.isCurrent,
-              order_index: education.orderIndex
-            })
+            console.log(`✏️ Updating education ${education.id}:`, educationData)
+            await educationAPI.update(education.id, educationData)
           } else {
             // Create new
-            await educationAPI.create({
-              institution: education.institution,
-              degree: education.degree,
-              field: education.field,
-              description: education.description,
-              start_date: education.startDate,
-              end_date: education.endDate,
-              is_current: education.isCurrent,
-              order_index: education.orderIndex
-            })
+            console.log('➕ Creating new education:', educationData)
+            const result = await educationAPI.create(educationData)
+            console.log('✅ Education created:', result.data)
           }
         }
       }
