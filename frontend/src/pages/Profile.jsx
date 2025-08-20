@@ -1677,14 +1677,6 @@ const Profile = () => {
         onPostUpdate={handlePostUpdate}
       />
 
-      {/* Multiple Work Education Modal */}
-      <MultipleWorkEducationModal
-        isOpen={showMultipleWorkEducationModal}
-        onClose={() => setShowMultipleWorkEducationModal(false)}
-        personalInfo={personalInfo}
-        onSave={handleMultipleWorkEducationSave}
-        loading={personalInfoLoading}
-      />
     </div>
   )
 }
