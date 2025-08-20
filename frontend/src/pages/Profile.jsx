@@ -934,10 +934,10 @@ const Profile = () => {
             {visitorsExpanded && (
               <div className="px-3 pb-3">
                 {profileVisitors.length > 0 ? (
-                  <div className="space-y-3">
-                    {profileVisitors.slice(0, 6).map((visitor) => (
-                      <div key={visitor.id} className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-lg cursor-pointer">
-                        <div className="w-10 h-10 rounded-full border-2 border-gray-200 p-0.5">
+                  <div className="flex space-x-3 overflow-x-auto pb-2">
+                    {profileVisitors.slice(0, 8).map((visitor) => (
+                      <div key={visitor.id} className="flex-shrink-0 w-20 text-center">
+                        <div className="w-16 h-16 rounded-full border-2 border-gray-200 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
                           {visitor.avatar ? (
                             <img
                               src={visitor.avatar}
@@ -952,27 +952,19 @@ const Profile = () => {
                             </div>
                           )}
                         </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900 text-sm">{visitor.name}</p>
-                          <p className="text-gray-500 text-xs">@{visitor.username}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-gray-400 text-xs">
-                            {new Date(visitor.visitTime).toLocaleDateString('pt-BR', {
-                              day: 'numeric',
-                              month: 'short'
-                            })}
-                          </p>
-                        </div>
+                        <span className="text-xs text-gray-600 block truncate">{visitor.name.split(' ')[0]}</span>
                       </div>
                     ))}
-                    {profileVisitors.length > 6 && (
-                      <button
-                        onClick={() => setShowVisitors(true)}
-                        className="w-full text-center text-vibe-blue text-sm font-medium py-2 hover:bg-gray-50 rounded-lg"
-                      >
-                        Ver todos os visitantes ({profileVisitors.length})
-                      </button>
+                    {profileVisitors.length > 8 && (
+                      <div className="flex-shrink-0 w-20 text-center">
+                        <button
+                          onClick={() => setShowVisitors(true)}
+                          className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex flex-col items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer mb-2 mx-auto"
+                        >
+                          <span className="text-gray-400 text-sm font-semibold">+{profileVisitors.length - 8}</span>
+                        </button>
+                        <span className="text-xs text-gray-600">Ver mais</span>
+                      </div>
                     )}
                   </div>
                 ) : (
