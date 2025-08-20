@@ -799,29 +799,57 @@ const Profile = () => {
             Destaques
           </h3>
           <div className="flex space-x-3 overflow-x-auto pb-2">
+            {/* Botão para adicionar novo destaque */}
+            <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer">
+                <span className="text-gray-400 text-2xl">+</span>
+              </div>
+              <span className="text-xs text-gray-600">Novo</span>
+            </div>
+
+            {/* Destaques com fotos de stories */}
             <div className="flex-shrink-0 w-20 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mb-2 mx-auto">
-                <Briefcase size={24} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-3 border-gray-300 p-0.5 mb-2 mx-auto">
+                <img
+                  src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=100&h=100&fit=crop&crop=face"
+                  alt="Trabalho"
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
               <span className="text-xs text-gray-600">Trabalho</span>
             </div>
+
             <div className="flex-shrink-0 w-20 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-400 rounded-full flex items-center justify-center mb-2 mx-auto">
-                <Camera size={24} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-3 border-gray-300 p-0.5 mb-2 mx-auto">
+                <img
+                  src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=100&h=100&fit=crop"
+                  alt="Viagens"
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
               <span className="text-xs text-gray-600">Viagens</span>
             </div>
+
             <div className="flex-shrink-0 w-20 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full flex items-center justify-center mb-2 mx-auto">
-                <Heart size={24} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-3 border-gray-300 p-0.5 mb-2 mx-auto">
+                <img
+                  src="https://images.unsplash.com/photo-1511895426328-dc8714191300?w=100&h=100&fit=crop&crop=face"
+                  alt="Momentos"
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
               <span className="text-xs text-gray-600">Momentos</span>
             </div>
+
             <div className="flex-shrink-0 w-20 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-400 rounded-full flex items-center justify-center mb-2 mx-auto">
-                <GraduationCap size={24} className="text-white" />
+              <div className="w-16 h-16 rounded-full border-3 border-gray-300 p-0.5 mb-2 mx-auto">
+                <img
+                  src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=100&h=100&fit=crop"
+                  alt="Eventos"
+                  className="w-full h-full rounded-full object-cover"
+                />
               </div>
-              <span className="text-xs text-gray-600">Formação</span>
+              <span className="text-xs text-gray-600">Eventos</span>
             </div>
           </div>
         </div>
