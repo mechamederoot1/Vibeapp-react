@@ -27,14 +27,13 @@ const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL detectada:', API_BASE_URL)
 console.log('🌐 Hostname atual:', window.location.hostname)
 
-// Cria instância da API apenas se não estiver no modo demo
-const api = API_BASE_URL ? axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
-}) : null
+})
 
 // Create special instance for uploads with longer timeout
 const uploadApi = axios.create({
