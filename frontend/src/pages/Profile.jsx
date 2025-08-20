@@ -1116,56 +1116,36 @@ const Profile = () => {
             )}
           </div>
           <div className="space-y-3">
-            {/* Experiências de Trabalho */}
-            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo && (
-              <div className="space-y-2">
-                {personalInfo.workExperiences.slice(0, 3).map((work, index) => (
-                  <div key={work.id || index} className="flex items-center text-sm text-gray-600">
-                    <Briefcase size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-                    <span>{work.displayText}</span>
-                  </div>
-                ))}
-                {personalInfo.workExperiences.length > 3 && (
-                  <button
-                    onClick={openMultipleWorkEducationModal}
-                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium ml-7"
-                  >
-                    Ver mais {personalInfo.workExperiences.length - 3} experiências
-                  </button>
+            {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
+            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo ? (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase size={16} className="mr-3 text-gray-500" />
+                <span>{personalInfo.workExperiences[0].displayText}</span>
+                {personalInfo.workExperiences.length > 1 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    +{personalInfo.workExperiences.length - 1} mais
+                  </span>
                 )}
               </div>
-            )}
-
-            {/* Formação Acadêmica */}
-            {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo && (
-              <div className="space-y-2">
-                {personalInfo.educationEntries.slice(0, 2).map((education, index) => (
-                  <div key={education.id || index} className="flex items-center text-sm text-gray-600">
-                    <GraduationCap size={16} className="mr-3 text-gray-500 flex-shrink-0" />
-                    <span>{education.displayText}</span>
-                  </div>
-                ))}
-                {personalInfo.educationEntries.length > 2 && (
-                  <button
-                    onClick={openMultipleWorkEducationModal}
-                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium ml-7"
-                  >
-                    Ver mais {personalInfo.educationEntries.length - 2} formações
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Experiência de trabalho antiga (fallback) */}
-            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (!personalInfo.workExperiences || personalInfo.workExperiences.length === 0) && (
+            ) : personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Briefcase size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.work.displayText}</span>
               </div>
             )}
 
-            {/* Educação antiga (fallback) */}
-            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (!personalInfo.educationEntries || personalInfo.educationEntries.length === 0) && (
+            {/* Formação acadêmica - primeira das múltiplas ou campo simples */}
+            {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo ? (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap size={16} className="mr-3 text-gray-500" />
+                <span>{personalInfo.educationEntries[0].displayText}</span>
+                {personalInfo.educationEntries.length > 1 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    +{personalInfo.educationEntries.length - 1} mais
+                  </span>
+                )}
+              </div>
+            ) : personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap size={16} className="mr-3 text-gray-500" />
                 <span>{personalInfo.education.displayText}</span>
