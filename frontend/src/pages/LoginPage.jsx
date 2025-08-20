@@ -37,7 +37,7 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="auth-container p-4 md:p-8">
+    <div className="auth-container px-0 py-4 md:p-8">
       <div className="auth-card max-w-md rounded-lg md:rounded-lg p-6 md:p-8">
         {/* Header */}
         <div className="text-center mb-8">
