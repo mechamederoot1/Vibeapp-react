@@ -312,10 +312,18 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
       }
 
       setSuccess('Perfil e experiências atualizados com sucesso!')
+
+      // Notify parent component to refresh data instead of full page reload
+      if (typeof window !== 'undefined' && window.refreshProfileData) {
+        window.refreshProfileData()
+      }
+
       setTimeout(() => {
         onClose()
-        // Refresh the page to show updated info
-        window.location.reload()
+        // Only reload if parent refresh mechanism is not available
+        if (typeof window === 'undefined' || !window.refreshProfileData) {
+          window.location.reload()
+        }
       }, 1500)
 
     } catch (error) {
