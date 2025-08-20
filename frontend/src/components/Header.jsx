@@ -117,7 +117,7 @@ const Header = ({ onOpenPostModal }) => {
 
           {/* Notificações */}
           <button
-            onClick={() => setShowNotifications(true)}
+            onClick={() => navigate('/notifications')}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
             title="Notificações"
           >
