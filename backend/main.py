@@ -40,6 +40,7 @@ from app.models.profile_view import ProfileView
 from app.models.notification import Notification
 from app.models.account_settings import AccountSettings
 from app.models.message import Message, Conversation, PostShare
+from app.models.personal_info import PersonalInfo
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
