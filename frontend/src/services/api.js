@@ -103,42 +103,10 @@ export const authAPI = {
 export const usersAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (userData) => api.put('/users/profile', userData),
-  getUserById: (userId) => {
-    if (!api) {
-      console.log('🔄 API not available - using fallback for getUserById')
-      return fallbackStorage.getProfile() // Use same profile data
-    }
-    return api.get(`/users/${userId}`)
-  },
-  getUserStats: (userId) => {
-    if (!api) {
-      console.log('🔄 API not available - using fallback for getUserStats')
-      return Promise.resolve({
-        data: {
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          profileViewsCount: 0,
-          friendsCount: 0
-        }
-      })
-    }
-    return api.get(`/users/${userId}/stats`)
-  },
-  getProfileVisitors: (userId, limit = 10) => {
-    if (!api) {
-      console.log('🔄 API not available - using fallback for getProfileVisitors')
-      return Promise.resolve({ data: [] })
-    }
-    return api.get(`/users/${userId}/visitors?limit=${limit}`)
-  },
-  searchUsers: (query, limit = 20) => {
-    if (!api) {
-      console.log('🔄 API not available - using fallback for searchUsers')
-      return Promise.resolve({ data: [] })
-    }
-    return api.get(`/users/search?q=${query}&limit=${limit}`)
-  }
+  getUserById: (userId) => api.get(`/users/${userId}`),
+  getUserStats: (userId) => api.get(`/users/${userId}/stats`),
+  getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
+  searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
 }
 
 // Posts endpoints
