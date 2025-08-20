@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
-  MessageCircle as MessageCircleIcon, Share, Repeat2
+  MessageCircle as MessageCircleIcon, Share, Repeat2, MapPin, Briefcase,
+  GraduationCap, Globe, Calendar, Heart as HeartIcon
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI } from '../services/api'
