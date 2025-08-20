@@ -21,6 +21,8 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
+import CreateHighlightModal from '../components/CreateHighlightModal'
+import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const Profile = () => {
   const { user, setUser } = useAuth()
@@ -754,7 +756,7 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Bot��o de opções da capa */}
+          {/* Bot����o de opções da capa */}
           <div className="absolute top-4 right-4">
             <button
               className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
