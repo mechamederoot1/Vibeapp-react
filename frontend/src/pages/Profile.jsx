@@ -918,46 +918,81 @@ const Profile = () => {
 
         {/* Informações Pessoais */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-            <Users size={18} className="mr-2" />
-            Informações Pessoais
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-gray-800 flex items-center">
+              <Users size={18} className="mr-2" />
+              Informações Pessoais
+            </h3>
+            {!viewAsVisitor && (
+              <button
+                onClick={openPersonalInfoEditor}
+                className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+              >
+                Editar
+              </button>
+            )}
+          </div>
           <div className="space-y-3">
-            {profileData.work && (
+            {personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.work}</span>
+                <span>{personalInfo.work.displayText}</span>
               </div>
             )}
-            {profileData.education && (
+            {personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.education}</span>
+                <span>{personalInfo.education.displayText}</span>
               </div>
             )}
-            {profileData.currentCity && (
+            {personalInfo?.location?.displayText && personalInfo.privacy?.showLocationInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.currentCity}</span>
+                <span>{personalInfo.location.displayText}</span>
               </div>
             )}
-            {profileData.relationship && (
+            {personalInfo?.relationship?.displayText && personalInfo.privacy?.showRelationshipInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <HeartIcon size={16} className="mr-3 text-gray-500" />
-                <span>{profileData.relationship}</span>
+                <span>{personalInfo.relationship.displayText}</span>
               </div>
             )}
-            {profileData.website && (
+            {personalInfo?.contact?.websitePersonal && personalInfo.privacy?.showContactInfo && (
               <div className="flex items-center text-sm text-gray-600">
                 <Globe size={16} className="mr-3 text-gray-500" />
                 <a
-                  href={`https://${profileData.website}`}
+                  href={personalInfo.contact.websitePersonal.startsWith('http')
+                    ? personalInfo.contact.websitePersonal
+                    : `https://${personalInfo.contact.websitePersonal}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-vibe-blue hover:underline"
                 >
-                  {profileData.website}
+                  {personalInfo.contact.websitePersonal}
                 </a>
+              </div>
+            )}
+
+            {/* Se não há informações para mostrar */}
+            {(!personalInfo ||
+              (!personalInfo.work?.displayText || !personalInfo.privacy?.showWorkInfo) &&
+              (!personalInfo.education?.displayText || !personalInfo.privacy?.showEducationInfo) &&
+              (!personalInfo.location?.displayText || !personalInfo.privacy?.showLocationInfo) &&
+              (!personalInfo.relationship?.displayText || !personalInfo.privacy?.showRelationshipInfo) &&
+              (!personalInfo.contact?.websitePersonal || !personalInfo.privacy?.showContactInfo)
+            ) && (
+              <div className="text-center py-3">
+                <p className="text-gray-500 text-sm">
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
+                </p>
+                {!viewAsVisitor && (
+                  <button
+                    onClick={openPersonalInfoEditor}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
+                  >
+                    Adicionar informações
+                  </button>
+                )}
               </div>
             )}
           </div>
