@@ -1102,21 +1102,12 @@ const Profile = () => {
                   {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação dispon��vel.'}
                 </p>
                 {!viewAsVisitor && (
-                  <div className="mt-2 space-x-2">
-                    <button
-                      onClick={openMultipleWorkEducationModal}
-                      className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
-                    >
-                      Adicionar experiências
-                    </button>
-                    <span className="text-gray-400">•</span>
-                    <button
-                      onClick={openPersonalInfoEditor}
-                      className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
-                    >
-                      Outras informações
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
+                  >
+                    Adicionar informações
+                  </button>
                 )}
               </div>
             )}
