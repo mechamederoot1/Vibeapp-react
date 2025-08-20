@@ -6,7 +6,7 @@ import {
   GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, workExperienceAPI, educationAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -21,7 +21,6 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import MultipleWorkEducationModal from '../components/MultipleWorkEducationModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
@@ -57,7 +56,6 @@ const Profile = () => {
 
   // Estados para informações pessoais
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
-  const [showMultipleWorkEducationModal, setShowMultipleWorkEducationModal] = useState(false)
   const [personalInfo, setPersonalInfo] = useState(null)
   const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
 
@@ -109,7 +107,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n������ Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -203,7 +201,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Alguém mais viciado em café? �� Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
+            content: 'Alguém mais viciado em café? ☕ Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
             imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=400&fit=crop',
             createdAt: '2024-01-11T11:30:00Z',
             likes: 92,
