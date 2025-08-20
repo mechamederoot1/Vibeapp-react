@@ -287,6 +287,60 @@ const Profile = () => {
         ]
 
         setProfileVisitors(mockVisitors)
+
+        // Mock personal info
+        const mockPersonalInfo = {
+          work: {
+            company: 'TechCorp',
+            position: 'UX Designer',
+            description: 'Responsável pelo design de experiência do usuário em produtos digitais',
+            startDate: '2022-01-01',
+            endDate: null,
+            isCurrent: true,
+            displayText: 'UX Designer na TechCorp'
+          },
+          education: {
+            institution: 'UFPE',
+            degree: 'Design Digital',
+            field: 'Design e Tecnologia',
+            startDate: '2018-03-01',
+            endDate: '2021-12-15',
+            isCurrent: false,
+            displayText: 'Design Digital - UFPE'
+          },
+          location: {
+            currentCity: 'Recife, PE',
+            hometown: 'São Paulo, SP',
+            country: 'Brasil',
+            displayText: 'Recife, PE'
+          },
+          relationship: {
+            status: 'in_relationship',
+            partnerName: 'João Silva',
+            anniversary: '2020-02-14',
+            displayText: 'Em um relacionamento com João Silva'
+          },
+          contact: {
+            websitePersonal: 'marina-santos.design',
+            websiteProfessional: null,
+            phoneMobile: null,
+            phoneWork: null
+          },
+          additional: {
+            languages: 'Português, Inglês, Espanhol',
+            interests: 'Design, Tecnologia, Fotografia, Viagens',
+            aboutMe: 'Apaixonada por criar experiências digitais que fazem a diferença na vida das pessoas.'
+          },
+          privacy: {
+            showWorkInfo: true,
+            showEducationInfo: true,
+            showLocationInfo: true,
+            showRelationshipInfo: true,
+            showContactInfo: false
+          }
+        }
+
+        setPersonalInfo(mockPersonalInfo)
         setLoading(false)
         return
       }
