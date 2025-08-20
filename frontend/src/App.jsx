@@ -21,12 +21,44 @@ import VibeLogoSimple from './components/VibeLogoSimple'
 import DatabaseFixer from './components/DatabaseFixer'
 
 const ProtectedRoute = ({ children }) => {
-  // Autenticação temporariamente desabilitada para navegação livre
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <VibeLogoSimple size="xl" />
+          <div className="mt-4 text-gray-600">Carregando...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />
+  }
+
   return children
 }
 
 const PublicRoute = ({ children }) => {
-  // Redirecionamento temporariamente desabilitado para navegação livre
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <VibeLogoSimple size="xl" />
+          <div className="mt-4 text-gray-600">Carregando...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (user) {
+    return <Navigate to="/feed" replace />
+  }
+
   return children
 }
 

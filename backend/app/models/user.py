@@ -17,6 +17,7 @@ class User(Base):
     # Profile information
     bio = Column(Text, nullable=True)
     avatar = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)  # For consistency with frontend
     cover_photo = Column(String, nullable=True)
     location = Column(String, nullable=True)
     website = Column(String, nullable=True)
@@ -87,8 +88,10 @@ class User(Base):
             "firstName": self.first_name,
             "lastName": self.last_name,
             "fullName": self.full_name,
+            "displayName": self.display_name,
             "bio": self.bio,
             "avatar": self.avatar,
+            "avatar_url": self.avatar_url or self.avatar,
             "coverPhoto": self.cover_photo,
             "location": self.location,
             "website": self.website,
@@ -112,8 +115,10 @@ class User(Base):
             "firstName": self.first_name,
             "lastName": self.last_name,
             "fullName": self.full_name,
+            "displayName": self.display_name,
             "bio": self.bio,
             "avatar": self.avatar,
+            "avatar_url": self.avatar_url or self.avatar,
             "coverPhoto": self.cover_photo,
             "location": self.location,
             "website": self.website,
