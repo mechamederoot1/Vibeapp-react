@@ -385,34 +385,273 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Professional and Social Info */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Briefcase size={16} className="inline mr-1" />
-                  Trabalho
-                </label>
+            {/* Professional Info - Work Experience */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Briefcase size={20} className="text-vibe-blue" />
+                  <h3 className="font-semibold text-gray-900">Experiência Profissional</h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={addWorkExperience}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm bg-vibe-blue text-white rounded-lg hover:bg-vibe-blue-dark"
+                  >
+                    <Plus size={14} />
+                    <span>Adicionar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('work')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedSections.work ? '−' : '+'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Simple work field (legacy) */}
+              <div className="mb-4">
                 <input
                   type="text"
                   value={formData.work}
                   onChange={(e) => handleInputChange('work', e.target.value)}
-                  placeholder="Ex: Designer na Empresa XYZ"
+                  placeholder="Ex: Designer na Empresa XYZ (campo rápido)"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">Campo rápido - ou use a seção expandida abaixo</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <GraduationCap size={16} className="inline mr-1" />
-                  Formação
-                </label>
+
+              {/* Expanded work experiences */}
+              {expandedSections.work && (
+                <div className="space-y-4">
+                  {formData.workExperiences.map((work, index) => (
+                    <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900">Experiência {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeWorkExperience(index)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={work.company}
+                            onChange={(e) => updateWorkExperience(index, 'company', e.target.value)}
+                            placeholder="Empresa"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={work.position}
+                            onChange={(e) => updateWorkExperience(index, 'position', e.target.value)}
+                            placeholder="Cargo"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={work.startDate}
+                            onChange={(e) => updateWorkExperience(index, 'startDate', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={work.endDate}
+                            onChange={(e) => updateWorkExperience(index, 'endDate', e.target.value)}
+                            disabled={work.isCurrent}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none disabled:bg-gray-100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={work.isCurrent}
+                            onChange={(e) => {
+                              updateWorkExperience(index, 'isCurrent', e.target.checked)
+                              if (e.target.checked) {
+                                updateWorkExperience(index, 'endDate', '')
+                              }
+                            }}
+                            className="w-4 h-4 text-vibe-blue border-gray-300 rounded focus:ring-vibe-blue"
+                          />
+                          <span className="text-sm text-gray-700">Trabalho atual</span>
+                        </label>
+                      </div>
+
+                      <div className="mt-3">
+                        <textarea
+                          value={work.description}
+                          onChange={(e) => updateWorkExperience(index, 'description', e.target.value)}
+                          placeholder="Descrição das responsabilidades..."
+                          rows={2}
+                          className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none resize-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {formData.workExperiences.length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma experiência adicionada. Clique em "Adicionar" para começar.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Education Info */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <GraduationCap size={20} className="text-vibe-blue" />
+                  <h3 className="font-semibold text-gray-900">Formação Acadêmica</h3>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={addEducation}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm bg-vibe-blue text-white rounded-lg hover:bg-vibe-blue-dark"
+                  >
+                    <Plus size={14} />
+                    <span>Adicionar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleSection('education')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    {expandedSections.education ? '−' : '+'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Simple education field (legacy) */}
+              <div className="mb-4">
                 <input
                   type="text"
                   value={formData.education}
                   onChange={(e) => handleInputChange('education', e.target.value)}
-                  placeholder="Ex: Design Digital - UFPE"
+                  placeholder="Ex: Design Digital - UFPE (campo rápido)"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:border-vibe-blue focus:outline-none"
                 />
+                <p className="text-xs text-gray-500 mt-1">Campo rápido - ou use a seção expandida abaixo</p>
               </div>
+
+              {/* Expanded education entries */}
+              {expandedSections.education && (
+                <div className="space-y-4">
+                  {formData.educationEntries.map((education, index) => (
+                    <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-gray-900">Formação {index + 1}</h4>
+                        <button
+                          type="button"
+                          onClick={() => removeEducation(index)}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={education.institution}
+                            onChange={(e) => updateEducation(index, 'institution', e.target.value)}
+                            placeholder="Instituição"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="text"
+                            value={education.degree}
+                            onChange={(e) => updateEducation(index, 'degree', e.target.value)}
+                            placeholder="Curso/Título"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <input
+                            type="text"
+                            value={education.field}
+                            onChange={(e) => updateEducation(index, 'field', e.target.value)}
+                            placeholder="Área de estudo"
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={education.startDate}
+                            onChange={(e) => updateEducation(index, 'startDate', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <input
+                            type="date"
+                            value={education.endDate}
+                            onChange={(e) => updateEducation(index, 'endDate', e.target.value)}
+                            disabled={education.isCurrent}
+                            className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none disabled:bg-gray-100"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={education.isCurrent}
+                            onChange={(e) => {
+                              updateEducation(index, 'isCurrent', e.target.checked)
+                              if (e.target.checked) {
+                                updateEducation(index, 'endDate', '')
+                              }
+                            }}
+                            className="w-4 h-4 text-vibe-blue border-gray-300 rounded focus:ring-vibe-blue"
+                          />
+                          <span className="text-sm text-gray-700">Cursando atualmente</span>
+                        </label>
+                      </div>
+
+                      <div className="mt-3">
+                        <textarea
+                          value={education.description}
+                          onChange={(e) => updateEducation(index, 'description', e.target.value)}
+                          placeholder="Descrição, especializações, projetos..."
+                          rows={2}
+                          className="w-full p-2 border border-gray-300 rounded focus:border-vibe-blue focus:outline-none resize-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  {formData.educationEntries.length === 0 && (
+                    <p className="text-center text-gray-500 py-4">
+                      Nenhuma formação adicionada. Clique em "Adicionar" para começar.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
