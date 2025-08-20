@@ -107,7 +107,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n������ Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -1107,21 +1107,12 @@ const Profile = () => {
               Informações Pessoais
             </h3>
             {!viewAsVisitor && (
-              <div className="flex space-x-2">
-                <button
-                  onClick={openMultipleWorkEducationModal}
-                  className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors flex items-center space-x-1"
-                >
-                  <Plus size={14} />
-                  <span>Experiências</span>
-                </button>
-                <button
-                  onClick={openPersonalInfoEditor}
-                  className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
-                >
-                  Editar
-                </button>
-              </div>
+              <button
+                onClick={openPersonalInfoEditor}
+                className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+              >
+                Editar
+              </button>
             )}
           </div>
           <div className="space-y-3">
@@ -1219,7 +1210,7 @@ const Profile = () => {
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação dispon��vel.'}
                 </p>
                 {!viewAsVisitor && (
                   <div className="mt-2 space-x-2">
