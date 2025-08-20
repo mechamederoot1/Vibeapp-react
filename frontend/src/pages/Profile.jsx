@@ -87,7 +87,7 @@ const Profile = () => {
   const [viewAsVisitor, setViewAsVisitor] = useState(false)
 
   // Function to reload personal info data
-  const reloadPersonalInfo = async () => {
+  const reloadPersonalInfo = useCallback(async () => {
     try {
       console.log('🔄 Reloading personal info...')
       const personalInfoResponse = await personalInfoAPI.get()
@@ -105,20 +105,23 @@ const Profile = () => {
     } catch (error) {
       console.error('❌ Error reloading personal info:', error)
     }
-  }
+  }, [])
+
+  // Function to update user context
+  const updateUserContext = useCallback((updatedUser) => {
+    console.log('🔄 Updating user context with:', updatedUser)
+    setUser(updatedUser)
+  }, [setUser])
 
   // Add global refresh functions
   useEffect(() => {
     window.refreshProfileData = reloadPersonalInfo
-    window.updateUserContext = (updatedUser) => {
-      console.log('🔄 Updating user context with:', updatedUser)
-      setUser(updatedUser)
-    }
+    window.updateUserContext = updateUserContext
     return () => {
       delete window.refreshProfileData
       delete window.updateUserContext
     }
-  }, [setUser])
+  }, [reloadPersonalInfo, updateUserContext])
 
   // Load user data
   useEffect(() => {
