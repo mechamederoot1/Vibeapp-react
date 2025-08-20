@@ -619,6 +619,17 @@ const Profile = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h2 className="text-xl font-bold">{profileData.username}</h2>
         <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setViewAsVisitor(!viewAsVisitor)}
+            className={`px-3 py-1 rounded-full text-sm transition-colors ${
+              viewAsVisitor
+                ? 'bg-vibe-blue text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            <Eye size={16} className="inline mr-1" />
+            {viewAsVisitor ? 'Ver como dono' : 'Ver como visitante'}
+          </button>
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <MoreHorizontal size={24} className="text-gray-600" />
           </button>
