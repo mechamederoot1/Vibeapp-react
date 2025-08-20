@@ -27,6 +27,11 @@ const BottomNavigation = () => {
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
+      // Fallback: definir valores padrão para não quebrar a interface
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
     }
   }
 
