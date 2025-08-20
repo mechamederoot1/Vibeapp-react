@@ -225,12 +225,11 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     setLoading(true)
     setError('')
 
-    console.log('💾 Starting save process...')
-    console.log('📋 Form data to save:', {
-      workExperiences: formData.workExperiences,
-      educationEntries: formData.educationEntries,
-      deletedItems
-    })
+    console.log('🚀 PROFILE EDIT MODAL: Starting save process...')
+    console.log('📋 PROFILE EDIT MODAL: Form data to save:', formData)
+    console.log('💼 PROFILE EDIT MODAL: Work experiences:', formData.workExperiences)
+    console.log('🎓 PROFILE EDIT MODAL: Education entries:', formData.educationEntries)
+    console.log('🗑️ PROFILE EDIT MODAL: Deleted items:', deletedItems)
 
     try {
       // 1. Update basic profile information
@@ -836,7 +835,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
                   {formData.educationEntries.length === 0 && (
                     <p className="text-center text-gray-500 py-4">
-                      Nenhuma formação adicionada. Clique em "Adicionar" para come��ar.
+                      Nenhuma formação adicionada. Clique em "Adicionar" para começar.
                     </p>
                   )}
                 </div>
