@@ -445,6 +445,14 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [initialStoryIndex, setInitialStoryIndex] = useState(0)
 
   const loadFeed = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando feed vazio')
+      setPosts([])
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       const response = await postsAPI.getFeed(page)
