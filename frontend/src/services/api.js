@@ -90,61 +90,14 @@ export const authAPI = {
   createDemoUser: () => api.post('/auth/create-demo-user')
 }
 
-// Users endpoints with demo mode support
+// Users endpoints
 export const usersAPI = {
-  getProfile: async () => {
-    if (!API_BASE_URL) {
-      const token = localStorage.getItem('token')
-      if (!token) throw new Error('Not authenticated')
-      return createDemoAuthResponse()
-    }
-    return api.get('/users/profile')
-  },
-
-  updateProfile: async (userData) => {
-    if (!API_BASE_URL) {
-      console.log('🎭 Modo demo - Perfil atualizado')
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return createDemoAuthResponse(userData)
-    }
-    return api.put('/users/profile', userData)
-  },
-
-  getUserById: async (userId) => {
-    if (!API_BASE_URL) {
-      return createDemoAuthResponse()
-    }
-    return api.get(`/users/${userId}`)
-  },
-
-  getUserStats: async (userId) => {
-    if (!API_BASE_URL) {
-      return {
-        data: {
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          profileViewsCount: 0,
-          friendsCount: 0
-        }
-      }
-    }
-    return api.get(`/users/${userId}/stats`)
-  },
-
-  getProfileVisitors: async (userId, limit = 10) => {
-    if (!API_BASE_URL) {
-      return { data: [] }
-    }
-    return api.get(`/users/${userId}/visitors?limit=${limit}`)
-  },
-
-  searchUsers: async (query, limit = 20) => {
-    if (!API_BASE_URL) {
-      return { data: [] }
-    }
-    return api.get(`/users/search?q=${query}&limit=${limit}`)
-  }
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (userData) => api.put('/users/profile', userData),
+  getUserById: (userId) => api.get(`/users/${userId}`),
+  getUserStats: (userId) => api.get(`/users/${userId}/stats`),
+  getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
+  searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
 }
 
 // Posts endpoints
