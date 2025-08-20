@@ -95,7 +95,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
     setToken(null)
     localStorage.removeItem('token')
+    localStorage.removeItem('authToken')
+    localStorage.removeItem('currentUser')
+    // Clear any demo data
+    localStorage.removeItem('personalInfo')
+    localStorage.removeItem('workExperiences')
+    localStorage.removeItem('educationEntries')
     delete api.defaults.headers.Authorization
+    console.log('✅ Logout successful - all data cleared')
   }
 
   const updateProfile = async (profileData) => {
