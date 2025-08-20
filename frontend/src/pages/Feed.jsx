@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI, storiesAPI } from '../services/api'
+import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
