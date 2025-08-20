@@ -58,9 +58,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      console.log('🔍 Tentando registrar usuário:', userData.email)
       const response = await authAPI.register(userData)
       const { user: newUser, access_token: authToken } = response.data
 
+      console.log('✅ Registro bem-sucedido:', newUser.email)
       setUser(newUser)
       setToken(authToken)
       localStorage.setItem('token', authToken)
@@ -68,9 +70,23 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true }
     } catch (error) {
+      console.error('❌ Erro no registro:', error)
+
+      let errorMessage = 'Erro ao criar conta'
+
+      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+        errorMessage = 'Servidor temporariamente indisponível. Tente novamente em alguns minutos.'
+      } else if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || 'Dados inválidos. Verifique as informações e tente novamente.'
+      } else if (error.response?.status === 409) {
+        errorMessage = 'Este email já está cadastrado. Tente fazer login.'
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail
+      }
+
       return {
         success: false,
-        error: error.response?.data?.detail || 'Erro ao criar conta'
+        error: errorMessage
       }
     }
   }
