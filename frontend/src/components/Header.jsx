@@ -38,6 +38,16 @@ const Header = ({ onOpenPostModal }) => {
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando valores padrão para contadores')
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
+      return
+    }
+
     try {
       const [messagesRes, notificationsRes] = await Promise.all([
         api.get('/api/messages/unread-count'),
