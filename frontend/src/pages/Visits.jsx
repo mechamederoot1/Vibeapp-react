@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Eye, MessageCircle, UserPlus, Clock, MapPin, ChevronLeft } from 'lucide-react'
+import { Eye, MessageCircle, UserPlus, ChevronLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const Visits = () => {
@@ -12,9 +12,6 @@ const Visits = () => {
       username: 'ana_costa',
       name: 'Ana Costa',
       avatar: 'https://picsum.photos/100/100?random=visitor1',
-      visitTime: '2 horas atrás',
-      visitCount: 3,
-      location: 'São Paulo, SP',
       isFriend: false,
       isMutualFriend: false
     },
@@ -23,9 +20,6 @@ const Visits = () => {
       username: 'joao_silva',
       name: 'João Silva',
       avatar: 'https://picsum.photos/100/100?random=visitor2',
-      visitTime: '4 horas atrás',
-      visitCount: 1,
-      location: 'Rio de Janeiro, RJ',
       isFriend: true,
       isMutualFriend: true
     },
@@ -34,9 +28,6 @@ const Visits = () => {
       username: 'maria_santos',
       name: 'Maria Santos',
       avatar: 'https://picsum.photos/100/100?random=visitor3',
-      visitTime: '6 horas atrás',
-      visitCount: 5,
-      location: 'Belo Horizonte, MG',
       isFriend: false,
       isMutualFriend: false
     },
@@ -45,9 +36,6 @@ const Visits = () => {
       username: 'pedro_oliveira',
       name: 'Pedro Oliveira',
       avatar: 'https://picsum.photos/100/100?random=visitor4',
-      visitTime: '1 dia atrás',
-      visitCount: 2,
-      location: 'Salvador, BA',
       isFriend: false,
       isMutualFriend: false
     },
@@ -56,9 +44,6 @@ const Visits = () => {
       username: 'sofia_lima',
       name: 'Sofia Lima',
       avatar: 'https://picsum.photos/100/100?random=visitor5',
-      visitTime: '2 dias atrás',
-      visitCount: 7,
-      location: 'Brasília, DF',
       isFriend: true,
       isMutualFriend: false
     },
@@ -67,9 +52,6 @@ const Visits = () => {
       username: 'carlos_pereira',
       name: 'Carlos Pereira',
       avatar: 'https://picsum.photos/100/100?random=visitor6',
-      visitTime: '3 dias atrás',
-      visitCount: 1,
-      location: 'Porto Alegre, RS',
       isFriend: false,
       isMutualFriend: false
     },
@@ -78,9 +60,6 @@ const Visits = () => {
       username: 'lucia_martins',
       name: 'Lúcia Martins',
       avatar: 'https://picsum.photos/100/100?random=visitor7',
-      visitTime: '1 semana atrás',
-      visitCount: 4,
-      location: 'Recife, PE',
       isFriend: true,
       isMutualFriend: true
     }
@@ -99,9 +78,8 @@ const Visits = () => {
     return mockVisitors
   }
 
-  const formatVisitCount = (count) => {
-    if (count === 1) return '1 visualização'
-    return `${count} visualizações`
+  const handleProfileClick = (username) => {
+    navigate(`/profile/${username}`)
   }
 
   return (
@@ -167,7 +145,12 @@ const Visits = () => {
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2">
-                    <p className="font-semibold truncate">{visitor.name}</p>
+                    <button
+                      onClick={() => handleProfileClick(visitor.username)}
+                      className="font-semibold truncate hover:text-vibe-blue transition-colors text-left"
+                    >
+                      {visitor.name}
+                    </button>
                     {visitor.isMutualFriend && (
                       <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">
                         Amigos
@@ -175,24 +158,6 @@ const Visits = () => {
                     )}
                   </div>
                   <p className="text-gray-600 text-sm">@{visitor.username}</p>
-                  
-                  <div className="flex items-center space-x-4 mt-1">
-                    <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                      <Clock size={12} />
-                      <span>{visitor.visitTime}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-gray-500 text-xs">
-                      <Eye size={12} />
-                      <span>{formatVisitCount(visitor.visitCount)}</span>
-                    </div>
-                  </div>
-                  
-                  {visitor.location && (
-                    <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
-                      <MapPin size={12} />
-                      <span>{visitor.location}</span>
-                    </div>
-                  )}
                 </div>
               </div>
               
