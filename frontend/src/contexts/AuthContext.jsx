@@ -14,29 +14,6 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-
-  // Check for existing authenticated user
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('authToken')
-      if (token) {
-        try {
-          const { usersAPI } = await import('../services/api')
-          const response = await usersAPI.getProfile()
-          setUser(response.data)
-          console.log('✅ User authenticated from token')
-        } catch (error) {
-          console.log('❌ Token invalid, clearing auth')
-          localStorage.removeItem('authToken')
-          localStorage.removeItem('currentUser')
-          setUser(null)
-        }
-      }
-      setLoading(false)
-    }
-
-    checkAuth()
-  }, [])
   const [token, setToken] = useState(localStorage.getItem('token'))
 
   useEffect(() => {
