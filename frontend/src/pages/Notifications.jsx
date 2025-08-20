@@ -11,11 +11,20 @@ const Notifications = () => {
 
   // Carregar notificações
   const loadNotifications = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando notificações vazias')
+      setNotifications([])
+      setLoading(false)
+      return
+    }
+
     try {
       const response = await api.get('/api/notifications/');
       setNotifications(response.data);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
+      setNotifications([]) // Set empty array as fallback
     } finally {
       setLoading(false);
     }
