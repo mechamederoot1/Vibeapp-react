@@ -464,6 +464,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       setStories(response.data.storiesByAuthor || [])
     } catch (error) {
       console.error('Error loading stories:', error)
+      setStories([]) // Set empty array as fallback
     }
   }
 
