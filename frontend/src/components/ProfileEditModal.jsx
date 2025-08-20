@@ -317,14 +317,28 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
       setSuccess('Perfil e experiências atualizados com sucesso!')
 
-      // Notify parent component to refresh data instead of full page reload
+      // Notify parent component to refresh data
       if (typeof window !== 'undefined' && window.refreshProfileData) {
-        window.refreshProfileData()
+        await window.refreshProfileData()
+      }
+
+      // Force a re-fetch of user profile to ensure UI is updated
+      try {
+        const { usersAPI } = await import('../services/api')
+        const updatedUserResponse = await usersAPI.getProfile()
+        console.log('🔄 Fetched updated user profile:', updatedUserResponse.data)
+
+        // Update the user context with the latest data
+        if (typeof window !== 'undefined' && window.updateUserContext) {
+          window.updateUserContext(updatedUserResponse.data)
+        }
+      } catch (error) {
+        console.error('Error fetching updated user profile:', error)
       }
 
       setTimeout(() => {
         onClose()
-        // Only reload if parent refresh mechanism is not available
+        // Reload as fallback if other mechanisms fail
         if (typeof window === 'undefined' || !window.refreshProfileData) {
           window.location.reload()
         }
