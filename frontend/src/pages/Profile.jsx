@@ -804,7 +804,7 @@ const Profile = () => {
               </button>
             </>
           ) : (
-            /* Botões para dono do perfil */
+            /* Botões para dono do perfil - sem mensagem */
             <>
               <button
                 onClick={() => setShowEditModal(true)}
@@ -818,9 +818,6 @@ const Profile = () => {
               >
                 <Users size={20} />
                 <span className="hidden sm:inline">Conexões</span>
-              </button>
-              <button className="btn-secondary px-4">
-                <MessageCircle size={20} />
               </button>
             </>
           )}
