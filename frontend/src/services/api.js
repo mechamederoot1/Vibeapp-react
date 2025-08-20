@@ -199,45 +199,10 @@ export const workExperienceAPI = {
 
 // Education endpoints
 export const educationAPI = {
-  getAll: () => {
-    if (!api) {
-      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
-      return Promise.resolve({ data: educationEntries })
-    }
-    return api.get('/education')
-  },
-  create: (educationData) => {
-    if (!api) {
-      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
-      const newEducation = { ...educationData, id: Date.now(), displayText: `${educationData.degree} - ${educationData.institution}` }
-      educationEntries.push(newEducation)
-      localStorage.setItem('educationEntries', JSON.stringify(educationEntries))
-      return Promise.resolve({ data: newEducation })
-    }
-    return api.post('/education', educationData)
-  },
-  update: (id, educationData) => {
-    if (!api) {
-      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
-      const index = educationEntries.findIndex(e => e.id == id)
-      if (index !== -1) {
-        educationEntries[index] = { ...educationEntries[index], ...educationData, displayText: `${educationData.degree} - ${educationData.institution}` }
-        localStorage.setItem('educationEntries', JSON.stringify(educationEntries))
-        return Promise.resolve({ data: educationEntries[index] })
-      }
-      return Promise.reject(new Error('Education entry not found'))
-    }
-    return api.put(`/education/${id}`, educationData)
-  },
-  delete: (id) => {
-    if (!api) {
-      const educationEntries = JSON.parse(localStorage.getItem('educationEntries') || '[]')
-      const filtered = educationEntries.filter(e => e.id != id)
-      localStorage.setItem('educationEntries', JSON.stringify(filtered))
-      return Promise.resolve({ message: 'Education entry deleted' })
-    }
-    return api.delete(`/education/${id}`)
-  }
+  getAll: () => api.get('/education'),
+  create: (educationData) => api.post('/education', educationData),
+  update: (id, educationData) => api.put(`/education/${id}`, educationData),
+  delete: (id) => api.delete(`/education/${id}`)
 }
 
 // Highlights endpoints
