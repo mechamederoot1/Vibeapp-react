@@ -15,8 +15,8 @@ const Visits = () => {
       visitTime: '2 horas atrás',
       visitCount: 3,
       location: 'São Paulo, SP',
-      isFollowing: false,
-      isMutualFollow: false
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 2,
@@ -26,8 +26,8 @@ const Visits = () => {
       visitTime: '4 horas atrás',
       visitCount: 1,
       location: 'Rio de Janeiro, RJ',
-      isFollowing: true,
-      isMutualFollow: true
+      isFriend: true,
+      isMutualFriend: true
     },
     {
       id: 3,
@@ -37,8 +37,8 @@ const Visits = () => {
       visitTime: '6 horas atrás',
       visitCount: 5,
       location: 'Belo Horizonte, MG',
-      isFollowing: false,
-      isMutualFollow: false
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 4,
@@ -48,8 +48,8 @@ const Visits = () => {
       visitTime: '1 dia atrás',
       visitCount: 2,
       location: 'Salvador, BA',
-      isFollowing: false,
-      isMutualFollow: false
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 5,
@@ -59,8 +59,8 @@ const Visits = () => {
       visitTime: '2 dias atrás',
       visitCount: 7,
       location: 'Brasília, DF',
-      isFollowing: true,
-      isMutualFollow: false
+      isFriend: true,
+      isMutualFriend: false
     },
     {
       id: 6,
@@ -70,8 +70,8 @@ const Visits = () => {
       visitTime: '3 dias atrás',
       visitCount: 1,
       location: 'Porto Alegre, RS',
-      isFollowing: false,
-      isMutualFollow: false
+      isFriend: false,
+      isMutualFriend: false
     },
     {
       id: 7,
@@ -81,8 +81,8 @@ const Visits = () => {
       visitTime: '1 semana atrás',
       visitCount: 4,
       location: 'Recife, PE',
-      isFollowing: true,
-      isMutualFollow: true
+      isFriend: true,
+      isMutualFriend: true
     }
   ]
 
@@ -158,7 +158,7 @@ const Visits = () => {
                     alt={visitor.name}
                     className="w-12 h-12 rounded-full object-cover"
                   />
-                  {visitor.isMutualFollow && (
+                  {visitor.isMutualFriend && (
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white">
                       <span className="text-white text-xs">✓</span>
                     </div>
@@ -168,9 +168,9 @@ const Visits = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2">
                     <p className="font-semibold truncate">{visitor.name}</p>
-                    {visitor.isMutualFollow && (
+                    {visitor.isMutualFriend && (
                       <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">
-                        Seguindo mutuamente
+                        Amigos
                       </span>
                     )}
                   </div>
@@ -202,17 +202,17 @@ const Visits = () => {
                   <MessageCircle size={18} />
                 </button>
                 
-                {!visitor.isFollowing ? (
+                {!visitor.isFriend ? (
                   <button className="bg-vibe-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-vibe-blue-dark transition-colors">
                     <div className="flex items-center space-x-1">
                       <UserPlus size={16} />
-                      <span>Seguir</span>
+                      <span>Adicionar</span>
                     </div>
                   </button>
                 ) : (
                   <button className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                    Seguindo
-                  </button>
+                    Amigos
+                    </button>
                 )}
               </div>
             </div>
