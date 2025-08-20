@@ -94,7 +94,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n🏢 Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n��� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -786,6 +786,42 @@ const Profile = () => {
           <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
             {profileData.bio}
           </p>
+        </div>
+
+        {/* Botões de Ação */}
+        <div className="flex space-x-2 mb-6">
+          {viewAsVisitor ? (
+            /* Botões para visitante */
+            <>
+              <button className="btn-primary flex-1">
+                <UserPlus size={20} className="mr-2" />
+                Adicionar
+              </button>
+              <button className="btn-secondary px-4">
+                <MessageCircle size={20} />
+              </button>
+            </>
+          ) : (
+            /* Botões para dono do perfil */
+            <>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="btn-primary flex-1"
+              >
+                Editar Perfil
+              </button>
+              <button
+                onClick={() => setShowConnections(true)}
+                className="btn-secondary px-4 flex items-center space-x-2"
+              >
+                <Users size={20} />
+                <span className="hidden sm:inline">Conexões</span>
+              </button>
+              <button className="btn-secondary px-4">
+                <MessageCircle size={20} />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Informações Pessoais */}
