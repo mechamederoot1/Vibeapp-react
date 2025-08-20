@@ -98,12 +98,50 @@ export const authAPI = {
 
 // Users endpoints
 export const usersAPI = {
-  getProfile: () => api.get('/users/profile'),
-  updateProfile: (userData) => api.put('/users/profile', userData),
-  getUserById: (userId) => api.get(`/users/${userId}`),
-  getUserStats: (userId) => api.get(`/users/${userId}/stats`),
-  getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
-  searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
+  getProfile: () => {
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    return api.get('/users/profile')
+  },
+  updateProfile: (userData) => {
+    console.log('🔄 usersAPI.updateProfile called with:', userData)
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    console.log('📤 Making API call to PUT /users/profile')
+    return api.put('/users/profile', userData)
+  },
+  getUserById: (userId) => {
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    return api.get(`/users/${userId}`)
+  },
+  getUserStats: (userId) => {
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    return api.get(`/users/${userId}/stats`)
+  },
+  getProfileVisitors: (userId, limit = 10) => {
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    return api.get(`/users/${userId}/visitors?limit=${limit}`)
+  },
+  searchUsers: (query, limit = 20) => {
+    if (!api) {
+      console.error('❌ API not available - in demo mode')
+      return Promise.reject(new Error('API not available in demo mode'))
+    }
+    return api.get(`/users/search?q=${query}&limit=${limit}`)
+  }
 }
 
 // Posts endpoints
