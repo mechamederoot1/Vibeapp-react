@@ -233,13 +233,17 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
 
     try {
       // 1. Update basic profile information
+      console.log('🔄 PROFILE EDIT MODAL: Calling updateProfile with data:', formData)
       const profileResult = await updateProfile(formData)
+      console.log('📤 PROFILE EDIT MODAL: updateProfile result:', profileResult)
 
       if (!profileResult.success) {
+        console.error('❌ PROFILE EDIT MODAL: updateProfile failed:', profileResult.error)
         setError(profileResult.error)
         setLoading(false)
         return
       }
+      console.log('✅ PROFILE EDIT MODAL: updateProfile succeeded')
 
       // 2. Delete removed work experiences
       for (const workId of deletedItems.workExperiences) {
