@@ -89,11 +89,21 @@ const Profile = () => {
   // Function to reload personal info data
   const reloadPersonalInfo = async () => {
     try {
+      console.log('🔄 Reloading personal info...')
       const personalInfoResponse = await personalInfoAPI.get()
-      setPersonalInfo(personalInfoResponse.data.personalInfo || null)
-      console.log('✅ Personal info reloaded successfully')
+      const newPersonalInfo = personalInfoResponse.data.personalInfo || null
+      setPersonalInfo(newPersonalInfo)
+      console.log('✅ Personal info reloaded successfully:', newPersonalInfo)
+
+      // Also show work experiences and education if available
+      if (newPersonalInfo?.workExperiences) {
+        console.log('💼 Work experiences found:', newPersonalInfo.workExperiences.length)
+      }
+      if (newPersonalInfo?.educationEntries) {
+        console.log('🎓 Education entries found:', newPersonalInfo.educationEntries.length)
+      }
     } catch (error) {
-      console.error('Error reloading personal info:', error)
+      console.error('❌ Error reloading personal info:', error)
     }
   }
 
