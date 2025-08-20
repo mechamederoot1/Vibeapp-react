@@ -60,6 +60,10 @@ class User(Base):
     # Destaques de stories
     highlights = relationship("Highlight", back_populates="user", order_by="Highlight.order_index")
 
+    # Experiências de trabalho e formação
+    work_experiences = relationship("WorkExperience", back_populates="user", order_by="WorkExperience.order_index")
+    education_entries = relationship("Education", back_populates="user", order_by="Education.order_index")
+
     def set_password(self, password: str):
         """Hash and set the password"""
         salt = bcrypt.gensalt()

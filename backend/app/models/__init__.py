@@ -9,6 +9,8 @@ from .story import Story, StoryView
 from .message import Message, Conversation, PostShare
 from .personal_info import PersonalInfo
 from .highlight import Highlight, HighlightStory
+from .work_experience import WorkExperience
+from .education import Education
 
 __all__ = [
     "User",
@@ -29,5 +31,7 @@ __all__ = [
     "PostShare",
     "PersonalInfo",
     "Highlight",
-    "HighlightStory"
+    "HighlightStory",
+    "WorkExperience",
+    "Education"
 ]
