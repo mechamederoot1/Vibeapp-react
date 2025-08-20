@@ -1231,32 +1231,59 @@ const Profile = () => {
 
         {/* Stories/Highlights */}
         <div className="mb-6">
-          <div className="flex space-x-4 overflow-x-auto pb-2">
+          <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
             {/* Adicionar novo destaque */}
-            <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer">
-                <span className="text-gray-400 text-2xl">+</span>
+            {!viewAsVisitor && (
+              <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+                <button
+                  onClick={openCreateHighlight}
+                  className="w-16 h-16 rounded-full border-2 border-gray-300 border-dashed flex items-center justify-center hover:border-vibe-blue hover:bg-gray-50 transition-colors cursor-pointer"
+                  disabled={highlightsLoading}
+                >
+                  <span className="text-gray-400 text-2xl">+</span>
+                </button>
+                <span className="text-xs text-gray-600">Novo</span>
               </div>
-              <span className="text-xs text-gray-600">Novo</span>
-            </div>
+            )}
 
-            {/* Destaques dos stories */}
-            {userStories && userStories.length > 0 ? (
-              userStories.map((story) => (
-                <div key={story.id} className="flex-shrink-0 w-20 text-center">
-                  <div className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
-                    <img
-                      src={story.imageUrl}
-                      alt={story.title}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  </div>
-                  <span className="text-xs text-gray-600">{story.title}</span>
+            {/* Destaques existentes */}
+            {highlights && highlights.length > 0 ? (
+              highlights.map((highlight) => (
+                <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
+                  <button className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
+                    {highlight.coverImageUrl ? (
+                      <img
+                        src={highlight.coverImageUrl}
+                        alt={highlight.title}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500 text-xs font-bold">
+                          {highlight.title.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                  <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
+                  <span className="text-xs text-gray-400">{highlight.storiesCount} stories</span>
                 </div>
               ))
+            ) : !viewAsVisitor ? (
+              <div className="flex-1 flex items-center justify-center py-4">
+                <div className="text-center">
+                  <p className="text-gray-500 text-sm mb-2">Nenhum destaque ainda.</p>
+                  <button
+                    onClick={openCreateHighlight}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
+                  >
+                    Criar seu primeiro destaque
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="flex-1 flex items-center justify-center py-4">
-                <p className="text-gray-500 text-sm">Nenhum destaque ainda. Crie stories para adicioná-los aqui!</p>
+                <p className="text-gray-500 text-sm">Este usuário não possui destaques.</p>
               </div>
             )}
           </div>
