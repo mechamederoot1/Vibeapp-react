@@ -985,6 +985,18 @@ const Profile = () => {
           <Grid size={20} />
         </button>
         <button
+          onClick={() => setActiveTab('videos')}
+          className={`flex-1 p-3 flex items-center justify-center ${
+            activeTab === 'videos'
+              ? 'border-b-2 border-gray-900 text-gray-900'
+              : 'text-gray-500'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" />
+          </svg>
+        </button>
+        <button
           onClick={() => setActiveTab('saved')}
           className={`flex-1 p-3 flex items-center justify-center ${
             activeTab === 'saved'
