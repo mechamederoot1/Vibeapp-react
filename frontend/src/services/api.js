@@ -166,7 +166,7 @@ export const userService = {
   getProfile: (userId) => usersAPI.getUserById(userId),
   updateProfile: (userId, data) => usersAPI.updateProfile(data),
   getProfileVisitors: (userId) => usersAPI.getProfileVisitors(userId),
-  getFriends: (userId) => usersAPI.getUserStats(userId),
+  getFriends: (userId) => friendshipsAPI.getUserFriends(userId),
 }
 
 export const postService = {
