@@ -39,6 +39,11 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
     education: false
   })
 
+  const [deletedItems, setDeletedItems] = useState({
+    workExperiences: [],
+    educationEntries: []
+  })
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
@@ -64,6 +69,14 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
   }
 
   const removeWorkExperience = (index) => {
+    const workToRemove = formData.workExperiences[index]
+    if (workToRemove.id) {
+      // Track for deletion if it has an ID (exists in backend)
+      setDeletedItems(prev => ({
+        ...prev,
+        workExperiences: [...prev.workExperiences, workToRemove.id]
+      }))
+    }
     setFormData(prev => ({
       ...prev,
       workExperiences: prev.workExperiences.filter((_, i) => i !== index)
@@ -99,6 +112,14 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
   }
 
   const removeEducation = (index) => {
+    const educationToRemove = formData.educationEntries[index]
+    if (educationToRemove.id) {
+      // Track for deletion if it has an ID (exists in backend)
+      setDeletedItems(prev => ({
+        ...prev,
+        educationEntries: [...prev.educationEntries, educationToRemove.id]
+      }))
+    }
     setFormData(prev => ({
       ...prev,
       educationEntries: prev.educationEntries.filter((_, i) => i !== index)
@@ -687,7 +708,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
                   {formData.educationEntries.map((education, index) => (
                     <div key={index} className="border border-gray-100 rounded-lg p-4 bg-gray-50">
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium text-gray-900">Formaç��o {index + 1}</h4>
+                        <h4 className="font-medium text-gray-900">Formação {index + 1}</h4>
                         <button
                           type="button"
                           onClick={() => removeEducation(index)}
