@@ -1,36 +1,31 @@
 import axios from 'axios'
 
-// Detecta se está rodando no Builder.io
-const isBuilderEnvironment = () => {
-  const hostname = window.location.hostname
-  return hostname.includes('fly.dev') || hostname.includes('builder.io') || hostname.includes('netlify.app')
-}
-
 // Configuração base da API
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL
   }
 
-  // Se está no Builder.io ou ambiente de produção, não tenta conectar backend local
-  if (isBuilderEnvironment()) {
-    console.log('🌐 Detectado ambiente Builder.io - usando modo demo')
-    return null // Indica que deve usar modo demo
-  }
+  // Detecta o IP da rede automaticamente
+  const hostname = window.location.hostname
 
-  // Em desenvolvimento local, usa localhost
-  if (import.meta.env.DEV && window.location.hostname === 'localhost') {
+  // Se estiver acessando por localhost, usa localhost para API também
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return 'http://localhost:8000/api'
   }
 
-  // Para rede local (ex: 192.168.x.x)
-  const hostname = window.location.hostname
-  return `http://${hostname}:8000/api`
+  // Se estiver acessando por IP da rede, usa o mesmo IP para a API
+  if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    return `http://${hostname}:8000/api`
+  }
+
+  // Para outros casos, assume localhost
+  return 'http://localhost:8000/api'
 }
 
 const API_BASE_URL = getApiBaseUrl()
-console.log('🔧 API Base URL:', API_BASE_URL)
-console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
+console.log('🔧 API Base URL detectada:', API_BASE_URL)
+console.log('🌐 Hostname atual:', window.location.hostname)
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
