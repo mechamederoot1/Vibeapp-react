@@ -97,19 +97,39 @@ export const authAPI = {
 }
 
 // Users endpoints
+// Fallback functions for when API is not available
+const fallbackStorage = {
+  getProfile: () => {
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
+    console.log('📦 FALLBACK: Loading user from localStorage:', user)
+    return Promise.resolve({ data: user })
+  },
+  updateProfile: (userData) => {
+    console.log('📦 FALLBACK: Saving user to localStorage:', userData)
+    // Get current user data
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+    // Merge with new data
+    const updatedUser = { ...currentUser, ...userData }
+    // Save back to localStorage
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+    console.log('✅ FALLBACK: User data saved successfully')
+    return Promise.resolve({ data: updatedUser })
+  }
+}
+
 export const usersAPI = {
   getProfile: () => {
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using localStorage fallback')
+      return fallbackStorage.getProfile()
     }
     return api.get('/users/profile')
   },
   updateProfile: (userData) => {
     console.log('🔄 usersAPI.updateProfile called with:', userData)
     if (!api) {
-      console.error('❌ API not available - in demo mode')
-      return Promise.reject(new Error('API not available in demo mode'))
+      console.log('🔄 API not available - using localStorage fallback')
+      return fallbackStorage.updateProfile(userData)
     }
     console.log('📤 Making API call to PUT /users/profile')
     return api.put('/users/profile', userData)
