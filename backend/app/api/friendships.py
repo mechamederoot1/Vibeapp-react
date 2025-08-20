@@ -8,7 +8,7 @@ from ..database.database import get_db
 from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.notification import Notification
-from ..auth import get_current_user
+from .auth import get_current_user
 from pydantic import BaseModel
 
 router = APIRouter()
