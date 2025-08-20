@@ -27,5 +27,7 @@ __all__ = [
     "Message",
     "Conversation",
     "PostShare",
-    "PersonalInfo"
+    "PersonalInfo",
+    "Highlight",
+    "HighlightStory"
 ]
