@@ -10,6 +10,7 @@ import Notifications from './pages/Notifications'
 import Messages from './pages/Messages'
 import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
+import Visits from './pages/Visits'
 import ReactionTest from './components/ReactionTest'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
@@ -140,6 +141,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Profile />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/visits"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Visits />
               </Layout>
             </ProtectedRoute>
           }
