@@ -56,6 +56,9 @@ class User(Base):
     # Informações pessoais detalhadas
     personal_info = relationship("PersonalInfo", back_populates="user", uselist=False)
 
+    # Destaques de stories
+    highlights = relationship("Highlight", back_populates="user", order_by="Highlight.order_index")
+
     def set_password(self, password: str):
         """Hash and set the password"""
         salt = bcrypt.gensalt()
