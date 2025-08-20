@@ -21,6 +21,7 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
+import MultipleWorkEducationModal from '../components/MultipleWorkEducationModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
@@ -56,6 +57,7 @@ const Profile = () => {
 
   // Estados para informações pessoais
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
+  const [showMultipleWorkEducationModal, setShowMultipleWorkEducationModal] = useState(false)
   const [personalInfo, setPersonalInfo] = useState(null)
   const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
 
