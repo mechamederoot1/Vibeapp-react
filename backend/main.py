@@ -145,21 +145,7 @@ async def health_check():
 async def health_check_simple():
     return {"status": "ok"}
 
-# Error handlers
-@app.exception_handler(404)
-async def not_found_handler(request, exc):
-    return JSONResponse(
-        status_code=404,
-        content={"detail": "Endpoint not found"}
-    )
-
-@app.exception_handler(500)
-async def internal_error_handler(request, exc):
-    print(f"Internal server error: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"}
-    )
+# Basic error handling is handled by FastAPI automatically
 
 if __name__ == "__main__":
     uvicorn.run(
