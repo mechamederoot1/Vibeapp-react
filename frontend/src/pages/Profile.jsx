@@ -59,6 +59,11 @@ const Profile = () => {
   const [personalInfo, setPersonalInfo] = useState(null)
   const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
 
+  // Estados para destaques
+  const [highlights, setHighlights] = useState([])
+  const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
+  const [highlightsLoading, setHighlightsLoading] = useState(false)
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     friendsCount: 0,
@@ -756,7 +761,7 @@ const Profile = () => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Bot����o de opções da capa */}
+          {/* Bot��o de opções da capa */}
           <div className="absolute top-4 right-4">
             <button
               className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
