@@ -28,6 +28,8 @@ from app.api.notifications import router as notifications_router
 from app.api.friendships import router as friendships_router
 from app.api.personal_info import router as personal_info_router
 from app.api.highlights import router as highlights_router
+from app.api.work_experience import router as work_experience_router
+from app.api.education import router as education_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
@@ -117,6 +119,8 @@ app.include_router(notifications_router, prefix="/api/notifications", tags=["not
 app.include_router(friendships_router, prefix="/api/friendships", tags=["friendships"])
 app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
 app.include_router(highlights_router, prefix="/api", tags=["highlights"])
+app.include_router(work_experience_router, prefix="/api", tags=["work_experience"])
+app.include_router(education_router, prefix="/api", tags=["education"])
 
 # WebSocket endpoint
 @app.websocket("/ws")
