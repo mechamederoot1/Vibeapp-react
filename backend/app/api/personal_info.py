@@ -4,7 +4,7 @@ from typing import Optional
 from datetime import date
 
 from ..database.database import get_db
-from ..models import User, PersonalInfo
+from ..models import User, PersonalInfo, WorkExperience, Education
 from ..api.auth import get_current_user
 from pydantic import BaseModel
 
