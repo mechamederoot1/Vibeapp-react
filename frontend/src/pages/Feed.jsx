@@ -445,6 +445,14 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [initialStoryIndex, setInitialStoryIndex] = useState(0)
 
   const loadFeed = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando feed vazio')
+      setPosts([])
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       const response = await postsAPI.getFeed(page)
@@ -452,17 +460,26 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     } catch (error) {
       console.error('Error loading feed:', error)
       setError('Erro ao carregar feed')
+      setPosts([]) // Set empty array as fallback
     } finally {
       setLoading(false)
     }
   }
 
   const loadStories = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando stories vazias')
+      setStories([])
+      return
+    }
+
     try {
       const response = await storiesAPI.getStories()
       setStories(response.data.storiesByAuthor || [])
     } catch (error) {
       console.error('Error loading stories:', error)
+      setStories([]) // Set empty array as fallback
     }
   }
 

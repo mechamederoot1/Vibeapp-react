@@ -15,6 +15,16 @@ const BottomNavigation = () => {
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando valores padrão para contadores')
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
+      return
+    }
+
     try {
       const [messagesRes, notificationsRes] = await Promise.all([
         api.get('/api/messages/unread-count'),
@@ -27,6 +37,11 @@ const BottomNavigation = () => {
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
+      // Fallback: definir valores padrão para não quebrar a interface
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
     }
   }
 
@@ -56,7 +71,6 @@ const BottomNavigation = () => {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
-    { path: '/explore', icon: Search, label: 'Explorar' },
     { path: '/create', icon: PlusCircle, label: 'Criar' },
     {
       path: '/messages',

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
-import NotificationsList from './NotificationsList'
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 
@@ -12,7 +11,6 @@ const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
     notifications: 0
@@ -38,6 +36,16 @@ const Header = ({ onOpenPostModal }) => {
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = async () => {
+    // Modo offline/demo - não fazer chamadas de API
+    if (import.meta.env.DEV) {
+      console.log('🔧 Modo demo - usando valores padrão para contadores')
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
+      return
+    }
+
     try {
       const [messagesRes, notificationsRes] = await Promise.all([
         api.get('/api/messages/unread-count'),
@@ -50,6 +58,11 @@ const Header = ({ onOpenPostModal }) => {
       })
     } catch (error) {
       console.error('Erro ao carregar contadores:', error)
+      // Fallback: definir valores padrão para não quebrar a interface
+      setUnreadCounts({
+        messages: 0,
+        notifications: 0
+      })
     }
   }
 
@@ -102,7 +115,7 @@ const Header = ({ onOpenPostModal }) => {
 
           {/* Notificações */}
           <button
-            onClick={() => setShowNotifications(true)}
+            onClick={() => navigate('/notifications')}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
             title="Notificações"
           >
@@ -114,18 +127,13 @@ const Header = ({ onOpenPostModal }) => {
             )}
           </button>
 
-          {/* Mensagens */}
+          {/* Pesquisar */}
           <button
-            onClick={() => navigate('/messages')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-            title="Mensagens"
+            onClick={() => navigate('/search')}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            title="Pesquisar amigos"
           >
-            <MessageCircle size={24} className="text-gray-600" />
-            {unreadCounts.messages > 0 && (
-              <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                {unreadCounts.messages > 99 ? '99+' : unreadCounts.messages}
-              </span>
-            )}
+            <Search size={24} className="text-gray-600" />
           </button>
 
           {/* User Avatar with Dropdown */}
@@ -162,16 +170,6 @@ const Header = ({ onOpenPostModal }) => {
         </div>
       </div>
 
-      {/* Modal de Notificações */}
-      {showNotifications && (
-        <NotificationsList
-          onClose={() => {
-            setShowNotifications(false)
-            // Recarregar contadores após fechar
-            loadUnreadCounts()
-          }}
-        />
-      )}
     </header>
   )
 }

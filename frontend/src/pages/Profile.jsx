@@ -73,16 +73,49 @@ const Profile = () => {
     const loadUserData = async () => {
       if (!user?.id) return
 
+      // Modo offline/demo - não fazer chamadas de API
+      if (import.meta.env.DEV) {
+        console.log('🔧 Modo demo - usando dados padrão para o perfil')
+        setUserStats({
+          followersCount: 0,
+          followingCount: 0,
+          postsCount: 0,
+          profileViewsCount: 0,
+          friendsCount: 0
+        })
+        setUserPosts([])
+        setProfileVisitors([])
+        setLoading(false)
+        return
+      }
+
       try {
         setLoading(true)
 
         // Load user stats
-        const statsResponse = await usersAPI.getUserStats(user.id)
-        setUserStats(statsResponse.data)
+        try {
+          const statsResponse = await usersAPI.getUserStats(user.id)
+          setUserStats(statsResponse.data)
+        } catch (error) {
+          console.error('Error loading user stats:', error)
+          // Use default stats
+          setUserStats({
+            followersCount: 0,
+            followingCount: 0,
+            postsCount: 0,
+            profileViewsCount: 0,
+            friendsCount: 0
+          })
+        }
 
         // Load user posts
-        const postsResponse = await postsAPI.getUserPosts(user.id)
-        setUserPosts(postsResponse.data.posts || [])
+        try {
+          const postsResponse = await postsAPI.getUserPosts(user.id)
+          setUserPosts(postsResponse.data.posts || [])
+        } catch (error) {
+          console.error('Error loading user posts:', error)
+          setUserPosts([])
+        }
 
         // Load profile visitors (only if user wants to show them)
         if (privacySettings.showVisitors) {
@@ -92,6 +125,7 @@ const Profile = () => {
           } catch (error) {
             // User might not have permission to see visitors
             console.log('Could not load visitors:', error.response?.data?.detail)
+            setProfileVisitors([])
           }
         }
 
@@ -107,15 +141,15 @@ const Profile = () => {
 
   // Use real user data from auth context, fallback to defaults
   const [profileData, setProfileData] = useState({
-    username: user?.username || user?.email?.split('@')[0] || 'usuario',
+    username: user?.username || (user?.email ? user.email.split('@')[0] : 'usuario'),
     name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
     bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
     isVerified: user?.isVerified || false,
-    followers: userStats.followersCount.toString(),
-    following: userStats.followingCount.toString(),
-    posts: userStats.postsCount.toString(),
-    profileViews: userStats.profileViewsCount.toString(),
-    friends: userStats.friendsCount.toString(),
+    followers: '0',
+    following: '0',
+    posts: '0',
+    profileViews: '0',
+    friends: '0',
     avatar: user?.avatar,
     coverPhoto: user?.coverPhoto,
     location: user?.location,
@@ -127,7 +161,7 @@ const Profile = () => {
     if (user) {
       setProfileData(prev => ({
         ...prev,
-        username: user.username || user.email?.split('@')[0] || 'usuario',
+        username: user.username || (user.email ? user.email.split('@')[0] : 'usuario'),
         name: user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Usuário',
         bio: user.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
         isVerified: user.isVerified || false,
@@ -138,6 +172,18 @@ const Profile = () => {
       }))
     }
   }, [user])
+
+  // Update profileData when userStats changes
+  useEffect(() => {
+    setProfileData(prev => ({
+      ...prev,
+      followers: (userStats.followersCount || 0).toString(),
+      following: (userStats.followingCount || 0).toString(),
+      posts: (userStats.postsCount || 0).toString(),
+      profileViews: (userStats.profileViewsCount || 0).toString(),
+      friends: (userStats.friendsCount || 0).toString()
+    }))
+  }, [userStats])
 
   // Real data is now loaded from backend via useEffect
 
@@ -304,7 +350,7 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-    console.log('🖼️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
+    console.log('��️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
     setShowCoverDropdown(!showCoverDropdown)
   }
 
@@ -507,21 +553,21 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center space-x-6 mb-6">
-          <div className="text-center min-w-[60px]">
+        <div className="flex justify-center items-center space-x-6 mb-6">
+          <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
             <p className="font-bold text-lg">{profileData.posts}</p>
             <p className="text-gray-600 text-sm">Posts</p>
           </div>
           <button
             onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px]"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
           >
             <p className="font-bold text-lg">{profileData.followers}</p>
             <p className="text-gray-600 text-sm">Seguidores</p>
           </button>
           <button
             onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[70px]"
+            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
           >
             <p className="font-bold text-lg">{profileData.following}</p>
             <p className="text-gray-600 text-sm">Seguindo</p>
