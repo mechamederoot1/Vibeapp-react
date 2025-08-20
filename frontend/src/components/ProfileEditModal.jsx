@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react'
 import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Briefcase, GraduationCap, Heart, Plus, Trash2, Building } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { workExperienceAPI, educationAPI, personalInfoAPI } from '../services/api'
 
 const ProfileEditModal = ({ isOpen, onClose }) => {
   const { user, updateProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [dataLoading, setDataLoading] = useState(false)
   
   const avatarInputRef = useRef(null)
   const coverInputRef = useRef(null)
