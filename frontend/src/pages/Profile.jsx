@@ -60,6 +60,7 @@ const Profile = () => {
     profileViewsCount: 0
   })
   const [userPosts, setUserPosts] = useState([])
+  const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
   const [loading, setLoading] = useState(true)
 
