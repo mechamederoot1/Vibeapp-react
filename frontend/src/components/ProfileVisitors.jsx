@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X, Eye, MessageCircle, UserPlus, Clock } from 'lucide-react'
+import { X, Eye, MessageCircle, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import FriendshipButton from './FriendshipButton'
 
 const ProfileVisitors = ({ onClose }) => {
   const navigate = useNavigate()
