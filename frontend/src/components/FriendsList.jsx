@@ -1,137 +1,223 @@
-import React, { useState } from 'react'
-import { X, UserCheck, UserPlus, MessageCircle, Search, Users, UserX } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, UserCheck, UserPlus, MessageCircle, Search, Users, UserX, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { friendshipsAPI } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
-const FriendsList = ({ onClose }) => {
-  const [activeTab, setActiveTab] = useState('friends') // friends, followers, following
+const FriendsList = ({ onClose, userId = null }) => {
+  const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
+  const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [friends, setFriends] = useState([])
+  const [receivedRequests, setReceivedRequests] = useState([])
+  const [sentRequests, setSentRequests] = useState([])
+  const [error, setError] = useState('')
 
-  const mockFriends = [
-    {
-      id: 1,
-      username: 'ana_costa',
-      name: 'Ana Costa',
-      avatar: 'https://picsum.photos/100/100?random=friend1',
-      mutualFriends: 12,
-      isFollowing: true,
-      isFollowingBack: true,
-      lastActive: '2h',
-      location: 'São Paulo, SP'
-    },
-    {
-      id: 2,
-      username: 'joao_silva',
-      name: 'João Silva',
-      avatar: 'https://picsum.photos/100/100?random=friend2',
-      mutualFriends: 8,
-      isFollowing: true,
-      isFollowingBack: true,
-      lastActive: '1d',
-      location: 'Rio de Janeiro, RJ'
-    },
-    {
-      id: 3,
-      username: 'maria_santos',
-      name: 'Maria Santos',
-      avatar: 'https://picsum.photos/100/100?random=friend3',
-      mutualFriends: 15,
-      isFollowing: false,
-      isFollowingBack: true,
-      lastActive: '3h',
-      location: 'Belo Horizonte, MG'
-    },
-    {
-      id: 4,
-      username: 'pedro_oliveira',
-      name: 'Pedro Oliveira',
-      avatar: 'https://picsum.photos/100/100?random=friend4',
-      mutualFriends: 6,
-      isFollowing: true,
-      isFollowingBack: false,
-      lastActive: '5h',
-      location: 'Salvador, BA'
-    },
-    {
-      id: 5,
-      username: 'sofia_lima',
-      name: 'Sofia Lima',
-      avatar: 'https://picsum.photos/100/100?random=friend5',
-      mutualFriends: 23,
-      isFollowing: true,
-      isFollowingBack: true,
-      lastActive: '30min',
-      location: 'Brasília, DF'
-    },
-    {
-      id: 6,
-      username: 'carlos_pereira',
-      name: 'Carlos Pereira',
-      avatar: 'https://picsum.photos/100/100?random=friend6',
-      mutualFriends: 9,
-      isFollowing: true,
-      isFollowingBack: true,
-      lastActive: '1w',
-      location: 'Porto Alegre, RS'
-    },
-    {
-      id: 7,
-      username: 'lucia_martins',
-      name: 'Lúcia Martins',
-      avatar: 'https://picsum.photos/100/100?random=friend7',
-      mutualFriends: 18,
-      isFollowing: true,
-      isFollowingBack: true,
-      lastActive: '2d',
-      location: 'Recife, PE'
+  const targetUserId = userId || currentUser?.id
+
+  useEffect(() => {
+    if (targetUserId) {
+      loadData()
     }
-  ]
+  }, [targetUserId, activeTab])
+
+  const loadData = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      if (activeTab === 'friends') {
+        await loadFriends()
+      } else if (activeTab === 'requests' && targetUserId === currentUser?.id) {
+        await loadRequests()
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+      setError('Erro ao carregar dados. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadFriends = async () => {
+    try {
+      const response = await friendshipsAPI.getUserFriends(targetUserId)
+      setFriends(response.data || [])
+    } catch (error) {
+      console.error('Erro ao carregar amigos:', error)
+      setFriends([])
+    }
+  }
+
+  const loadRequests = async () => {
+    try {
+      const [receivedRes, sentRes] = await Promise.all([
+        friendshipsAPI.getReceivedRequests(),
+        friendshipsAPI.getSentRequests()
+      ])
+      setReceivedRequests(receivedRes.data || [])
+      setSentRequests(sentRes.data || [])
+    } catch (error) {
+      console.error('Erro ao carregar pedidos:', error)
+      setReceivedRequests([])
+      setSentRequests([])
+    }
+  }
+
+  const handleAcceptRequest = async (friendshipId) => {
+    try {
+      await friendshipsAPI.acceptFriendRequest(friendshipId)
+      // Recarregar dados
+      await loadRequests()
+      await loadFriends()
+    } catch (error) {
+      console.error('Erro ao aceitar pedido:', error)
+      setError('Erro ao aceitar pedido de amizade.')
+    }
+  }
+
+  const handleRejectRequest = async (friendshipId) => {
+    try {
+      await friendshipsAPI.rejectFriendRequest(friendshipId)
+      await loadRequests()
+    } catch (error) {
+      console.error('Erro ao rejeitar pedido:', error)
+      setError('Erro ao rejeitar pedido de amizade.')
+    }
+  }
+
+  const handleRemoveFriend = async (friendUserId) => {
+    try {
+      await friendshipsAPI.removeFriend(friendUserId)
+      await loadFriends()
+    } catch (error) {
+      console.error('Erro ao remover amigo:', error)
+      setError('Erro ao remover amigo.')
+    }
+  }
+
+  const handleSendMessage = (username) => {
+    navigate(`/messages?user=${username}`)
+    onClose()
+  }
+
+  const handleProfileClick = (username) => {
+    navigate(`/profile/${username}`)
+    onClose()
+  }
 
   const tabs = [
-    { key: 'friends', label: 'Amigos', count: mockFriends.filter(f => f.isFollowing && f.isFollowingBack).length },
-    { key: 'followers', label: 'Seguidores', count: mockFriends.filter(f => f.isFollowingBack).length },
-    { key: 'following', label: 'Seguindo', count: mockFriends.filter(f => f.isFollowing).length }
-  ]
+    { 
+      key: 'friends', 
+      label: 'Amigos', 
+      count: friends.length,
+      show: true
+    },
+    { 
+      key: 'requests', 
+      label: 'Pedidos', 
+      count: receivedRequests.length + sentRequests.length,
+      show: targetUserId === currentUser?.id // Só mostra para o próprio usuário
+    }
+  ].filter(tab => tab.show)
 
-  const getFilteredFriends = () => {
-    let filtered = mockFriends
-
-    // Filtrar por tab
-    switch (activeTab) {
-      case 'friends':
-        filtered = filtered.filter(f => f.isFollowing && f.isFollowingBack)
-        break
-      case 'followers':
-        filtered = filtered.filter(f => f.isFollowingBack)
-        break
-      case 'following':
-        filtered = filtered.filter(f => f.isFollowing)
-        break
+  const getFilteredData = () => {
+    let data = []
+    
+    if (activeTab === 'friends') {
+      data = friends.map(item => ({
+        ...item.user_info,
+        friendship: item.friendship,
+        mutual_friends_count: item.mutual_friends_count,
+        type: 'friend'
+      }))
+    } else if (activeTab === 'requests') {
+      // Combinar pedidos recebidos e enviados
+      const received = receivedRequests.map(item => ({
+        ...item.user_info,
+        friendship: item.friendship,
+        mutual_friends_count: item.mutual_friends_count,
+        type: 'received'
+      }))
+      const sent = sentRequests.map(item => ({
+        ...item.user_info,
+        friendship: item.friendship,
+        mutual_friends_count: item.mutual_friends_count,
+        type: 'sent'
+      }))
+      data = [...received, ...sent]
     }
 
     // Filtrar por busca
     if (searchQuery) {
-      filtered = filtered.filter(f => 
-        f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.username.toLowerCase().includes(searchQuery.toLowerCase())
+      data = data.filter(item => 
+        (item.display_name || item.username).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.username.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
-    return filtered
+    return data
   }
 
-  const getStatusText = (friend) => {
-    if (friend.isFollowing && friend.isFollowingBack) {
-      return { text: 'Amigo', color: 'text-green-600' }
-    } else if (friend.isFollowingBack && !friend.isFollowing) {
-      return { text: 'Te segue', color: 'text-blue-600' }
-    } else if (friend.isFollowing && !friend.isFollowingBack) {
-      return { text: 'Você segue', color: 'text-orange-600' }
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now - date) / 1000)
+
+    if (diffInSeconds < 60) return 'agora'
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)}min`
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)}h`
+    if (diffInSeconds < 604800) return `há ${Math.floor(diffInSeconds / 86400)}d`
+    return `há ${Math.floor(diffInSeconds / 604800)}sem`
+  }
+
+  const renderActionButtons = (item) => {
+    if (item.type === 'friend') {
+      return (
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => handleSendMessage(item.username)}
+            className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors"
+          >
+            <MessageCircle size={18} />
+          </button>
+          <button 
+            onClick={() => handleRemoveFriend(item.id)}
+            className="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
+          >
+            <UserX size={16} className="mr-1" />
+            Remover
+          </button>
+        </div>
+      )
+    } else if (item.type === 'received') {
+      return (
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => handleRejectRequest(item.friendship.id)}
+            className="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            Rejeitar
+          </button>
+          <button 
+            onClick={() => handleAcceptRequest(item.friendship.id)}
+            className="bg-vibe-blue text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-vibe-blue-dark transition-colors"
+          >
+            <UserPlus size={16} className="mr-1" />
+            Aceitar
+          </button>
+        </div>
+      )
+    } else if (item.type === 'sent') {
+      return (
+        <div className="flex items-center space-x-2">
+          <span className="text-gray-500 text-sm">Pendente</span>
+          <Clock size={16} className="text-gray-400" />
+        </div>
+      )
     }
-    return { text: '', color: '' }
-  }
-
-  const handleFollowToggle = (friendId) => {
-    // Aqui você implementaria a lógica real de seguir/desseguir
-    console.log('Toggle follow for:', friendId)
   }
 
   return (
@@ -140,8 +226,15 @@ const FriendsList = ({ onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div>
-            <h2 className="text-xl font-bold">Conexões</h2>
-            <p className="text-gray-500 text-sm">Gerencie seus amigos e seguidores</p>
+            <h2 className="text-xl font-bold">
+              {targetUserId === currentUser?.id ? 'Suas Conexões' : 'Conexões'}
+            </h2>
+            <p className="text-gray-500 text-sm">
+              {targetUserId === currentUser?.id 
+                ? 'Gerencie seus amigos e pedidos'
+                : 'Amigos e conexões'
+              }
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -187,109 +280,79 @@ const FriendsList = ({ onClose }) => {
           ))}
         </div>
 
-        {/* Lista de Amigos */}
+        {/* Erro */}
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-400">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Lista */}
         <div className="overflow-y-auto max-h-[calc(85vh-200px)]">
-          {getFilteredFriends().length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vibe-blue"></div>
+            </div>
+          ) : getFilteredData().length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Users size={48} className="text-gray-300 mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                {searchQuery ? 'Nenhum resultado encontrado' : 'Nenhum amigo ainda'}
+                {searchQuery ? 'Nenhum resultado encontrado' : 
+                 activeTab === 'friends' ? 'Nenhum amigo ainda' : 'Nenhum pedido'}
               </h3>
               <p className="text-gray-500 text-center">
                 {searchQuery 
                   ? `Não encontramos ninguém com "${searchQuery}"`
-                  : 'Comece seguindo pessoas para criar sua rede!'
+                  : activeTab === 'friends' 
+                    ? 'Comece adicionando pessoas para criar sua rede!'
+                    : 'Não há pedidos de amizade pendentes'
                 }
               </p>
             </div>
           ) : (
-            getFilteredFriends().map((friend) => {
-              const status = getStatusText(friend)
-              
-              return (
-                <div key={friend.id} className="p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <div className="relative">
-                        <img
-                          src={friend.avatar}
-                          alt={friend.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                        {friend.lastActive === '30min' && (
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            getFilteredData().map((item) => (
+              <div key={`${item.id}-${item.type}`} className="p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1">
+                    <img
+                      src={item.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.display_name || item.username)}&background=2563eb&color=fff`}
+                      alt={item.display_name || item.username}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleProfileClick(item.username)}
+                          className="font-semibold truncate hover:text-vibe-blue transition-colors text-left"
+                        >
+                          {item.display_name || item.username}
+                        </button>
+                        {item.type === 'received' && (
+                          <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">
+                            Novo pedido
+                          </span>
                         )}
                       </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="font-semibold truncate">{friend.name}</p>
-                          {status.text && (
-                            <span className={`text-xs ${status.color} bg-gray-100 px-2 py-1 rounded-full`}>
-                              {status.text}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-gray-600 text-sm">@{friend.username}</p>
-                        <div className="flex items-center space-x-4 text-gray-500 text-xs mt-1">
-                          <span>{friend.mutualFriends} amigos em comum</span>
-                          <span>Ativo {friend.lastActive}</span>
-                        </div>
+                      <p className="text-gray-600 text-sm">@{item.username}</p>
+                      <div className="flex items-center space-x-4 text-gray-500 text-xs mt-1">
+                        {item.mutual_friends_count > 0 && (
+                          <span>{item.mutual_friends_count} amigos em comum</span>
+                        )}
+                        {item.friendship?.created_at && (
+                          <span>{formatTimeAgo(item.friendship.created_at)}</span>
+                        )}
                       </div>
                     </div>
-                    
-                    {/* Botões de Ação */}
-                    <div className="flex items-center space-x-2 ml-3">
-                      <button className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors">
-                        <MessageCircle size={18} />
-                      </button>
-                      
-                      {activeTab === 'following' && !friend.isFollowingBack ? (
-                        <button 
-                          onClick={() => handleFollowToggle(friend.id)}
-                          className="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <UserX size={16} />
-                            <span>Deixar de seguir</span>
-                          </div>
-                        </button>
-                      ) : friend.isFollowing && friend.isFollowingBack ? (
-                        <button 
-                          onClick={() => handleFollowToggle(friend.id)}
-                          className="bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <UserCheck size={16} />
-                            <span>Amigo</span>
-                          </div>
-                        </button>
-                      ) : !friend.isFollowing ? (
-                        <button 
-                          onClick={() => handleFollowToggle(friend.id)}
-                          className="bg-vibe-blue text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-vibe-blue-dark transition-colors"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <UserPlus size={16} />
-                            <span>Seguir de volta</span>
-                          </div>
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleFollowToggle(friend.id)}
-                          className="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-                        >
-                          <div className="flex items-center space-x-1">
-                            <UserCheck size={16} />
-                            <span>Seguindo</span>
-                          </div>
-                        </button>
-                      )}
-                    </div>
+                  </div>
+                  
+                  {/* Botões de Ação */}
+                  <div className="ml-3">
+                    {renderActionButtons(item)}
                   </div>
                 </div>
-              )
-            })
+              </div>
+            ))
           )}
         </div>
       </div>
