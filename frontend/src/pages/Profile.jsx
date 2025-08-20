@@ -3,7 +3,7 @@ import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
   MessageCircle as MessageCircleIcon, Share, Repeat2, MapPin, Briefcase,
-  GraduationCap, Globe, Calendar, Heart as HeartIcon
+  GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, workExperienceAPI, educationAPI } from '../services/api'
@@ -203,7 +203,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Alguém mais viciado em café? ☕ Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
+            content: 'Alguém mais viciado em café? �� Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
             imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=400&fit=crop',
             createdAt: '2024-01-11T11:30:00Z',
             likes: 92,
