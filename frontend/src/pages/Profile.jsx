@@ -156,6 +156,18 @@ const Profile = () => {
     }
   }, [user])
 
+  // Update profileData when userStats changes
+  useEffect(() => {
+    setProfileData(prev => ({
+      ...prev,
+      followers: (userStats.followersCount || 0).toString(),
+      following: (userStats.followingCount || 0).toString(),
+      posts: (userStats.postsCount || 0).toString(),
+      profileViews: (userStats.profileViewsCount || 0).toString(),
+      friends: (userStats.friendsCount || 0).toString()
+    }))
+  }, [userStats])
+
   // Real data is now loaded from backend via useEffect
 
   const toggleVisitorsPrivacy = () => {
