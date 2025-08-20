@@ -80,33 +80,50 @@ async def get_personal_info(
     personal_info = db.query(PersonalInfo).filter(
         PersonalInfo.user_id == target_user_id
     ).first()
-    
+
     if not personal_info:
         # Se não existir, criar um registro vazio
         personal_info = PersonalInfo(user_id=target_user_id)
         db.add(personal_info)
         db.commit()
         db.refresh(personal_info)
-    
+
+    # Buscar experiências de trabalho
+    work_experiences = db.query(WorkExperience).filter(
+        WorkExperience.user_id == target_user_id
+    ).order_by(WorkExperience.order_index.desc(), WorkExperience.created_at.desc()).all()
+
+    # Buscar educação
+    education_entries = db.query(Education).filter(
+        Education.user_id == target_user_id
+    ).order_by(Education.order_index.desc(), Education.created_at.desc()).all()
+
+    # Converter para dicionário
+    data = personal_info.to_dict()
+
+    # Adicionar listas de experiências
+    data["workExperiences"] = [we.to_dict() for we in work_experiences]
+    data["educationEntries"] = [edu.to_dict() for edu in education_entries]
+
     # Se estiver visualizando o perfil de outro usuário, aplicar filtros de privacidade
     if target_user_id != current_user.id:
-        data = personal_info.to_dict()
-        
         # Aplicar configurações de privacidade
         if not personal_info.show_work_info:
             data["work"] = None
+            data["workExperiences"] = []
         if not personal_info.show_education_info:
             data["education"] = None
+            data["educationEntries"] = []
         if not personal_info.show_location_info:
             data["location"] = None
         if not personal_info.show_relationship_info:
             data["relationship"] = None
         if not personal_info.show_contact_info:
             data["contact"] = None
-        
+
         return {"personalInfo": data}
-    
-    return {"personalInfo": personal_info.to_dict()}
+
+    return {"personalInfo": data}
 
 @router.put("/personal-info")
 async def update_personal_info(
