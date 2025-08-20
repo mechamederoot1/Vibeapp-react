@@ -186,7 +186,9 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
           }))
         }))
 
-        console.log('✅ Loaded existing data:', { workExperiences, educationEntries })
+        console.log('✅ Loaded existing data:')
+        console.log('  💼 Work experiences:', workExperiences.length, workExperiences)
+        console.log('  🎓 Education entries:', educationEntries.length, educationEntries)
       } catch (error) {
         console.error('❌ Error loading existing data:', error)
       } finally {
