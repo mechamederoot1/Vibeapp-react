@@ -65,16 +65,9 @@ const PublicRoute = ({ children }) => {
 
 const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
-  const [showSplash, setShowSplash] = useState(true)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
-  const handleSplashComplete = () => setShowSplash(false)
-
-  // Mostrar splash screen primeiro
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} duration={5000} />
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
