@@ -75,16 +75,179 @@ const Profile = () => {
 
       // Modo offline/demo - não fazer chamadas de API
       if (import.meta.env.DEV) {
-        console.log('🔧 Modo demo - usando dados padrão para o perfil')
+        console.log('🔧 Modo demo - usando dados mock para visualização do perfil')
+
+        // Mock user stats
         setUserStats({
-          followersCount: 0,
-          followingCount: 0,
-          postsCount: 0,
-          profileViewsCount: 0,
-          friendsCount: 0
+          followersCount: 1524,
+          followingCount: 247,
+          postsCount: 89,
+          profileViewsCount: 3420,
+          friendsCount: 156
         })
-        setUserPosts([])
-        setProfileVisitors([])
+
+        // Mock profile data enhancement
+        setProfileData(prev => ({
+          ...prev,
+          name: 'Marina Santos',
+          username: 'marina_santos',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n🏢 Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          isVerified: true,
+          avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+          coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
+          location: 'Recife, Pernambuco, Brasil',
+          website: 'marina-santos.design',
+          work: 'UX Designer na TechCorp',
+          education: 'Design Digital - UFPE',
+          relationship: 'Em um relacionamento com João Silva',
+          currentCity: 'Recife, PE'
+        }))
+
+        // Mock posts with variety
+        const mockPosts = [
+          {
+            id: '1',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Finalizando mais um projeto incrível! 🎨 Esse dashboard foi um desafio e tanto, mas o resultado ficou lindo. Obrigada ao time por toda colaboração! 💜',
+            imageUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=600&h=400&fit=crop',
+            createdAt: '2024-01-15T10:30:00Z',
+            likes: 89,
+            comments: 12,
+            shares: 5,
+            isLiked: true,
+            type: 'image'
+          },
+          {
+            id: '2',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Sessão de fotos em família no fim de semana! ❤️ Momentos especiais assim que fazem a vida valer a pena. #família #momentos #gratidão',
+            imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=400&fit=crop',
+            createdAt: '2024-01-14T16:45:00Z',
+            likes: 156,
+            comments: 24,
+            shares: 8,
+            isLiked: false,
+            type: 'image'
+          },
+          {
+            id: '3',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭✨',
+            createdAt: '2024-01-13T09:15:00Z',
+            likes: 73,
+            comments: 18,
+            shares: 12,
+            isLiked: true,
+            type: 'text'
+          },
+          {
+            id: '4',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já está sendo planejado!',
+            imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
+            createdAt: '2024-01-12T14:20:00Z',
+            likes: 234,
+            comments: 31,
+            shares: 19,
+            isLiked: true,
+            type: 'image'
+          },
+          {
+            id: '5',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Alguém mais viciado em café? ☕ Essa cafeteria nova no centro virou meu escritório favorito para trabalhar remotamente!',
+            imageUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=600&h=400&fit=crop',
+            createdAt: '2024-01-11T11:30:00Z',
+            likes: 92,
+            comments: 15,
+            shares: 3,
+            isLiked: false,
+            type: 'image'
+          },
+          {
+            id: '6',
+            author: {
+              id: user?.id || '1',
+              username: 'marina_santos',
+              name: 'Marina Santos',
+              avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
+              isVerified: true
+            },
+            content: 'Aproveitando o sábado para relaxar na praia! 🏖️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
+            imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
+            createdAt: '2024-01-10T17:00:00Z',
+            likes: 187,
+            comments: 22,
+            shares: 6,
+            isLiked: true,
+            type: 'image'
+          }
+        ]
+
+        setUserPosts(mockPosts)
+
+        // Mock profile visitors
+        const mockVisitors = [
+          {
+            id: '1',
+            username: 'joao_silva',
+            name: 'João Silva',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-15T10:30:00Z',
+            isFriend: true,
+            isMutualFriend: false
+          },
+          {
+            id: '2',
+            username: 'ana_costa',
+            name: 'Ana Costa',
+            avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-15T09:15:00Z',
+            isFriend: false,
+            isMutualFriend: true
+          },
+          {
+            id: '3',
+            username: 'carlos_dev',
+            name: 'Carlos Developer',
+            avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face',
+            visitTime: '2024-01-14T16:45:00Z',
+            isFriend: true,
+            isMutualFriend: false
+          }
+        ]
+
+        setProfileVisitors(mockVisitors)
         setLoading(false)
         return
       }
@@ -905,7 +1068,7 @@ const Profile = () => {
                 </button>
               </div>
 
-              {/* Conteúdo do Post */}
+              {/* Conte��do do Post */}
               {post.content && (
                 <div className="px-4 pb-3">
                   <p className="text-gray-800">{post.content}</p>
