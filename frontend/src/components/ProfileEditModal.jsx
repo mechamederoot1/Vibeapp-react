@@ -318,7 +318,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         }
       }
 
-      setSuccess('Perfil e experiências atualizados com sucesso!')
+      setSuccess('✅ Perfil e experiências atualizados com sucesso! As informações foram salvas e serão exibidas no seu perfil.')
 
       // Force a re-fetch of user profile to ensure UI is updated
       try {
@@ -520,7 +520,7 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <MapPin size={16} className="inline mr-1" />
-                  Localização
+                  Localizaç��o
                 </label>
                 <input
                   type="text"
