@@ -23,25 +23,7 @@ const ProtectedRoute = ({ children }) => {
 }
 
 const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth()
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-pulse mb-4">
-            <VibeLogoSimple size="lg" />
-          </div>
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to="/feed" replace />
-  }
-
+  // Redirecionamento temporariamente desabilitado para navegação livre
   return children
 }
 
