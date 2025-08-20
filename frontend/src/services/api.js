@@ -60,10 +60,81 @@ const addInterceptors = (apiInstance) => {
 addInterceptors(api)
 addInterceptors(uploadApi)
 
-// Auth endpoints
+// Mock auth functions for when backend is unavailable
+const mockAuth = {
+  login: (email, password) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          data: {
+            access_token: 'mock_token_' + Date.now(),
+            token_type: 'bearer',
+            user: {
+              id: 1,
+              email: email,
+              firstName: 'Usuário',
+              lastName: 'Demo',
+              username: 'usuario.demo',
+              avatar: null,
+              isVerified: false
+            }
+          }
+        })
+      }, 1000)
+    })
+  },
+  register: (userData) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          data: {
+            access_token: 'mock_token_' + Date.now(),
+            token_type: 'bearer',
+            user: {
+              id: Date.now(),
+              email: userData.email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              username: `${userData.firstName.toLowerCase()}.${userData.lastName.toLowerCase()}`,
+              avatar: null,
+              isVerified: false
+            }
+          }
+        })
+      }, 1000)
+    })
+  }
+}
+
+// Check if backend is available
+const useBackend = async () => {
+  try {
+    await api.get('/health', { timeout: 2000 })
+    return true
+  } catch {
+    console.warn('⚠️ Backend não disponível, usando mock authentication')
+    return false
+  }
+}
+
+// Auth endpoints with fallback to mock
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData),
+  login: async (email, password) => {
+    const backendAvailable = await useBackend()
+    if (backendAvailable) {
+      return api.post('/auth/login', { email, password })
+    } else {
+      return mockAuth.login(email, password)
+    }
+  },
+  register: async (userData) => {
+    const backendAvailable = await useBackend()
+    if (backendAvailable) {
+      return api.post('/auth/register', userData)
+    } else {
+      return mockAuth.register(userData)
+    }
+  },
   me: () => api.get('/auth/me'),
   logout: () => api.post('/auth/logout'),
   createDemoUser: () => api.post('/auth/create-demo-user')
