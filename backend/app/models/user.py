@@ -17,6 +17,7 @@ class User(Base):
     # Profile information
     bio = Column(Text, nullable=True)
     avatar = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)  # For consistency with frontend
     cover_photo = Column(String, nullable=True)
     location = Column(String, nullable=True)
     website = Column(String, nullable=True)
