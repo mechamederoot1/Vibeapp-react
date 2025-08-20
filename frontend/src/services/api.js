@@ -159,6 +159,24 @@ export const personalInfoAPI = {
   updatePrivacy: (privacy) => api.put('/personal-info/privacy', privacy)
 }
 
+// Highlights endpoints
+export const highlightsAPI = {
+  get: (userId = null) => {
+    const url = userId ? `/highlights?user_id=${userId}` : '/highlights'
+    return api.get(url)
+  },
+  getDetails: (highlightId) => api.get(`/highlights/${highlightId}`),
+  create: (data) => api.post('/highlights', data),
+  update: (highlightId, data) => api.put(`/highlights/${highlightId}`, data),
+  delete: (highlightId) => api.delete(`/highlights/${highlightId}`),
+  addStory: (highlightId, storyId, orderIndex = null) => api.post(`/highlights/${highlightId}/stories`, {
+    storyId,
+    orderIndex
+  }),
+  removeStory: (highlightId, storyId) => api.delete(`/highlights/${highlightId}/stories/${storyId}`),
+  getStories: (highlightId) => api.get(`/highlights/${highlightId}/stories`)
+}
+
 // Development endpoints
 export const devAPI = {
   createTestUsers: () => api.post('/dev/create-test-users'),
