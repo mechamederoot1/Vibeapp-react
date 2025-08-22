@@ -18,19 +18,33 @@ const getApiBaseUrl = () => {
     return null // Indica que deve usar modo demo
   }
 
-  // Em desenvolvimento local, usa localhost
-  if (import.meta.env.DEV && window.location.hostname === 'localhost') {
-    return 'http://localhost:8000/api'
+  const hostname = window.location.hostname
+  const protocol = window.location.protocol
+
+  // Em desenvolvimento local, usa localhost com porta específica
+  if (import.meta.env.DEV && hostname === 'localhost') {
+    return 'http://localhost:3010/api'
   }
 
-  // Para rede local (ex: 192.168.x.x)
-  const hostname = window.location.hostname
-  return `http://${hostname}:8000/api`
+  // Para domínios de produção (ex: meuvibe.com), usa nginx proxy
+  if (hostname === 'meuvibe.com' || hostname === 'www.meuvibe.com') {
+    return `${protocol}//${hostname}/api`
+  }
+
+  // Para rede local (ex: 192.168.x.x), usa porta específica
+  if (hostname.startsWith('192.168.') || hostname.startsWith('10.0.')) {
+    return `http://${hostname}:3010/api`
+  }
+
+  // Fallback: usa nginx proxy para outros domínios
+  return `${protocol}//${hostname}/api`
 }
 
 const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL:', API_BASE_URL)
 console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
+console.log('🌍 Hostname atual:', window.location.hostname)
+console.log('🔒 Protocol atual:', window.location.protocol)
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
@@ -74,10 +88,24 @@ const addInterceptors = (apiInstance) => {
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+      console.error('❌ Erro na API:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data
+      })
+
       if (error.response?.status === 401) {
         localStorage.removeItem('token')
         window.location.href = '/login'
       }
+
+      // Tratar erro de conexão
+      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+        console.error('🚫 Erro de conexão com o servidor')
+      }
+
       return Promise.reject(error)
     }
   )
