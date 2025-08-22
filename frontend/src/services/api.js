@@ -56,13 +56,13 @@ const api = API_BASE_URL ? axios.create({
 }) : null
 
 // Create special instance for uploads with longer timeout
-const uploadApi = axios.create({
+const uploadApi = API_BASE_URL ? axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 2 minutes for uploads
   headers: {
     'Content-Type': 'application/json',
   },
-})
+}) : null
 
 // Function to add interceptors
 const addInterceptors = (apiInstance) => {
@@ -111,9 +111,13 @@ const addInterceptors = (apiInstance) => {
   )
 }
 
-// Add interceptors to both instances
-addInterceptors(api)
-addInterceptors(uploadApi)
+// Add interceptors to both instances only if they exist
+if (api) {
+  addInterceptors(api)
+}
+if (uploadApi) {
+  addInterceptors(uploadApi)
+}
 
 // Auth endpoints
 export const authAPI = {
