@@ -14,7 +14,6 @@ const getApiBaseUrl = () => {
 
   // Se está no Builder.io ou ambiente de produção, não tenta conectar backend local
   if (isBuilderEnvironment()) {
-    console.log('🌐 Detectado ambiente Builder.io - usando modo demo')
     return null // Indica que deve usar modo demo
   }
 
@@ -80,22 +79,9 @@ const addInterceptors = (apiInstance) => {
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error('❌ Erro na API:', {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data
-      })
-
       if (error.response?.status === 401) {
         localStorage.removeItem('token')
         window.location.href = '/login'
-      }
-
-      // Tratar erro de conexão
-      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
-        console.error('🚫 Erro de conexão com o servidor')
       }
 
       return Promise.reject(error)
