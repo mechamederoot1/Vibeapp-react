@@ -119,12 +119,22 @@ if (uploadApi) {
   addInterceptors(uploadApi)
 }
 
+// Safe API wrapper for demo mode
+const createSafeAPI = (apiCall) => {
+  return (...args) => {
+    if (!api) {
+      return Promise.reject(new Error('Backend não disponível no modo demo. Por favor, configure um backend real.'))
+    }
+    return apiCall(...args)
+  }
+}
+
 // Auth endpoints
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData),
-  me: () => api.get('/auth/me'),
-  logout: () => api.post('/auth/logout')
+  login: createSafeAPI((email, password) => api.post('/auth/login', { email, password })),
+  register: createSafeAPI((userData) => api.post('/auth/register', userData)),
+  me: createSafeAPI(() => api.get('/auth/me')),
+  logout: createSafeAPI(() => api.post('/auth/logout'))
 }
 
 // Users endpoints
