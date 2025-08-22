@@ -38,6 +38,12 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 4001,
+    allowedHosts: [
+      'localhost',
+      'meuvibe.com',
+      'www.meuvibe.com',
+      '.fly.dev'
+    ],
     proxy: {
       '/api': {
         target: 'http://localhost:3010',
