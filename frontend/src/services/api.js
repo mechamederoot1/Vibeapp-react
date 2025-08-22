@@ -41,10 +41,6 @@ const getApiBaseUrl = () => {
 }
 
 const API_BASE_URL = getApiBaseUrl()
-console.log('🔧 API Base URL:', API_BASE_URL)
-console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
-console.log('🌍 Hostname atual:', window.location.hostname)
-console.log('🔒 Protocol atual:', window.location.protocol)
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
@@ -72,14 +68,10 @@ const addInterceptors = (apiInstance) => {
       const token = localStorage.getItem('token')
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
-        console.log(`🔑 Adding auth token to ${config.method?.toUpperCase()} ${config.url}`)
-      } else {
-        console.log(`⚠️  No token found for ${config.method?.toUpperCase()} ${config.url}`)
       }
       return config
     },
     (error) => {
-      console.error('❌ Request interceptor error:', error)
       return Promise.reject(error)
     }
   )
