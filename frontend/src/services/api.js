@@ -22,7 +22,7 @@ const getApiBaseUrl = () => {
   const protocol = window.location.protocol
 
   // Em desenvolvimento local, usa localhost com porta específica
-  if (import.meta.env.DEV && hostname === 'localhost') {
+  if (import.meta.env.DEV && (hostname === 'localhost' || hostname === '127.0.0.1')) {
     return 'http://localhost:3010/api'
   }
 
