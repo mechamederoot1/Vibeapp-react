@@ -18,14 +18,26 @@ const getApiBaseUrl = () => {
     return null // Indica que deve usar modo demo
   }
 
-  // Em desenvolvimento local, usa localhost
-  if (import.meta.env.DEV && window.location.hostname === 'localhost') {
+  const hostname = window.location.hostname
+  const protocol = window.location.protocol
+
+  // Em desenvolvimento local, usa localhost com porta específica
+  if (import.meta.env.DEV && hostname === 'localhost') {
     return 'http://localhost:3010/api'
   }
 
-  // Para rede local (ex: 192.168.x.x)
-  const hostname = window.location.hostname
-  return `http://${hostname}:3010/api`
+  // Para domínios de produção (ex: meuvibe.com), usa nginx proxy
+  if (hostname === 'meuvibe.com' || hostname === 'www.meuvibe.com') {
+    return `${protocol}//${hostname}/api`
+  }
+
+  // Para rede local (ex: 192.168.x.x), usa porta específica
+  if (hostname.startsWith('192.168.') || hostname.startsWith('10.0.')) {
+    return `http://${hostname}:3010/api`
+  }
+
+  // Fallback: usa nginx proxy para outros domínios
+  return `${protocol}//${hostname}/api`
 }
 
 const API_BASE_URL = getApiBaseUrl()
