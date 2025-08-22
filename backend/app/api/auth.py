@@ -190,36 +190,6 @@ async def logout():
 async def auth_health():
     return {"status": "healthy", "service": "authentication"}
 
-# Debug endpoint
-@router.post("/debug-token")
-async def debug_token(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
-    """Debug endpoint to check token validity"""
-    try:
-        token = credentials.credentials
-        user_id = verify_token(token)
-        user = db.query(User).filter(User.id == user_id).first()
-
-        return {
-            "status": "valid",
-            "token_valid": True,
-            "user_id": user_id,
-            "user_found": user is not None,
-            "user_active": user.is_active if user else False,
-            "user_email": user.email if user else None
-        }
-    except HTTPException as e:
-        return {
-            "status": "invalid",
-            "token_valid": False,
-            "error": e.detail,
-            "status_code": e.status_code
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "token_valid": False,
-            "error": str(e)
-        }
 
 async def get_user_from_websocket(token: str, db: Session = None):
     """Função para autenticar usuário via WebSocket"""
