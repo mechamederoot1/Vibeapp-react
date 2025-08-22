@@ -120,8 +120,7 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   me: () => api.get('/auth/me'),
-  logout: () => api.post('/auth/logout'),
-  createDemoUser: () => api.post('/auth/create-demo-user')
+  logout: () => api.post('/auth/logout')
 }
 
 // Users endpoints
