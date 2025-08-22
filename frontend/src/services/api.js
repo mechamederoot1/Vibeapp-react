@@ -20,12 +20,12 @@ const getApiBaseUrl = () => {
 
   // Em desenvolvimento local, usa localhost
   if (import.meta.env.DEV && window.location.hostname === 'localhost') {
-    return 'http://localhost:8000/api'
+    return 'http://localhost:3010/api'
   }
 
   // Para rede local (ex: 192.168.x.x)
   const hostname = window.location.hostname
-  return `http://${hostname}:8000/api`
+  return `http://${hostname}:3010/api`
 }
 
 const API_BASE_URL = getApiBaseUrl()
