@@ -248,12 +248,6 @@ export const highlightsAPI = {
   getStories: (highlightId) => api.get(`/highlights/${highlightId}/stories`)
 }
 
-// Development endpoints
-export const devAPI = {
-  createTestUsers: () => api.post('/dev/create-test-users'),
-  listTestUsers: () => api.get('/dev/test-users'),
-  migrateDatabase: () => api.post('/dev/migrate-database'),
-}
 
 // Legacy services for backward compatibility
 export const authService = {

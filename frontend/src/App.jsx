@@ -12,7 +12,6 @@ import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
 import Visits from './pages/Visits'
 import Friends from './pages/Friends'
-import ReactionTest from './components/ReactionTest'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
@@ -215,19 +214,6 @@ const AppContent = () => {
           }
         />
 
-        {/* Debug routes */}
-        <Route
-          path="/debug/database"
-          element={
-            <div className="min-h-screen bg-gray-50 py-8">
-              <DatabaseFixer />
-            </div>
-          }
-        />
-        <Route
-          path="/test/reactions"
-          element={<ReactionTest />}
-        />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/feed" replace />} />
