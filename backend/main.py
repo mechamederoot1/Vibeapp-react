@@ -71,9 +71,9 @@ app = FastAPI(
 # Configure CORS - allow all local network IPs for development
 def get_cors_origins():
     origins = [
-        "http://localhost:3000",
+        "http://localhost:4001",
         "http://localhost:5173",
-        "http://127.0.0.1:3000",
+        "http://127.0.0.1:4001",
         "http://127.0.0.1:5173",
         "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
     ]
@@ -82,11 +82,11 @@ def get_cors_origins():
     # This allows access from mobile devices on the same network
     for i in range(1, 255):
         origins.extend([
-            f"http://192.168.1.{i}:3000",
+            f"http://192.168.1.{i}:4001",
             f"http://192.168.1.{i}:5173",
-            f"http://192.168.0.{i}:3000",
+            f"http://192.168.0.{i}:4001",
             f"http://192.168.0.{i}:5173",
-            f"http://10.0.0.{i}:3000",
+            f"http://10.0.0.{i}:4001",
             f"http://10.0.0.{i}:5173"
         ])
 
@@ -172,7 +172,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=3010,
         reload=True,
         log_level="info"
     )
