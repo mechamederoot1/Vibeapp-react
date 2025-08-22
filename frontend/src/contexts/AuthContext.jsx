@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       console.log('🔍 Tentando registrar usuário:', userData.email)
+      console.log('🔧 URL da API:', import.meta.env.VITE_API_URL || 'auto-detectada')
       const response = await authAPI.register(userData)
       const { user: newUser, access_token: authToken } = response.data
 
@@ -70,12 +71,23 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true }
     } catch (error) {
-      console.error('❌ Erro no registro:', error)
+      console.error('❌ Erro no registro:', {
+        message: error.message,
+        code: error.code,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          method: error.config?.method
+        }
+      })
 
       let errorMessage = 'Erro ao criar conta'
 
       if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
         errorMessage = 'Servidor temporariamente indisponível. Tente novamente em alguns minutos.'
+        console.error('🚫 Falha na conexão. Verifique se o backend está rodando e se o nginx está configurado corretamente.')
       } else if (error.response?.status === 400) {
         errorMessage = error.response.data?.detail || 'Dados inválidos. Verifique as informações e tente novamente.'
       } else if (error.response?.status === 409) {
