@@ -43,6 +43,8 @@ const getApiBaseUrl = () => {
 const API_BASE_URL = getApiBaseUrl()
 console.log('🔧 API Base URL:', API_BASE_URL)
 console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
+console.log('🌍 Hostname atual:', window.location.hostname)
+console.log('🔒 Protocol atual:', window.location.protocol)
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
@@ -86,10 +88,24 @@ const addInterceptors = (apiInstance) => {
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
+      console.error('❌ Erro na API:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        status: error.response?.status,
+        message: error.message,
+        data: error.response?.data
+      })
+
       if (error.response?.status === 401) {
         localStorage.removeItem('token')
         window.location.href = '/login'
       }
+
+      // Tratar erro de conexão
+      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+        console.error('🚫 Erro de conexão com o servidor')
+      }
+
       return Promise.reject(error)
     }
   )
