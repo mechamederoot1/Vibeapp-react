@@ -13,6 +13,30 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
   const currentStory = stories[currentIndex]
   const STORY_DURATION = 5000 // 5 segundos por story
 
+  // Sincronizar currentIndex com initialStoryIndex quando abrir
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentIndex(initialStoryIndex || 0)
+      setPaused(false) // garante que o viewer comece despausado
+      setProgress(0)
+    }
+  }, [isOpen, initialStoryIndex])
+
+  // Proteger currentIndex quando stories mudar
+  useEffect(() => {
+    if (!stories || stories.length === 0) return
+    if (currentIndex >= stories.length) {
+      setCurrentIndex(0)
+    }
+  }, [stories])
+
+  // Setar loading quando trocar de story
+  useEffect(() => {
+    if (isOpen && currentStory) {
+      setLoading(true)
+    }
+  }, [currentIndex, stories, isOpen])
+
   useEffect(() => {
     if (!isOpen || isPaused || !currentStory) return
 
@@ -67,6 +91,7 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
     setCurrentIndex(0)
     setProgress(0)
     setShowHighlightModal(false)
+    setPaused(false) // resetar paused ao fechar
     onClose()
   }
 
@@ -144,6 +169,13 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
           </button>
         </div>
       </div>
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
 
       {/* Story content */}
       <div className="relative w-full h-full flex items-center justify-center">
