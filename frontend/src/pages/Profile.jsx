@@ -812,15 +812,9 @@ const Profile = () => {
 
   const handleCameraButtonClick = (e) => {
     e.stopPropagation()
-    console.log('📷 Botão da câmera clicado')
-
-    // Se usuário não tem avatar, abrir editor diretamente
-    if (!profileData.avatar) {
-      setShowAvatarEditor(true)
-    } else {
-      // Se tem avatar, abrir dropdown com opções
-      setShowAvatarDropdown(!showAvatarDropdown)
-    }
+    console.log('📷 Botão da câmera clicado - abrindo galeria')
+    // Sempre abrir editor de avatar diretamente
+    setShowAvatarEditor(true)
   }
 
   const handleEditAvatarFromDropdown = () => {
