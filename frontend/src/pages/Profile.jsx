@@ -888,7 +888,7 @@ const Profile = () => {
     <div className="bg-white min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <h2 className="text-xl font-bold">{profileData.username}</h2>
+        <h2 className="text-xl font-bold">{currentProfileData.username}</h2>
         <div className="flex items-center justify-center flex-1">
           <button
             onClick={() => setViewAsVisitor(!viewAsVisitor)}
@@ -1561,7 +1561,7 @@ const Profile = () => {
                     <span className="text-sm font-semibold">{post.likesCount}</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <span className="text-sm">��</span>
+                    <span className="text-sm">💬</span>
                     <span className="text-sm font-semibold">{post.commentsCount}</span>
                   </div>
                 </div>
