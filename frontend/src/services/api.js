@@ -64,9 +64,15 @@ const addInterceptors = (apiInstance) => {
   // Interceptor para adicionar token de autenticação
   apiInstance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('token')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+      // Não adicionar Authorization para endpoints públicos
+      const isPublicEndpoint = config.url?.includes('/auth/register') ||
+                               config.url?.includes('/auth/login')
+
+      if (!isPublicEndpoint) {
+        const token = localStorage.getItem('token')
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
       }
       return config
     },
@@ -80,8 +86,16 @@ const addInterceptors = (apiInstance) => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
+        // Só redirecionar se não estiver em uma página pública
+        const currentPath = window.location.pathname
+        const isPublicPage = currentPath === '/login' ||
+                            currentPath === '/register'
+
         localStorage.removeItem('token')
-        window.location.href = '/login'
+
+        if (!isPublicPage) {
+          window.location.href = '/login'
+        }
       }
 
       return Promise.reject(error)
@@ -103,7 +117,11 @@ const createSafeAPI = (apiCall) => {
     if (!api) {
       return Promise.reject(new Error('Backend não disponível no modo demo. Por favor, configure um backend real.'))
     }
-    return apiCall(...args)
+    try {
+      return apiCall(...args)
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 }
 

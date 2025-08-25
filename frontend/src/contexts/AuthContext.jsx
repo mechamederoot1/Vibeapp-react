@@ -26,14 +26,26 @@ export const AuthProvider = ({ children }) => {
             setUser(response.data)
           }
         } catch (error) {
-          console.error('Erro na autenticação:', error.message)
-          logout()
+          // Não fazer logout agressivo - só limpar estado
+          console.error('Token inválido:', error.message)
+          setUser(null)
+          setToken(null)
+          localStorage.removeItem('token')
+          if (api) {
+            delete api.defaults.headers.Authorization
+          }
         }
       }
       setLoading(false)
     }
 
-    initAuth()
+    // Só executar se não estiver na página de registro
+    const currentPath = window.location.pathname
+    if (currentPath !== '/register') {
+      initAuth()
+    } else {
+      setLoading(false)
+    }
   }, [token])
 
   const login = async (email, password) => {
