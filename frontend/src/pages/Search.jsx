@@ -23,14 +23,6 @@ const Search = () => {
       return
     }
 
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
-      console.log('🔧 Modo demo - usando resultados de pesquisa vazios')
-      setSearchResults([])
-      setLoading(false)
-      return
-    }
-
     setLoading(true)
     try {
       const response = await usersAPI.searchUsers(query)
