@@ -16,6 +16,7 @@ class Post(Base):
     post_type = Column(String, nullable=False, default="text")  # text, image, video, profile_update
     background_color = Column(String, nullable=True)  # Background color for text posts
     profile_update_type = Column(String, nullable=True)  # avatar, cover (para posts de atualização de perfil)
+    privacy = Column(String, nullable=False, default="public")  # public, friends, private
     
     # Engagement
     likes_count = Column(Integer, default=0)
