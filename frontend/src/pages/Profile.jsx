@@ -1001,9 +1001,9 @@ const Profile = () => {
             className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
             onClick={handleAvatarClick}
           >
-            {profileData.avatar ? (
+            {currentProfileData.avatar ? (
               <img
-                src={profileData.avatar}
+                src={currentProfileData.avatar}
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
