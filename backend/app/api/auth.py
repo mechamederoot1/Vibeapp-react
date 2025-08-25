@@ -119,22 +119,27 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             username = f"{base_username}{counter}"
             counter += 1
         new_user.username = username
+        print(f"📝 Usuário criado com username: {username}")
 
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
+        print(f"✅ Usuário salvo no banco com ID: {new_user.id}")
 
         # Create access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
             data={"sub": str(new_user.id)}, expires_delta=access_token_expires
         )
+        print(f"🔑 Token criado para usuário {new_user.id}")
 
-        return {
+        response_data = {
             "access_token": access_token,
             "token_type": "bearer",
             "user": new_user.to_dict()
         }
+        print(f"📤 Retornando resposta de sucesso para usuário {new_user.email}")
+        return response_data
 
     except HTTPException:
         # Re-raise HTTP exceptions as they are
