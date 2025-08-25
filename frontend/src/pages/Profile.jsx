@@ -930,15 +930,6 @@ const handleCoverClick = () => {
           )}
         </div>
       </div>
-            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-              <div className="text-white text-center">
-                <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-sm">Fazendo upload...</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Avatar Section */}
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
