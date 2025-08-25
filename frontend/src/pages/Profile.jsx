@@ -530,7 +530,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState({
     username: user?.username || (user?.email ? user.email.split('@')[0] : 'usuario'),
     name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
-    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
+    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ��',
     isVerified: user?.isVerified || false,
     followers: '0',
     following: '0',
@@ -558,7 +558,7 @@ const Profile = () => {
         website: user.website
       }))
     }
-  }, [user])
+  }, [user, userId, navigate])
 
   // Update profileData when userStats changes
   useEffect(() => {
