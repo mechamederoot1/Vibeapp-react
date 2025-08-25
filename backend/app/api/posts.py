@@ -115,7 +115,14 @@ async def get_post(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found"
         )
-    
+
+    # Verificar se o usuário pode ver este post baseado na privacidade
+    if not can_view_post(db, current_user.id, post.author_id, post.privacy):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to view this post"
+        )
+
     return post.to_dict(current_user.id)
 
 @router.post("/{post_id}/like")
