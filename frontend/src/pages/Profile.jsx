@@ -58,9 +58,15 @@ const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => 
 
 const Profile = () => {
   const { user, setUser } = useAuth()
+  const { userId } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
+
+  // Estados para perfil de outros usuários
+  const [profileUser, setProfileUser] = useState(null)
+  const [isOwnProfile, setIsOwnProfile] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [showFriends, setShowFriends] = useState(false)
   const [showConnections, setShowConnections] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
@@ -199,7 +205,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭✨',
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭��',
             createdAt: '2024-01-13T09:15:00Z',
             likes: 73,
             comments: 18,
