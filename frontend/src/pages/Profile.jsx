@@ -886,7 +886,7 @@ const Profile = () => {
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
         <div className="relative">
           <div
-            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105"
+            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
             onClick={handleAvatarClick}
           >
             {profileData.avatar ? (
@@ -904,16 +904,23 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="absolute bottom-0 right-0">
+          {/* Botão de câmera com melhor posicionamento */}
+          <div className="absolute bottom-1 right-1 z-20">
             <button
-              className="w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
-              onClick={handleAvatarClick}
+              className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleAvatarClick()
+              }}
               disabled={uploading.avatar}
-              title={uploading.avatar ? "Fazendo upload..." : "Opções do perfil"}
+              title={uploading.avatar ? "Fazendo upload..." : "Alterar foto do perfil"}
             >
-              <Camera size={14} className="text-white" />
+              <Camera size={16} className="text-white" />
             </button>
+          </div>
 
+          {/* Dropdown posicionado corretamente */}
+          <div className="absolute bottom-0 right-0 z-30">
             <AvatarDropdown
               isOpen={showAvatarDropdown}
               onClose={() => setShowAvatarDropdown(false)}
@@ -926,7 +933,7 @@ const Profile = () => {
           </div>
 
           {uploading.avatar && (
-            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center z-10">
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
