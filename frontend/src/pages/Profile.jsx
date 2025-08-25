@@ -834,14 +834,9 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-    console.log('Botão da capa clicado')
-    // Se não há capa, abre diretamente o editor
-    if (!profileData.coverPhoto) {
-      setShowCoverEditor(true)
-    } else {
-      // Se há capa, mostra o dropdown
-      setShowCoverDropdown(!showCoverDropdown)
-    }
+    console.log('Botão da capa clicado - abrindo galeria')
+    // Sempre abrir editor de capa diretamente
+    setShowCoverEditor(true)
   }
 
   const handleEditCoverFromDropdown = () => {
