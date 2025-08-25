@@ -223,8 +223,8 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
         </div>
 
         {/* Benefits */}
-        <div className="bg-gray-50 p-4">
-          <p className="text-xs text-gray-600 text-center">
+        <div className="bg-gray-50 p-6 md:p-4 mt-auto md:mt-0">
+          <p className="text-sm md:text-xs text-gray-600 text-center">
             Você pode alterar essas permissões a qualquer momento nas configurações do seu navegador
           </p>
         </div>
