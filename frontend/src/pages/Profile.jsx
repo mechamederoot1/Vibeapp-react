@@ -637,7 +637,7 @@ const Profile = () => {
 
       console.log('Cover uploaded successfully:', response.data.message)
 
-      // Criar post automático no feed
+      // Criar post autom��tico no feed
       try {
         await postsAPI.createPost({
           content: 'atualizou a foto de capa',
@@ -823,34 +823,6 @@ const handleCoverClick = () => {
     )
   }
 
-  const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
-    const sizeClasses = {
-      sm: 'w-12 h-12',
-      md: 'w-14 h-14',
-      lg: 'w-16 h-16'
-    }
-    
-    return (
-      <div className={`flex flex-col items-center space-y-1 ${className}`}>
-        <div className={`${sizeClasses[size]} rounded-full p-0.5 ${
-          user.hasStory 
-            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
-            : 'bg-gray-300'
-        }`}>
-          <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
-            <img 
-              src={user.avatar} 
-              alt={user.name}
-              className="w-full h-full rounded-full object-cover"
-            />
-          </div>
-        </div>
-        <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
-          {user.name.split(' ')[0]}
-        </span>
-      </div>
-    )
-  }
 
   return (
     <div className="bg-white min-h-full">
