@@ -188,26 +188,26 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
         )}
 
         {/* Actions */}
-        <div className="p-6 space-y-3">
+        <div className="p-8 md:p-6 space-y-4 md:space-y-3 mt-auto md:mt-0">
           <button
             onClick={() => handleRequestPermission(currentPermission.type)}
             disabled={loading}
-            className="w-full bg-vibe-blue text-white py-3 px-4 rounded-lg hover:bg-vibe-blue-dark transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full bg-vibe-blue text-white py-4 md:py-3 px-6 md:px-4 rounded-xl md:rounded-lg hover:bg-vibe-blue-dark transition-colors disabled:opacity-50 flex items-center justify-center space-x-3 md:space-x-2 text-lg md:text-base font-medium"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Icon size={20} />
+                <Icon size={24} className="md:w-5 md:h-5" />
                 <span>Permitir Acesso</span>
               </>
             )}
           </button>
-          
+
           <button
             onClick={handleSkip}
             disabled={loading}
-            className="w-full text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-full text-gray-600 py-3 md:py-2 px-6 md:px-4 rounded-xl md:rounded-lg hover:bg-gray-100 transition-colors text-lg md:text-base"
           >
             Agora não
           </button>
@@ -216,7 +216,7 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
           <button
             onClick={handleFinish}
             disabled={loading}
-            className="w-full text-gray-400 text-sm py-1"
+            className="w-full text-gray-400 text-base md:text-sm py-2 md:py-1"
           >
             Pular todas as permissões
           </button>
