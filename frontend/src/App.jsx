@@ -12,13 +12,12 @@ import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
 import Visits from './pages/Visits'
 import Friends from './pages/Friends'
-import ReactionTest from './components/ReactionTest'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
-import DatabaseFixer from './components/DatabaseFixer'
+import PermissionsHandler from './components/PermissionsHandler'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -64,9 +63,15 @@ const PublicRoute = ({ children }) => {
 
 const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [permissionsGranted, setPermissionsGranted] = useState(false)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
+
+  const handlePermissionsGranted = (permissions) => {
+    console.log('Permissions granted:', permissions)
+    setPermissionsGranted(true)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
@@ -215,23 +220,13 @@ const AppContent = () => {
           }
         />
 
-        {/* Debug routes */}
-        <Route
-          path="/debug/database"
-          element={
-            <div className="min-h-screen bg-gray-50 py-8">
-              <DatabaseFixer />
-            </div>
-          }
-        />
-        <Route
-          path="/test/reactions"
-          element={<ReactionTest />}
-        />
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/feed" replace />} />
       </Routes>
+
+      {/* Permissions Handler */}
+      <PermissionsHandler onPermissionsGranted={handlePermissionsGranted} />
     </div>
   )
 }

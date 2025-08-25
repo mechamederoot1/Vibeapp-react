@@ -7,7 +7,7 @@ import {
   GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI } from '../services/api'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -22,8 +22,39 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import CreateHighlightModal from '../components/CreateHighlightModal'
+import CreateHighlightModalV2 from '../components/CreateHighlightModalV2'
 import AddToHighlightModal from '../components/AddToHighlightModal'
+
+const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
+  const sizeClasses = {
+    sm: 'w-12 h-12',
+    md: 'w-14 h-14',
+    lg: 'w-16 h-16'
+  }
+
+  const hasStory = user.hasStory || (userStories && userStories.length > 0)
+
+  return (
+    <div className={`flex flex-col items-center space-y-1 ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-full p-0.5 ${
+        hasStory
+          ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+          : 'bg-gray-300'
+      }`}>
+        <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-full h-full rounded-full object-cover"
+          />
+        </div>
+      </div>
+      <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+        {user.name.split(' ')[0]}
+      </span>
+    </div>
+  )
+}
 
 const Profile = () => {
   const { user, setUser } = useAuth()
@@ -415,6 +446,19 @@ const Profile = () => {
           console.error('Error loading user posts:', error)
           setUserPosts([])
         }
+// Load user stories
+        try {
+          const storiesResponse = await storiesAPI.getUserStories(user.id)
+          setUserStories(storiesResponse.data.stories || [])
+          // Set hasStory flag for avatar ring
+          setProfileData(prev => ({ 
+            ...prev, 
+            hasStory: (storiesResponse.data.total || 0) > 0 
+          }))
+        } catch (error) {
+          console.error('Error loading user stories:', error)
+          setUserStories([])
+        }
 
         // Load profile visitors (only if user wants to show them)
         if (privacySettings.showVisitors) {
@@ -593,7 +637,7 @@ const Profile = () => {
 
       console.log('Cover uploaded successfully:', response.data.message)
 
-      // Criar post automático no feed
+      // Criar post autom��tico no feed
       try {
         await postsAPI.createPost({
           content: 'atualizou a foto de capa',
@@ -712,7 +756,7 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
+    console.log('�� Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
     setShowAvatarDropdown(!showAvatarDropdown)
   }
 
@@ -733,8 +777,16 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-    console.log('��️ Botão da capa clicado, dropdown atual:', showCoverDropdown)
-    setShowCoverDropdown(!showCoverDropdown)
+const handleCoverClick = () => {
+    console.log('Botão da capa clicado')
+    // Se não há capa, abre diretamente o editor
+    if (!profileData.coverPhoto) {
+      setShowCoverEditor(true)
+    } else {
+      // Se há capa, mostra o dropdown
+      setShowCoverDropdown(!showCoverDropdown)
+    }
+  }
   }
 
   const handleEditCoverFromDropdown = () => {
@@ -771,34 +823,6 @@ const Profile = () => {
     )
   }
 
-  const AvatarWithStory = ({ user, size = 'md', className = '' }) => {
-    const sizeClasses = {
-      sm: 'w-12 h-12',
-      md: 'w-14 h-14',
-      lg: 'w-16 h-16'
-    }
-    
-    return (
-      <div className={`flex flex-col items-center space-y-1 ${className}`}>
-        <div className={`${sizeClasses[size]} rounded-full p-0.5 ${
-          user.hasStory 
-            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500' 
-            : 'bg-gray-300'
-        }`}>
-          <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
-            <img 
-              src={user.avatar} 
-              alt={user.name}
-              className="w-full h-full rounded-full object-cover"
-            />
-          </div>
-        </div>
-        <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
-          {user.name.split(' ')[0]}
-        </span>
-      </div>
-    )
-  }
 
   return (
     <div className="bg-white min-h-full">
@@ -836,40 +860,68 @@ const Profile = () => {
 
       {/* Capa do Perfil */}
       <div className="relative">
-        <div className="w-full h-48 relative">
+        <div 
+          className="w-full h-48 relative cursor-pointer group"
+          onClick={() => !uploading.cover && !viewAsVisitor && handleCoverClick()}
+        >
           {profileData.coverPhoto ? (
-            <img
-              src={profileData.coverPhoto}
-              alt="Capa do perfil"
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={profileData.coverPhoto}
+                alt="Capa do perfil"
+                className="w-full h-full object-cover"
+              />
+              {/* Overlay para hover quando há imagem */}
+              {!viewAsVisitor && (
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="text-white text-center">
+                    <Camera size={24} className="mx-auto mb-1" />
+                    <p className="text-sm font-medium">Alterar capa</p>
+                  </div>
+                </div>
+              )}
+            </>
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300"></div>
+            <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+              {!viewAsVisitor ? (
+                <div className="text-center text-gray-600 group-hover:text-gray-800 transition-colors">
+                  <Camera size={32} className="mx-auto mb-2" />
+                  <p className="text-lg font-medium">Adicionar capa</p>
+                  <p className="text-sm text-gray-500">Clique para escolher uma foto</p>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500">
+                  <Camera size={32} className="mx-auto mb-2 opacity-50" />
+                  <p className="text-lg">Sem foto de capa</p>
+                </div>
+              )}
+            </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
-          {/* Bot��o de opções da capa */}
-          <div className="absolute top-4 right-4">
-            <button
-              className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleCoverClick()
-              }}
-              disabled={uploading.cover}
-              title={uploading.cover ? "Fazendo upload..." : "Op��ões da capa"}
-            >
-              <Camera size={20} />
-            </button>
+          {/* Botão de opções da capa - só aparece se houver foto */}
+          {profileData.coverPhoto && !viewAsVisitor && (
+            <div className="absolute top-4 right-4">
+              <button
+                className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCoverClick()
+                }}
+                disabled={uploading.cover}
+                title={uploading.cover ? "Fazendo upload..." : "Opcoes da capa"}
+              >
+                <Camera size={20} />
+              </button>
 
-            <CoverDropdown
-              isOpen={showCoverDropdown}
-              onClose={() => setShowCoverDropdown(false)}
-              user={profileData}
-              onEditCover={handleEditCoverFromDropdown}
-              onViewCover={handleViewCover}
-            />
-          </div>
+              <CoverDropdown
+                isOpen={showCoverDropdown}
+                onClose={() => setShowCoverDropdown(false)}
+                user={profileData}
+                onEditCover={handleEditCoverFromDropdown}
+                onViewCover={handleViewCover}
+              />
+            </div>
+          )}
 
           {uploading.cover && (
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -886,7 +938,7 @@ const Profile = () => {
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
         <div className="relative">
           <div
-            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105"
+            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
             onClick={handleAvatarClick}
           >
             {profileData.avatar ? (
@@ -904,16 +956,23 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="absolute bottom-0 right-0">
+          {/* Botão de câmera com melhor posicionamento */}
+          <div className="absolute bottom-1 right-1 z-20">
             <button
-              className="w-7 h-7 bg-vibe-blue rounded-full flex items-center justify-center border-2 border-white hover:bg-vibe-blue-dark transition-colors"
-              onClick={handleAvatarClick}
+              className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleAvatarClick()
+              }}
               disabled={uploading.avatar}
-              title={uploading.avatar ? "Fazendo upload..." : "Opções do perfil"}
+              title={uploading.avatar ? "Fazendo upload..." : "Alterar foto do perfil"}
             >
-              <Camera size={14} className="text-white" />
+              <Camera size={16} className="text-white" />
             </button>
+          </div>
 
+          {/* Dropdown posicionado corretamente */}
+          <div className="absolute bottom-0 right-0 z-30">
             <AvatarDropdown
               isOpen={showAvatarDropdown}
               onClose={() => setShowAvatarDropdown(false)}
@@ -926,7 +985,7 @@ const Profile = () => {
           </div>
 
           {uploading.avatar && (
-            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center z-10">
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
@@ -1630,7 +1689,7 @@ const Profile = () => {
 
 
       {/* Modal de Criar Destaque */}
-      <CreateHighlightModal
+      <CreateHighlightModalV2
         isOpen={showCreateHighlightModal}
         onClose={() => setShowCreateHighlightModal(false)}
         onSave={handleCreateHighlight}

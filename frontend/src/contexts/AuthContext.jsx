@@ -18,23 +18,34 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      console.log('🔧 Auth init - token:', token ? `${token.substring(0, 20)}...` : 'null')
       if (token) {
         try {
-          api.defaults.headers.Authorization = `Bearer ${token}`
-          console.log('🔑 Set Authorization header')
-          const response = await authAPI.me()
-          console.log('✅ Auth init successful, user:', response.data)
-          setUser(response.data)
+          if (api) {
+            api.defaults.headers.Authorization = `Bearer ${token}`
+            const response = await authAPI.me()
+            setUser(response.data)
+          }
         } catch (error) {
-          console.error('❌ Auth init error:', error)
-          logout()
+          // Não fazer logout agressivo - só limpar estado
+          console.error('Token inválido:', error.message)
+          setUser(null)
+          setToken(null)
+          localStorage.removeItem('token')
+          if (api) {
+            delete api.defaults.headers.Authorization
+          }
         }
       }
       setLoading(false)
     }
 
-    initAuth()
+    // Só executar se não estiver na página de registro
+    const currentPath = window.location.pathname
+    if (currentPath !== '/register') {
+      initAuth()
+    } else {
+      setLoading(false)
+    }
   }, [token])
 
   const login = async (email, password) => {
@@ -58,36 +69,24 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      console.log('🔍 Tentando registrar usuário:', userData.email)
-      console.log('🔧 URL da API:', import.meta.env.VITE_API_URL || 'auto-detectada')
       const response = await authAPI.register(userData)
       const { user: newUser, access_token: authToken } = response.data
 
-      console.log('✅ Registro bem-sucedido:', newUser.email)
       setUser(newUser)
       setToken(authToken)
       localStorage.setItem('token', authToken)
-      api.defaults.headers.Authorization = `Bearer ${authToken}`
+      if (api) {
+        api.defaults.headers.Authorization = `Bearer ${authToken}`
+      }
 
       return { success: true }
     } catch (error) {
-      console.error('❌ Erro no registro:', {
-        message: error.message,
-        code: error.code,
-        status: error.response?.status,
-        data: error.response?.data,
-        config: {
-          url: error.config?.url,
-          baseURL: error.config?.baseURL,
-          method: error.config?.method
-        }
-      })
-
       let errorMessage = 'Erro ao criar conta'
 
-      if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
+      if (error.message?.includes('Backend não disponível')) {
+        errorMessage = 'Backend não está configurado. Por favor, conecte um banco de dados.'
+      } else if (error.code === 'ECONNREFUSED' || error.message?.includes('Network Error')) {
         errorMessage = 'Servidor temporariamente indisponível. Tente novamente em alguns minutos.'
-        console.error('🚫 Falha na conexão. Verifique se o backend está rodando e se o nginx está configurado corretamente.')
       } else if (error.response?.status === 400) {
         errorMessage = error.response.data?.detail || 'Dados inválidos. Verifique as informações e tente novamente.'
       } else if (error.response?.status === 409) {

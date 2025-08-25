@@ -14,7 +14,6 @@ const getApiBaseUrl = () => {
 
   // Se está no Builder.io ou ambiente de produção, não tenta conectar backend local
   if (isBuilderEnvironment()) {
-    console.log('🌐 Detectado ambiente Builder.io - usando modo demo')
     return null // Indica que deve usar modo demo
   }
 
@@ -22,7 +21,7 @@ const getApiBaseUrl = () => {
   const protocol = window.location.protocol
 
   // Em desenvolvimento local, usa localhost com porta específica
-  if (import.meta.env.DEV && hostname === 'localhost') {
+  if (import.meta.env.DEV && (hostname === 'localhost' || hostname === '127.0.0.1')) {
     return 'http://localhost:3010/api'
   }
 
@@ -41,10 +40,6 @@ const getApiBaseUrl = () => {
 }
 
 const API_BASE_URL = getApiBaseUrl()
-console.log('🔧 API Base URL:', API_BASE_URL)
-console.log('🌐 Ambiente Builder.io:', isBuilderEnvironment())
-console.log('🌍 Hostname atual:', window.location.hostname)
-console.log('🔒 Protocol atual:', window.location.protocol)
 
 // Cria instância da API apenas se não estiver no modo demo
 const api = API_BASE_URL ? axios.create({
@@ -56,30 +51,32 @@ const api = API_BASE_URL ? axios.create({
 }) : null
 
 // Create special instance for uploads with longer timeout
-const uploadApi = axios.create({
+const uploadApi = API_BASE_URL ? axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 2 minutes for uploads
   headers: {
     'Content-Type': 'application/json',
   },
-})
+}) : null
 
 // Function to add interceptors
 const addInterceptors = (apiInstance) => {
   // Interceptor para adicionar token de autenticação
   apiInstance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('token')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-        console.log(`🔑 Adding auth token to ${config.method?.toUpperCase()} ${config.url}`)
-      } else {
-        console.log(`⚠️  No token found for ${config.method?.toUpperCase()} ${config.url}`)
+      // Não adicionar Authorization para endpoints públicos
+      const isPublicEndpoint = config.url?.includes('/auth/register') ||
+                               config.url?.includes('/auth/login')
+
+      if (!isPublicEndpoint) {
+        const token = localStorage.getItem('token')
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`
+        }
       }
       return config
     },
     (error) => {
-      console.error('❌ Request interceptor error:', error)
       return Promise.reject(error)
     }
   )
@@ -88,22 +85,17 @@ const addInterceptors = (apiInstance) => {
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error('❌ Erro na API:', {
-        url: error.config?.url,
-        method: error.config?.method,
-        status: error.response?.status,
-        message: error.message,
-        data: error.response?.data
-      })
-
       if (error.response?.status === 401) {
-        localStorage.removeItem('token')
-        window.location.href = '/login'
-      }
+        // Só redirecionar se não estiver em uma página pública
+        const currentPath = window.location.pathname
+        const isPublicPage = currentPath === '/login' ||
+                            currentPath === '/register'
 
-      // Tratar erro de conexão
-      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
-        console.error('🚫 Erro de conexão com o servidor')
+        localStorage.removeItem('token')
+
+        if (!isPublicPage) {
+          window.location.href = '/login'
+        }
       }
 
       return Promise.reject(error)
@@ -111,17 +103,34 @@ const addInterceptors = (apiInstance) => {
   )
 }
 
-// Add interceptors to both instances
-addInterceptors(api)
-addInterceptors(uploadApi)
+// Add interceptors to both instances only if they exist
+if (api) {
+  addInterceptors(api)
+}
+if (uploadApi) {
+  addInterceptors(uploadApi)
+}
+
+// Safe API wrapper for demo mode
+const createSafeAPI = (apiCall) => {
+  return (...args) => {
+    if (!api) {
+      return Promise.reject(new Error('Backend não disponível no modo demo. Por favor, configure um backend real.'))
+    }
+    try {
+      return apiCall(...args)
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
+}
 
 // Auth endpoints
 export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  register: (userData) => api.post('/auth/register', userData),
-  me: () => api.get('/auth/me'),
-  logout: () => api.post('/auth/logout'),
-  createDemoUser: () => api.post('/auth/create-demo-user')
+  login: createSafeAPI((email, password) => api.post('/auth/login', { email, password })),
+  register: createSafeAPI((userData) => api.post('/auth/register', userData)),
+  me: createSafeAPI(() => api.get('/auth/me')),
+  logout: createSafeAPI(() => api.post('/auth/logout'))
 }
 
 // Users endpoints
@@ -248,12 +257,6 @@ export const highlightsAPI = {
   getStories: (highlightId) => api.get(`/highlights/${highlightId}/stories`)
 }
 
-// Development endpoints
-export const devAPI = {
-  createTestUsers: () => api.post('/dev/create-test-users'),
-  listTestUsers: () => api.get('/dev/test-users'),
-  migrateDatabase: () => api.post('/dev/migrate-database'),
-}
 
 // Legacy services for backward compatibility
 export const authService = {

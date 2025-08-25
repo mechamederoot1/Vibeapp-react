@@ -12,7 +12,9 @@ import os
 router = APIRouter()
 
 # JWT Settings
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable must be set")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
@@ -46,13 +48,14 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        user_id = int(user_id_str)
         return user_id
     except jwt.PyJWTError:
         raise HTTPException(
@@ -184,93 +187,12 @@ async def logout():
     # In a real app, you might want to blacklist the token
     return {"message": "Successfully logged out"}
 
-@router.post("/create-demo-user")
-async def create_demo_user(db: Session = Depends(get_db)):
-    """Create a demo user for testing"""
-
-    demo_email = "demo@vibesocial.com"
-    demo_password = "demo123"
-
-    # Check if demo user already exists
-    existing_user = db.query(User).filter(User.email == demo_email).first()
-    if existing_user:
-        # Login with existing demo user
-        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": str(existing_user.id)}, expires_delta=access_token_expires
-        )
-
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": existing_user.to_dict(),
-            "message": "Demo user already exists, logged in successfully"
-        }
-
-    # Create new demo user
-    new_user = User(
-        email=demo_email,
-        first_name="Demo",
-        last_name="User",
-        username="demo.user",
-        bio="This is a demo user for testing Vibe Social 🚀",
-        location="Demo City",
-        is_verified=True
-    )
-    new_user.set_password(demo_password)
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": str(new_user.id)}, expires_delta=access_token_expires
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": new_user.to_dict(),
-        "message": "Demo user created successfully"
-    }
 
 # Health check endpoint
 @router.get("/health")
 async def auth_health():
     return {"status": "healthy", "service": "authentication"}
 
-# Debug endpoint
-@router.post("/debug-token")
-async def debug_token(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
-    """Debug endpoint to check token validity"""
-    try:
-        token = credentials.credentials
-        user_id = verify_token(token)
-        user = db.query(User).filter(User.id == user_id).first()
-
-        return {
-            "status": "valid",
-            "token_valid": True,
-            "user_id": user_id,
-            "user_found": user is not None,
-            "user_active": user.is_active if user else False,
-            "user_email": user.email if user else None
-        }
-    except HTTPException as e:
-        return {
-            "status": "invalid",
-            "token_valid": False,
-            "error": e.detail,
-            "status_code": e.status_code
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "token_valid": False,
-            "error": str(e)
-        }
 
 async def get_user_from_websocket(token: str, db: Session = None):
     """Função para autenticar usuário via WebSocket"""
