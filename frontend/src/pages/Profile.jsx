@@ -574,6 +574,29 @@ const Profile = () => {
 
   // Real data is now loaded from backend via useEffect
 
+  // Função para obter dados do perfil corretos (próprio ou de outro usuário)
+  const getProfileData = () => {
+    if (isOwnProfile) {
+      return profileData
+    } else {
+      return {
+        ...profileUser,
+        username: profileUser?.username || 'usuario',
+        name: profileUser?.fullName || profileUser?.name || 'Usuário',
+        avatar: profileUser?.avatar || profileUser?.avatar_url,
+        coverPhoto: profileUser?.coverPhoto,
+        bio: profileUser?.bio || '',
+        isVerified: profileUser?.isVerified || false,
+        posts: 0, // TODO: carregar via API
+        followers: 0, // TODO: carregar via API
+        following: 0, // TODO: carregar via API
+        profileViews: 0 // TODO: carregar via API
+      }
+    }
+  }
+
+  const currentProfileData = getProfileData()
+
   const toggleVisitorsPrivacy = () => {
     setPrivacySettings(prev => ({
       ...prev,
@@ -1538,7 +1561,7 @@ const Profile = () => {
                     <span className="text-sm font-semibold">{post.likesCount}</span>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <span className="text-sm">💬</span>
+                    <span className="text-sm">��</span>
                     <span className="text-sm font-semibold">{post.commentsCount}</span>
                   </div>
                 </div>
