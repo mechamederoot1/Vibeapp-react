@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../services/api'
 
 const Search = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [loading, setLoading] = useState(false)
