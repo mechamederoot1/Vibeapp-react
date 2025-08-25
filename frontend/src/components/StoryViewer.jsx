@@ -230,7 +230,23 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
               {currentStory.content}
             </p>
           </div>
-        ) : null}
+        ) : (
+          // Fallback para quando não há mídia válida
+          <div className="w-full max-w-sm mx-4 p-8 rounded-2xl flex items-center justify-center min-h-[400px] bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="text-center text-white">
+              <div className="text-4xl mb-4">📷</div>
+              <p className="text-lg font-medium mb-2">Mídia não disponível</p>
+              <p className="text-sm text-gray-300">
+                {currentStory.content || 'Story não pôde ser carregado'}
+              </p>
+              {currentStory.mediaUrl && (
+                <p className="text-xs text-gray-400 mt-2 break-all">
+                  URL: {currentStory.mediaUrl}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Text overlay for media stories */}
         {currentStory.content && (currentStory.type === 'image' || currentStory.type === 'video') && (
