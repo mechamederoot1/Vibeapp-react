@@ -7,6 +7,7 @@ from ..database.database import get_db
 from ..models.user import User
 from ..models.post import Post, PostLike, Comment, Share
 from .auth import get_current_user
+from ..utils.privacy import can_view_post
 
 router = APIRouter()
 
