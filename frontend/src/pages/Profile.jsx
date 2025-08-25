@@ -1063,7 +1063,7 @@ const Profile = () => {
               </div>
             )}
           </div>
-          <p className="text-gray-600">@{profileData.username}</p>
+          <p className="text-gray-600">@{currentProfileData.username}</p>
         </div>
 
         {/* Stats */}
