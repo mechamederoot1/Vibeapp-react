@@ -446,8 +446,12 @@ async def get_user_posts(
         Post.author_id == user_id,
         Post.is_active == True
     ).order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
-    
-    posts_data = [post.to_dict(current_user.id) for post in posts]
+
+    posts_data = []
+    for post in posts:
+        # Verificar se o usuário pode ver este post baseado na privacidade
+        if can_view_post(db, current_user.id, post.author_id, post.privacy):
+            posts_data.append(post.to_dict(current_user.id))
     
     return {
         "posts": posts_data,
