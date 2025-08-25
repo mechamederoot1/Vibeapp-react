@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
@@ -909,7 +909,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Botão de opções da capa - só aparece se houver foto */}
+          {/* Botão de opções da capa - s�� aparece se houver foto */}
           {profileData.coverPhoto && !viewAsVisitor && (
             <div className="absolute top-4 right-4">
               <button
