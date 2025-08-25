@@ -22,7 +22,7 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import CreateHighlightModal from '../components/CreateHighlightModal'
+import CreateHighlightModalV2 from '../components/CreateHighlightModalV2'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
