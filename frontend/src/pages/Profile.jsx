@@ -970,19 +970,18 @@ const handleCoverClick = () => {
           </div>
 
           {/* Botão de câmera com melhor posicionamento */}
-          <div className="absolute bottom-1 right-1 z-20">
-            <button
-              className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleAvatarClick()
-              }}
-              disabled={uploading.avatar}
-              title={uploading.avatar ? "Fazendo upload..." : "Alterar foto do perfil"}
-            >
-              <Camera size={16} className="text-white" />
-            </button>
-          </div>
+          {!viewAsVisitor && (
+            <div className="absolute bottom-1 right-1 z-20">
+              <button
+                className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
+                onClick={handleCameraButtonClick}
+                disabled={uploading.avatar}
+                title={uploading.avatar ? "Fazendo upload..." : profileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
+              >
+                <Camera size={16} className="text-white" />
+              </button>
+            </div>
+          )}
 
           {/* Dropdown posicionado corretamente */}
           <div className="absolute bottom-0 right-0 z-30">
