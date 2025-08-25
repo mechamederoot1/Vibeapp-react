@@ -80,9 +80,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 @router.post("/register", response_model=Token)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     try:
+        print(f"🚀 Endpoint de registro chamado com dados: {user_data}")
+
         # Check if user already exists
         existing_user = db.query(User).filter(User.email == user_data.email).first()
         if existing_user:
+            print(f"❌ Email já existe: {user_data.email}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
