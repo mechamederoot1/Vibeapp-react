@@ -135,30 +135,30 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
   const Icon = currentPermission.icon
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:p-4">
+      <div className="bg-white md:rounded-2xl shadow-xl w-full h-full md:h-auto md:max-w-md overflow-hidden md:overflow-visible flex flex-col md:block">
         {/* Header */}
-        <div className="p-6 text-center">
-          <div className={`w-20 h-20 ${currentPermission.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
-            <Icon size={32} className="text-white" />
+        <div className="p-6 md:p-6 pt-12 md:pt-6 text-center flex-1 md:flex-initial flex flex-col justify-center md:justify-start">
+          <div className={`w-24 h-24 md:w-20 md:h-20 ${currentPermission.color} rounded-full flex items-center justify-center mx-auto mb-6 md:mb-4`}>
+            <Icon size={36} className="text-white md:w-8 md:h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-2">
             {currentPermission.title}
           </h2>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-lg md:text-base text-gray-600 leading-relaxed px-4 md:px-0">
             {currentPermission.description}
           </p>
         </div>
 
         {/* Progress */}
-        <div className="px-6 mb-6">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+        <div className="px-6 md:px-6 px-8 mb-8 md:mb-6">
+          <div className="flex items-center justify-between text-sm md:text-xs text-gray-500 mb-3 md:mb-2">
             <span>Passo {currentStep + 1} de {permissionSteps.length}</span>
             <span>{Math.round(((currentStep + 1) / permissionSteps.length) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-vibe-blue h-2 rounded-full transition-all duration-300"
+          <div className="w-full bg-gray-200 rounded-full h-3 md:h-2">
+            <div
+              className="bg-vibe-blue h-3 md:h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / permissionSteps.length) * 100}%` }}
             />
           </div>
@@ -166,20 +166,20 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
 
         {/* Permission Status */}
         {permissions[currentPermission.type] !== null && (
-          <div className="px-6 mb-4">
-            <div className={`flex items-center space-x-2 p-3 rounded-lg ${
-              permissions[currentPermission.type] 
-                ? 'bg-green-50 text-green-700' 
+          <div className="px-8 md:px-6 mb-6 md:mb-4">
+            <div className={`flex items-center space-x-3 md:space-x-2 p-4 md:p-3 rounded-lg ${
+              permissions[currentPermission.type]
+                ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'
             }`}>
               {permissions[currentPermission.type] ? (
-                <Check size={20} />
+                <Check size={24} className="md:w-5 md:h-5" />
               ) : (
-                <X size={20} />
+                <X size={24} className="md:w-5 md:h-5" />
               )}
-              <span className="text-sm font-medium">
-                {permissions[currentPermission.type] 
-                  ? 'Permissão concedida!' 
+              <span className="text-base md:text-sm font-medium">
+                {permissions[currentPermission.type]
+                  ? 'Permissão concedida!'
                   : 'Permissão negada'
                 }
               </span>
@@ -188,26 +188,26 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
         )}
 
         {/* Actions */}
-        <div className="p-6 space-y-3">
+        <div className="p-8 md:p-6 space-y-4 md:space-y-3 mt-auto md:mt-0">
           <button
             onClick={() => handleRequestPermission(currentPermission.type)}
             disabled={loading}
-            className="w-full bg-vibe-blue text-white py-3 px-4 rounded-lg hover:bg-vibe-blue-dark transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full bg-vibe-blue text-white py-4 md:py-3 px-6 md:px-4 rounded-xl md:rounded-lg hover:bg-vibe-blue-dark transition-colors disabled:opacity-50 flex items-center justify-center space-x-3 md:space-x-2 text-lg md:text-base font-medium"
           >
             {loading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <Icon size={20} />
+                <Icon size={24} className="md:w-5 md:h-5" />
                 <span>Permitir Acesso</span>
               </>
             )}
           </button>
-          
+
           <button
             onClick={handleSkip}
             disabled={loading}
-            className="w-full text-gray-600 py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+            className="w-full text-gray-600 py-3 md:py-2 px-6 md:px-4 rounded-xl md:rounded-lg hover:bg-gray-100 transition-colors text-lg md:text-base"
           >
             Agora não
           </button>
@@ -216,15 +216,15 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
           <button
             onClick={handleFinish}
             disabled={loading}
-            className="w-full text-gray-400 text-sm py-1"
+            className="w-full text-gray-400 text-base md:text-sm py-2 md:py-1"
           >
             Pular todas as permissões
           </button>
         </div>
 
         {/* Benefits */}
-        <div className="bg-gray-50 p-4">
-          <p className="text-xs text-gray-600 text-center">
+        <div className="bg-gray-50 p-6 md:p-4 mt-auto md:mt-0">
+          <p className="text-sm md:text-xs text-gray-600 text-center">
             Você pode alterar essas permissões a qualquer momento nas configurações do seu navegador
           </p>
         </div>

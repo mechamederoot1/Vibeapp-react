@@ -10,7 +10,11 @@
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && python3 -m pip install -r requirements.txt",
     "build": "cd frontend && npm run build",
-    "start": "cd frontend && npm run preview"
+    "start": "cd frontend && npm run preview",
+    "build:mobile": "cd frontend && npm run build:mobile",
+    "android": "cd frontend && npm run android",
+    "ios": "cd frontend && npm run ios",
+    "sync": "cd frontend && npm run sync"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
