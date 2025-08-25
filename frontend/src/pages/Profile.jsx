@@ -883,6 +883,36 @@ const Profile = () => {
     )
   }
 
+  // Loading para perfil de outro usuário
+  if (!isOwnProfile && profileLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-vibe-blue mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando perfil...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Erro ao carregar perfil de outro usuário
+  if (!isOwnProfile && !profileUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Perfil não encontrado</h2>
+          <p className="text-gray-600 mb-4">O usuário que você está procurando não existe.</p>
+          <button
+            onClick={() => navigate('/feed')}
+            className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
+          >
+            Voltar ao Feed
+          </button>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="bg-white min-h-full">
@@ -1219,7 +1249,7 @@ const Profile = () => {
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação dispon��vel.'}
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhec��-lo melhor.' : 'Nenhuma informação dispon��vel.'}
                 </p>
                 {!viewAsVisitor && (
                   <button
