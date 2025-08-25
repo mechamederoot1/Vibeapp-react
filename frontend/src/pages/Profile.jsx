@@ -1689,7 +1689,7 @@ const handleCoverClick = () => {
 
 
       {/* Modal de Criar Destaque */}
-      <CreateHighlightModal
+      <CreateHighlightModalV2
         isOpen={showCreateHighlightModal}
         onClose={() => setShowCreateHighlightModal(false)}
         onSave={handleCreateHighlight}

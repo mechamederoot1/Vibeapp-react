@@ -17,6 +17,7 @@ import LoginPage from './pages/LoginPage'
 import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
+import PermissionsHandler from './components/PermissionsHandler'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -62,9 +63,15 @@ const PublicRoute = ({ children }) => {
 
 const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
+  const [permissionsGranted, setPermissionsGranted] = useState(false)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
+
+  const handlePermissionsGranted = (permissions) => {
+    console.log('Permissions granted:', permissions)
+    setPermissionsGranted(true)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
@@ -217,6 +224,9 @@ const AppContent = () => {
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/feed" replace />} />
       </Routes>
+
+      {/* Permissions Handler */}
+      <PermissionsHandler onPermissionsGranted={handlePermissionsGranted} />
     </div>
   )
 }
