@@ -84,10 +84,10 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-xl font-bold">Editar Perfil</h2>
           <button
             onClick={onClose}
@@ -97,7 +97,8 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+          <div className="flex-1 p-6 space-y-6 overflow-y-auto">
           {/* Cover Photo */}
           <div className="relative">
             <div className="w-full h-32 bg-gradient-to-br from-vibe-blue via-vibe-blue-light to-purple-300 rounded-lg relative overflow-hidden">
@@ -348,8 +349,10 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
             </div>
           )}
 
+          </div>
+
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

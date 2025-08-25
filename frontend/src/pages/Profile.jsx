@@ -805,21 +805,16 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    console.log('�� Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
-    setShowAvatarDropdown(!showAvatarDropdown)
+    console.log('🖼️ Botão do avatar clicado - abrindo galeria')
+    // Abrir editor de avatar diretamente quando clicar no avatar
+    setShowAvatarEditor(true)
   }
 
   const handleCameraButtonClick = (e) => {
     e.stopPropagation()
-    console.log('📷 Botão da câmera clicado')
-
-    // Se usuário não tem avatar, abrir editor diretamente
-    if (!profileData.avatar) {
-      setShowAvatarEditor(true)
-    } else {
-      // Se tem avatar, abrir dropdown com opções
-      setShowAvatarDropdown(!showAvatarDropdown)
-    }
+    console.log('📷 Botão da câmera clicado - abrindo galeria')
+    // Sempre abrir editor de avatar diretamente
+    setShowAvatarEditor(true)
   }
 
   const handleEditAvatarFromDropdown = () => {
@@ -839,14 +834,9 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-    console.log('Botão da capa clicado')
-    // Se não há capa, abre diretamente o editor
-    if (!profileData.coverPhoto) {
-      setShowCoverEditor(true)
-    } else {
-      // Se há capa, mostra o dropdown
-      setShowCoverDropdown(!showCoverDropdown)
-    }
+    console.log('Botão da capa clicado - abrindo galeria')
+    // Sempre abrir editor de capa diretamente
+    setShowCoverEditor(true)
   }
 
   const handleEditCoverFromDropdown = () => {

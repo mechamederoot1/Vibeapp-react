@@ -191,29 +191,43 @@ const Register = () => {
   }
 
   const handleSubmit = async () => {
+    console.log('🚀 handleSubmit chamado')
+    console.log('📝 Dados do formulário:', formData)
+
     if (!validateStep(4)) {
+      console.log('❌ Validação falhou no passo 4')
       setError('Por favor, verifique todos os campos')
       return
     }
 
+    console.log('✅ Validação passou, iniciando registro...')
     setLoading(true)
     setError('')
 
-    const result = await register({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      gender: formData.gender,
-      birthDate: formData.birthDate,
-      password: formData.password
-    })
+    try {
+      const result = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        gender: formData.gender,
+        birthDate: formData.birthDate,
+        password: formData.password
+      })
 
-    if (result.success) {
-      navigate('/feed')
-    } else {
-      setError(result.error)
+      console.log('📥 Resultado do registro:', result)
+
+      if (result.success) {
+        console.log('✅ Registro bem-sucedido, navegando para /feed')
+        navigate('/feed')
+      } else {
+        console.log('❌ Erro no registro:', result.error)
+        setError(result.error)
+      }
+    } catch (error) {
+      console.error('💥 Erro durante o registro:', error)
+      setError('Erro inesperado durante o registro')
     }
-    
+
     setLoading(false)
   }
 
@@ -462,7 +476,10 @@ const Register = () => {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                console.log('🖱️ Botão "Criar conta" clicado')
+                handleSubmit()
+              }}
               disabled={loading || !validateStep(4)}
               className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed"
             >
