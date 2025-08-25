@@ -415,6 +415,19 @@ const Profile = () => {
           console.error('Error loading user posts:', error)
           setUserPosts([])
         }
+// Load user stories
+        try {
+          const storiesResponse = await storiesAPI.getUserStories(user.id)
+          setUserStories(storiesResponse.data.stories || [])
+          // Set hasStory flag for avatar ring
+          setProfileData(prev => ({ 
+            ...prev, 
+            hasStory: (storiesResponse.data.total || 0) > 0 
+          }))
+        } catch (error) {
+          console.error('Error loading user stories:', error)
+          setUserStories([])
+        }
 
         // Load profile visitors (only if user wants to show them)
         if (privacySettings.showVisitors) {
