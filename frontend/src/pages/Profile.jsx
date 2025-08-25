@@ -843,7 +843,6 @@ const handleCoverClick = () => {
       </div>
 
       {/* Capa do Perfil */}
-      {/* Capa do Perfil */}
       <div className="relative">
         <div 
           className="w-full h-48 relative cursor-pointer group"
