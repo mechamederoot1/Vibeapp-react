@@ -70,6 +70,13 @@ async def create_post(
             detail="Invalid post type"
         )
 
+    # Validate privacy setting
+    if post_data.privacy not in ["public", "friends", "private"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid privacy setting. Must be 'public', 'friends', or 'private'"
+        )
+
     new_post = Post(
         author_id=current_user.id,
         content=post_data.content,
@@ -77,7 +84,8 @@ async def create_post(
         video_url=post_data.videoUrl,
         post_type=post_data.type,
         background_color=post_data.backgroundColor,
-        profile_update_type=post_data.profileUpdateType
+        profile_update_type=post_data.profileUpdateType,
+        privacy=post_data.privacy
     )
     
     db.add(new_post)
