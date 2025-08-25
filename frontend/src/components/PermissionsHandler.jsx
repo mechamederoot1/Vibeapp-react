@@ -136,7 +136,7 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:p-4">
-      <div className="bg-white md:rounded-2xl shadow-xl w-full h-full md:h-auto md:max-w-md overflow-hidden md:overflow-visible">
+      <div className="bg-white md:rounded-2xl shadow-xl w-full h-full md:h-auto md:max-w-md overflow-hidden md:overflow-visible flex flex-col md:block">
         {/* Header */}
         <div className="p-6 md:p-6 pt-12 md:pt-6 text-center flex-1 md:flex-initial flex flex-col justify-center md:justify-start">
           <div className={`w-24 h-24 md:w-20 md:h-20 ${currentPermission.color} rounded-full flex items-center justify-center mx-auto mb-6 md:mb-4`}>
