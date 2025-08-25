@@ -34,6 +34,12 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
   useEffect(() => {
     if (isOpen && currentStory) {
       setLoading(true)
+      console.log('StoryViewer: Carregando story:', {
+        id: currentStory.id,
+        type: currentStory.type,
+        mediaUrl: currentStory.mediaUrl,
+        content: currentStory.content
+      })
     }
   }, [currentIndex, stories, isOpen])
 
