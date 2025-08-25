@@ -138,14 +138,14 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 md:p-4">
       <div className="bg-white md:rounded-2xl shadow-xl w-full h-full md:h-auto md:max-w-md overflow-hidden md:overflow-visible">
         {/* Header */}
-        <div className="p-6 text-center">
-          <div className={`w-20 h-20 ${currentPermission.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
-            <Icon size={32} className="text-white" />
+        <div className="p-6 md:p-6 pt-12 md:pt-6 text-center flex-1 md:flex-initial flex flex-col justify-center md:justify-start">
+          <div className={`w-24 h-24 md:w-20 md:h-20 ${currentPermission.color} rounded-full flex items-center justify-center mx-auto mb-6 md:mb-4`}>
+            <Icon size={36} className="text-white md:w-8 md:h-8" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-2">
             {currentPermission.title}
           </h2>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-lg md:text-base text-gray-600 leading-relaxed px-4 md:px-0">
             {currentPermission.description}
           </p>
         </div>
