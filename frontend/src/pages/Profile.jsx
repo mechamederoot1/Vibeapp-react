@@ -924,10 +924,10 @@ const Profile = () => {
           className="w-full h-48 relative cursor-pointer group"
           onClick={() => !uploading.cover && !viewAsVisitor && handleCoverClick()}
         >
-          {profileData.coverPhoto ? (
+          {currentProfileData.coverPhoto ? (
             <>
               <img
-                src={profileData.coverPhoto}
+                src={currentProfileData.coverPhoto}
                 alt="Capa do perfil"
                 className="w-full h-full object-cover"
               />
