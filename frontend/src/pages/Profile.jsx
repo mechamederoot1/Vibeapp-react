@@ -128,6 +128,26 @@ const Profile = () => {
     const loadUserData = async () => {
       if (!user?.id) return
 
+      // Determinar se é perfil próprio ou de outro usuário
+      const isOwnProfile = !userId || userId === user.id.toString()
+      setIsOwnProfile(isOwnProfile)
+
+      if (!isOwnProfile) {
+        // Carregar perfil de outro usuário
+        setProfileLoading(true)
+        try {
+          const response = await usersAPI.getUserById(userId)
+          setProfileUser(response.data)
+        } catch (error) {
+          console.error('Erro ao carregar perfil do usuário:', error)
+          // Redirecionar para 404 ou mostrar erro
+          navigate('/feed')
+          return
+        } finally {
+          setProfileLoading(false)
+        }
+      }
+
       // Modo offline/demo - não fazer chamadas de API
       if (false) {
         console.log('🔧 Modo demo - usando dados mock para visualização do perfil')
