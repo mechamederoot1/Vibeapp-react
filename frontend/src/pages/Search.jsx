@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Search as SearchIcon, UserPlus, Users, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../services/api'
 
 const Search = () => {
