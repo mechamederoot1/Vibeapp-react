@@ -476,7 +476,10 @@ const Register = () => {
             </button>
           ) : (
             <button
-              onClick={handleSubmit}
+              onClick={() => {
+                console.log('🖱️ Botão "Criar conta" clicado')
+                handleSubmit()
+              }}
               disabled={loading || !validateStep(4)}
               className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed"
             >
