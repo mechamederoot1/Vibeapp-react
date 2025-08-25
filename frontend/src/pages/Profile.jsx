@@ -805,8 +805,9 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    console.log('�� Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
-    setShowAvatarDropdown(!showAvatarDropdown)
+    console.log('🖼️ Botão do avatar clicado - abrindo galeria')
+    // Abrir editor de avatar diretamente quando clicar no avatar
+    setShowAvatarEditor(true)
   }
 
   const handleCameraButtonClick = (e) => {
