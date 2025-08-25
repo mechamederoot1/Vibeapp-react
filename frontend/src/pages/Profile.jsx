@@ -25,6 +25,37 @@ import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
+const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
+  const sizeClasses = {
+    sm: 'w-12 h-12',
+    md: 'w-14 h-14',
+    lg: 'w-16 h-16'
+  }
+
+  const hasStory = user.hasStory || (userStories && userStories.length > 0)
+
+  return (
+    <div className={`flex flex-col items-center space-y-1 ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-full p-0.5 ${
+        hasStory
+          ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+          : 'bg-gray-300'
+      }`}>
+        <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-full h-full rounded-full object-cover"
+          />
+        </div>
+      </div>
+      <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+        {user.name.split(' ')[0]}
+      </span>
+    </div>
+  )
+}
+
 const Profile = () => {
   const { user, setUser } = useAuth()
   const navigate = useNavigate()
@@ -725,7 +756,7 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    console.log('👤 Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
+    console.log('�� Botão do avatar clicado, dropdown atual:', showAvatarDropdown)
     setShowAvatarDropdown(!showAvatarDropdown)
   }
 
