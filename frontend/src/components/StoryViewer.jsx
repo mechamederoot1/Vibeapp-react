@@ -196,6 +196,10 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
             alt="Story"
             className="max-w-full max-h-full object-contain"
             onLoad={() => setLoading(false)}
+            onError={() => {
+              setLoading(false)
+              console.error('Erro ao carregar imagem do story:', currentStory.mediaUrl)
+            }}
           />
         ) : currentStory.type === 'video' && currentStory.mediaUrl ? (
           <video
@@ -204,6 +208,10 @@ const StoryViewer = ({ isOpen, onClose, stories, initialStoryIndex = 0, currentU
             muted
             className="max-w-full max-h-full object-contain"
             onLoadedData={() => setLoading(false)}
+            onError={() => {
+              setLoading(false)
+              console.error('Erro ao carregar vídeo do story:', currentStory.mediaUrl)
+            }}
           />
         ) : currentStory.type === 'text' ? (
           <div className={`
