@@ -69,6 +69,7 @@ class Post(Base):
             "type": self.post_type,
             "backgroundColor": self.background_color,
             "profileUpdateType": self.profile_update_type,
+            "privacy": self.privacy,
             "likesCount": self.likes_count,
             "commentsCount": self.comments_count,
             "sharesCount": self.shares_count,
