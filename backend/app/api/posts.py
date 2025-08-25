@@ -17,6 +17,7 @@ class PostCreate(BaseModel):
     type: str = "text"  # text, image, video, profile_update
     backgroundColor: Optional[str] = None  # Background color for text posts
     profileUpdateType: Optional[str] = None  # avatar, cover (for profile update posts)
+    privacy: str = "public"  # public, friends, private
 
 class CommentCreate(BaseModel):
     content: str
