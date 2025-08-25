@@ -166,20 +166,20 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
 
         {/* Permission Status */}
         {permissions[currentPermission.type] !== null && (
-          <div className="px-6 mb-4">
-            <div className={`flex items-center space-x-2 p-3 rounded-lg ${
-              permissions[currentPermission.type] 
-                ? 'bg-green-50 text-green-700' 
+          <div className="px-8 md:px-6 mb-6 md:mb-4">
+            <div className={`flex items-center space-x-3 md:space-x-2 p-4 md:p-3 rounded-lg ${
+              permissions[currentPermission.type]
+                ? 'bg-green-50 text-green-700'
                 : 'bg-red-50 text-red-700'
             }`}>
               {permissions[currentPermission.type] ? (
-                <Check size={20} />
+                <Check size={24} className="md:w-5 md:h-5" />
               ) : (
-                <X size={20} />
+                <X size={24} className="md:w-5 md:h-5" />
               )}
-              <span className="text-sm font-medium">
-                {permissions[currentPermission.type] 
-                  ? 'Permissão concedida!' 
+              <span className="text-base md:text-sm font-medium">
+                {permissions[currentPermission.type]
+                  ? 'Permissão concedida!'
                   : 'Permissão negada'
                 }
               </span>
