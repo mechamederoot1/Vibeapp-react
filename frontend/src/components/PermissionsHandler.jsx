@@ -151,14 +151,14 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
         </div>
 
         {/* Progress */}
-        <div className="px-6 mb-6">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+        <div className="px-6 md:px-6 px-8 mb-8 md:mb-6">
+          <div className="flex items-center justify-between text-sm md:text-xs text-gray-500 mb-3 md:mb-2">
             <span>Passo {currentStep + 1} de {permissionSteps.length}</span>
             <span>{Math.round(((currentStep + 1) / permissionSteps.length) * 100)}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-vibe-blue h-2 rounded-full transition-all duration-300"
+          <div className="w-full bg-gray-200 rounded-full h-3 md:h-2">
+            <div
+              className="bg-vibe-blue h-3 md:h-2 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / permissionSteps.length) * 100}%` }}
             />
           </div>
