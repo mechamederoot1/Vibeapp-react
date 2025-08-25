@@ -1056,8 +1056,8 @@ const Profile = () => {
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
-            <h1 className="text-xl font-bold">{profileData.name}</h1>
-            {profileData.isVerified && (
+            <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
+            {currentProfileData.isVerified && (
               <div className="w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
