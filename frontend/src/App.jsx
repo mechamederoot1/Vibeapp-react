@@ -184,6 +184,16 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/profile/:userId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Profile />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/visits"
           element={
             <ProtectedRoute>

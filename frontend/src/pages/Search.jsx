@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Search as SearchIcon, UserPlus, Users, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../services/api'
 
 const Search = () => {
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -20,14 +22,6 @@ const Search = () => {
   const handleSearch = async (query) => {
     if (!query.trim()) {
       setSearchResults([])
-      return
-    }
-
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
-      console.log('🔧 Modo demo - usando resultados de pesquisa vazios')
-      setSearchResults([])
-      setLoading(false)
       return
     }
 
@@ -65,39 +59,53 @@ const Search = () => {
     localStorage.removeItem('recentSearches')
   }
 
-  const UserCard = ({ user, isRecent = false }) => (
-    <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-      <div className="flex items-center space-x-3">
-        {user.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.name}
-            className="w-12 h-12 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
-            <span className="text-white font-bold text-lg">
-              {user.name?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          </div>
-        )}
-        <div>
-          <h3 className="font-semibold text-gray-900">{user.name || 'Usuário'}</h3>
-          <p className="text-gray-600 text-sm">@{user.username || 'usuario'}</p>
-          {user.mutualFriends && (
-            <p className="text-gray-500 text-xs">{user.mutualFriends} amigos em comum</p>
+  const UserCard = ({ user, isRecent = false }) => {
+    const handleUserClick = () => {
+      // Adicionar às pesquisas recentes
+      if (!isRecent) {
+        addToRecentSearches(user)
+      }
+      // Navegar para o perfil do usuário
+      navigate(`/profile/${user.id}`)
+    }
+
+    return (
+      <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors cursor-pointer" onClick={handleUserClick}>
+        <div className="flex items-center space-x-3">
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.fullName || user.name}
+              className="w-12 h-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
+              <span className="text-white font-bold text-lg">
+                {(user.fullName || user.firstName || user.name || 'U').charAt(0).toUpperCase()}
+              </span>
+            </div>
           )}
+          <div>
+            <h3 className="font-semibold text-gray-900">{user.fullName || user.name || 'Usuário'}</h3>
+            <p className="text-gray-600 text-sm">@{user.username || 'usuario'}</p>
+            {user.mutualFriends && (
+              <p className="text-gray-500 text-xs">{user.mutualFriends} amigos em comum</p>
+            )}
+          </div>
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation() // Evitar ativar o clique do card
+            console.log('Seguir usuário:', user)
+          }}
+          className="btn-primary"
+        >
+          <UserPlus size={16} className="mr-1" />
+          Seguir
+        </button>
       </div>
-      <button
-        onClick={() => !isRecent && addToRecentSearches(user)}
-        className="btn-primary"
-      >
-        <UserPlus size={16} className="mr-1" />
-        Seguir
-      </button>
-    </div>
-  )
+    )
+  }
 
   return (
     <div className="bg-white min-h-screen">

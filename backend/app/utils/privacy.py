@@ -46,6 +46,29 @@ def can_view_posts(db: Session, viewer_id: Optional[int], post_owner_id: int) ->
     # Pode ser expandido para ter configurações específicas de posts
     return can_view_profile(db, viewer_id, post_owner_id)
 
+def can_view_post(db: Session, viewer_id: Optional[int], post_owner_id: int, post_privacy: str) -> bool:
+    """
+    Verifica se o viewer pode ver um post específico baseado na privacidade do post
+    """
+    # Se é o próprio autor, sempre pode ver
+    if viewer_id == post_owner_id:
+        return True
+
+    # Verificar privacidade do post
+    if post_privacy == "public":
+        return True
+    elif post_privacy == "friends":
+        # Se não está logado, não pode ver posts de amigos
+        if not viewer_id:
+            return False
+        return is_friends(db, viewer_id, post_owner_id)
+    elif post_privacy == "private":
+        # Posts privados só o autor pode ver
+        return False
+
+    # Fallback para público
+    return True
+
 def can_view_stories(db: Session, viewer_id: Optional[int], story_owner_id: int) -> bool:
     """
     Verifica se o viewer pode ver as stories do story_owner

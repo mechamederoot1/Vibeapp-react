@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
   Camera, Users, ChevronDown, ChevronUp, EyeOff, Lock, Unlock, List, Heart,
@@ -58,9 +58,15 @@ const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => 
 
 const Profile = () => {
   const { user, setUser } = useAuth()
+  const { userId } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
+
+  // Estados para perfil de outros usuários
+  const [profileUser, setProfileUser] = useState(null)
+  const [isOwnProfile, setIsOwnProfile] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [showFriends, setShowFriends] = useState(false)
   const [showConnections, setShowConnections] = useState(false)
   const [showVisitors, setShowVisitors] = useState(false)
@@ -121,6 +127,26 @@ const Profile = () => {
   useEffect(() => {
     const loadUserData = async () => {
       if (!user?.id) return
+
+      // Determinar se é perfil próprio ou de outro usuário
+      const isOwnProfile = !userId || userId === user.id.toString()
+      setIsOwnProfile(isOwnProfile)
+
+      if (!isOwnProfile) {
+        // Carregar perfil de outro usuário
+        setProfileLoading(true)
+        try {
+          const response = await usersAPI.getUserById(userId)
+          setProfileUser(response.data)
+        } catch (error) {
+          console.error('Erro ao carregar perfil do usuário:', error)
+          // Redirecionar para 404 ou mostrar erro
+          navigate('/feed')
+          return
+        } finally {
+          setProfileLoading(false)
+        }
+      }
 
       // Modo offline/demo - não fazer chamadas de API
       if (false) {
@@ -199,7 +225,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭✨',
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭��',
             createdAt: '2024-01-13T09:15:00Z',
             likes: 73,
             comments: 18,
@@ -504,7 +530,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState({
     username: user?.username || (user?.email ? user.email.split('@')[0] : 'usuario'),
     name: user?.fullName || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Usuário',
-    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ✨',
+    bio: user?.bio || 'Olá! Bem-vindo ao meu perfil no Vibe Social! ��',
     isVerified: user?.isVerified || false,
     followers: '0',
     following: '0',
@@ -532,7 +558,7 @@ const Profile = () => {
         website: user.website
       }))
     }
-  }, [user])
+  }, [user, userId, navigate])
 
   // Update profileData when userStats changes
   useEffect(() => {
@@ -547,6 +573,29 @@ const Profile = () => {
   }, [userStats])
 
   // Real data is now loaded from backend via useEffect
+
+  // Função para obter dados do perfil corretos (próprio ou de outro usuário)
+  const getProfileData = () => {
+    if (isOwnProfile) {
+      return profileData
+    } else {
+      return {
+        ...profileUser,
+        username: profileUser?.username || 'usuario',
+        name: profileUser?.fullName || profileUser?.name || 'Usuário',
+        avatar: profileUser?.avatar || profileUser?.avatar_url,
+        coverPhoto: profileUser?.coverPhoto,
+        bio: profileUser?.bio || '',
+        isVerified: profileUser?.isVerified || false,
+        posts: 0, // TODO: carregar via API
+        followers: 0, // TODO: carregar via API
+        following: 0, // TODO: carregar via API
+        profileViews: 0 // TODO: carregar via API
+      }
+    }
+  }
+
+  const currentProfileData = getProfileData()
 
   const toggleVisitorsPrivacy = () => {
     setPrivacySettings(prev => ({
@@ -760,6 +809,19 @@ const Profile = () => {
     setShowAvatarDropdown(!showAvatarDropdown)
   }
 
+  const handleCameraButtonClick = (e) => {
+    e.stopPropagation()
+    console.log('📷 Botão da câmera clicado')
+
+    // Se usuário não tem avatar, abrir editor diretamente
+    if (!profileData.avatar) {
+      setShowAvatarEditor(true)
+    } else {
+      // Se tem avatar, abrir dropdown com opções
+      setShowAvatarDropdown(!showAvatarDropdown)
+    }
+  }
+
   const handleEditAvatarFromDropdown = () => {
     setShowAvatarDropdown(false)
     setShowAvatarEditor(true)
@@ -777,7 +839,6 @@ const Profile = () => {
   }
 
   const handleCoverClick = () => {
-const handleCoverClick = () => {
     console.log('Botão da capa clicado')
     // Se não há capa, abre diretamente o editor
     if (!profileData.coverPhoto) {
@@ -786,7 +847,6 @@ const handleCoverClick = () => {
       // Se há capa, mostra o dropdown
       setShowCoverDropdown(!showCoverDropdown)
     }
-  }
   }
 
   const handleEditCoverFromDropdown = () => {
@@ -823,12 +883,42 @@ const handleCoverClick = () => {
     )
   }
 
+  // Loading para perfil de outro usuário
+  if (!isOwnProfile && profileLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-vibe-blue mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando perfil...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Erro ao carregar perfil de outro usuário
+  if (!isOwnProfile && !profileUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Perfil não encontrado</h2>
+          <p className="text-gray-600 mb-4">O usuário que você está procurando não existe.</p>
+          <button
+            onClick={() => navigate('/feed')}
+            className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
+          >
+            Voltar ao Feed
+          </button>
+        </div>
+      </div>
+    )
+  }
+
 
   return (
     <div className="bg-white min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <h2 className="text-xl font-bold">{profileData.username}</h2>
+        <h2 className="text-xl font-bold">{currentProfileData.username}</h2>
         <div className="flex items-center justify-center flex-1">
           <button
             onClick={() => setViewAsVisitor(!viewAsVisitor)}
@@ -864,10 +954,10 @@ const handleCoverClick = () => {
           className="w-full h-48 relative cursor-pointer group"
           onClick={() => !uploading.cover && !viewAsVisitor && handleCoverClick()}
         >
-          {profileData.coverPhoto ? (
+          {currentProfileData.coverPhoto ? (
             <>
               <img
-                src={profileData.coverPhoto}
+                src={currentProfileData.coverPhoto}
                 alt="Capa do perfil"
                 className="w-full h-full object-cover"
               />
@@ -898,7 +988,7 @@ const handleCoverClick = () => {
             </div>
           )}
 
-          {/* Botão de opções da capa - só aparece se houver foto */}
+          {/* Botão de opções da capa - s�� aparece se houver foto */}
           {profileData.coverPhoto && !viewAsVisitor && (
             <div className="absolute top-4 right-4">
               <button
@@ -941,9 +1031,9 @@ const handleCoverClick = () => {
             className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
             onClick={handleAvatarClick}
           >
-            {profileData.avatar ? (
+            {currentProfileData.avatar ? (
               <img
-                src={profileData.avatar}
+                src={currentProfileData.avatar}
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
@@ -957,19 +1047,18 @@ const handleCoverClick = () => {
           </div>
 
           {/* Botão de câmera com melhor posicionamento */}
-          <div className="absolute bottom-1 right-1 z-20">
-            <button
-              className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleAvatarClick()
-              }}
-              disabled={uploading.avatar}
-              title={uploading.avatar ? "Fazendo upload..." : "Alterar foto do perfil"}
-            >
-              <Camera size={16} className="text-white" />
-            </button>
-          </div>
+          {!viewAsVisitor && (
+            <div className="absolute bottom-1 right-1 z-20">
+              <button
+                className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
+                onClick={handleCameraButtonClick}
+                disabled={uploading.avatar}
+                title={uploading.avatar ? "Fazendo upload..." : profileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
+              >
+                <Camera size={16} className="text-white" />
+              </button>
+            </div>
+          )}
 
           {/* Dropdown posicionado corretamente */}
           <div className="absolute bottom-0 right-0 z-30">
@@ -997,14 +1086,14 @@ const handleCoverClick = () => {
         {/* Nome e verificação */}
         <div className="text-center mb-4">
           <div className="flex items-center justify-center space-x-2 mb-1">
-            <h1 className="text-xl font-bold">{profileData.name}</h1>
-            {profileData.isVerified && (
+            <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
+            {currentProfileData.isVerified && (
               <div className="w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center">
                 <span className="text-white text-xs">✓</span>
               </div>
             )}
           </div>
-          <p className="text-gray-600">@{profileData.username}</p>
+          <p className="text-gray-600">@{currentProfileData.username}</p>
         </div>
 
         {/* Stats */}
@@ -1160,7 +1249,7 @@ const handleCoverClick = () => {
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação dispon��vel.'}
+                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhec��-lo melhor.' : 'Nenhuma informação dispon��vel.'}
                 </p>
                 {!viewAsVisitor && (
                   <button

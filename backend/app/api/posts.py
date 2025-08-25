@@ -7,6 +7,7 @@ from ..database.database import get_db
 from ..models.user import User
 from ..models.post import Post, PostLike, Comment, Share
 from .auth import get_current_user
+from ..utils.privacy import can_view_post
 
 router = APIRouter()
 
@@ -17,6 +18,7 @@ class PostCreate(BaseModel):
     type: str = "text"  # text, image, video, profile_update
     backgroundColor: Optional[str] = None  # Background color for text posts
     profileUpdateType: Optional[str] = None  # avatar, cover (for profile update posts)
+    privacy: str = "public"  # public, friends, private
 
 class CommentCreate(BaseModel):
     content: str
@@ -36,10 +38,12 @@ async def get_feed(
     posts = db.query(Post).filter(
         Post.is_active == True
     ).order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
-    
+
     posts_data = []
     for post in posts:
-        posts_data.append(post.to_dict(current_user.id))
+        # Verificar se o usuário pode ver este post baseado na privacidade
+        if can_view_post(db, current_user.id, post.author_id, post.privacy):
+            posts_data.append(post.to_dict(current_user.id))
     
     return {
         "posts": posts_data,
@@ -69,6 +73,13 @@ async def create_post(
             detail="Invalid post type"
         )
 
+    # Validate privacy setting
+    if post_data.privacy not in ["public", "friends", "private"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid privacy setting. Must be 'public', 'friends', or 'private'"
+        )
+
     new_post = Post(
         author_id=current_user.id,
         content=post_data.content,
@@ -76,7 +87,8 @@ async def create_post(
         video_url=post_data.videoUrl,
         post_type=post_data.type,
         background_color=post_data.backgroundColor,
-        profile_update_type=post_data.profileUpdateType
+        profile_update_type=post_data.profileUpdateType,
+        privacy=post_data.privacy
     )
     
     db.add(new_post)
@@ -103,7 +115,14 @@ async def get_post(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found"
         )
-    
+
+    # Verificar se o usuário pode ver este post baseado na privacidade
+    if not can_view_post(db, current_user.id, post.author_id, post.privacy):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to view this post"
+        )
+
     return post.to_dict(current_user.id)
 
 @router.post("/{post_id}/like")
@@ -427,8 +446,12 @@ async def get_user_posts(
         Post.author_id == user_id,
         Post.is_active == True
     ).order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
-    
-    posts_data = [post.to_dict(current_user.id) for post in posts]
+
+    posts_data = []
+    for post in posts:
+        # Verificar se o usuário pode ver este post baseado na privacidade
+        if can_view_post(db, current_user.id, post.author_id, post.privacy):
+            posts_data.append(post.to_dict(current_user.id))
     
     return {
         "posts": posts_data,
