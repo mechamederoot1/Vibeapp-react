@@ -13,6 +13,9 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
   const [error, setError] = useState(null)
   const [coverImage, setCoverImage] = useState(null)
   const [coverImagePreview, setCoverImagePreview] = useState(null)
+  const [additionalImages, setAdditionalImages] = useState([])
+  const [additionalPreviews, setAdditionalPreviews] = useState([])
+  const additionalInputRef = useRef(null)
 
   // Reset form when modal opens/closes
   useEffect(() => {
