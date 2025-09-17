@@ -17,9 +17,26 @@ export const useWebSocket = () => {
     }
 
     try {
-      const wsUrl = `ws://localhost:8000/ws?token=${token}`;
-      console.log('🔌 Conectando WebSocket...', wsUrl);
-      
+      const buildWsUrl = (tkn) => {
+        const explicit = import.meta.env.VITE_WS_URL
+        if (explicit) {
+          const hasQuery = explicit.includes('?')
+          return `${explicit}${hasQuery ? '&' : '?'}token=${tkn}`
+        }
+        const apiUrl = import.meta.env.VITE_API_URL
+        if (apiUrl) {
+          const base = apiUrl.replace(/^http(s?):\/\//i, (m, s) => (s ? 'wss://' : 'ws://')).replace(/\/?api\/?$/i, '')
+          return `${base}/ws?token=${tkn}`
+        }
+        const { protocol, hostname } = window.location
+        const wsProtocol = protocol === 'https:' ? 'wss' : 'ws'
+        const defaultPort = (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) ? 3010 : (protocol === 'https:' ? 443 : 80)
+        return `${wsProtocol}://${hostname}:${defaultPort}/ws?token=${tkn}`
+      }
+
+      const wsUrl = buildWsUrl(token)
+      console.log('🔌 Conectando WebSocket...', wsUrl)
+
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
