@@ -765,11 +765,31 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      const response = await highlightsAPI.create(highlightData)
+      let coverStoryId = highlightData.coverStoryId || null
+
+      // If a cover image file was provided, upload it and create a story to use as cover
+      if (highlightData.coverImage instanceof File) {
+        const uploadResp = await uploadsAPI.uploadStoryMedia(highlightData.coverImage)
+        const storyResp = await storiesAPI.createStory({
+          type: 'image',
+          mediaUrl: uploadResp.data.url,
+          content: highlightData.description?.trim() || '',
+          privacy: 'public',
+          duration: 24
+        })
+        coverStoryId = storyResp.data.id
+      }
+
+      const payload = {
+        title: highlightData.title,
+        description: highlightData.description || null,
+        coverStoryId: coverStoryId
+      }
+
+      const response = await highlightsAPI.create(payload)
       setHighlights(prev => [...prev, response.data.highlight])
       setUploadSuccess('Destaque criado com sucesso!')
 
-      // Limpar mensagem após um tempo
       setTimeout(() => {
         setUploadSuccess(null)
       }, 3000)
