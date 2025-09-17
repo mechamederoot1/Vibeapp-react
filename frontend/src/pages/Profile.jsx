@@ -791,9 +791,14 @@ const Profile = () => {
 
       // Add additional images as stories to the highlight, in sequence
       if (Array.isArray(highlightData.additionalImages) && highlightData.additionalImages.length > 0) {
-        for (const file of highlightData.additionalImages) {
+        for (let i = 0; i < highlightData.additionalImages.length; i++) {
+          const file = highlightData.additionalImages[i]
           const up = await uploadsAPI.uploadStoryMedia(file)
           const st = await storiesAPI.createStory({ type: 'image', mediaUrl: up.data.url, content: '', privacy: 'public', duration: 24 })
+          // If no cover was provided, use the first additional image as cover
+          if (!coverStoryId && i === 0) {
+            await highlightsAPI.update(created.id, { coverStoryId: st.data.id })
+          }
           await highlightsAPI.addStory(created.id, st.data.id)
         }
       }
