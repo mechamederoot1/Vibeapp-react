@@ -22,7 +22,7 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import CreateHighlightModalV2 from '../components/CreateHighlightModalV2'
+import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
@@ -783,11 +783,24 @@ const Profile = () => {
       const payload = {
         title: highlightData.title,
         description: highlightData.description || null,
-        coverStoryId: coverStoryId
+        coverStoryId
       }
 
       const response = await highlightsAPI.create(payload)
-      setHighlights(prev => [...prev, response.data.highlight])
+      const created = response.data.highlight
+
+      // Add additional images as stories to the highlight, in sequence
+      if (Array.isArray(highlightData.additionalImages) && highlightData.additionalImages.length > 0) {
+        for (const file of highlightData.additionalImages) {
+          const up = await uploadsAPI.uploadStoryMedia(file)
+          const st = await storiesAPI.createStory({ type: 'image', mediaUrl: up.data.url, content: '', privacy: 'public', duration: 24 })
+          await highlightsAPI.addStory(created.id, st.data.id)
+        }
+      }
+
+      // Refresh highlights to reflect updated storiesCount and cover
+      const highlightsResponse = await highlightsAPI.get()
+      setHighlights(highlightsResponse.data.highlights || [])
       setUploadSuccess('Destaque criado com sucesso!')
 
       setTimeout(() => {
@@ -1788,7 +1801,7 @@ const Profile = () => {
 
 
       {/* Modal de Criar Destaque */}
-      <CreateHighlightModalV2
+      <CreateHighlightModal
         isOpen={showCreateHighlightModal}
         onClose={() => setShowCreateHighlightModal(false)}
         onSave={handleCreateHighlight}
