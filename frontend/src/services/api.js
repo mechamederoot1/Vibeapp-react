@@ -12,9 +12,9 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL
   }
 
-  // Se está no Builder.io / fly.dev ou ambiente de preview, tente usar same-host /api
+  // Se está no Builder.io ou ambiente de produção, não tenta conectar backend local
   if (isBuilderEnvironment()) {
-    return `${protocol}//${hostname}/api`
+    return null // Indica que deve usar modo demo
   }
 
   const hostname = window.location.hostname
