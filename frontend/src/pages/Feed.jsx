@@ -547,14 +547,13 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setShowStoryViewer(true)
   }
 
-  const handleStoryCreate = async (storyData) => {
+  const handleStoryCreate = async () => {
     try {
-      await storiesAPI.createStory(storyData)
-      // Reload stories after creating
+      // Story already created by modal; just reload list
       await loadStories()
       console.log('Story created successfully')
     } catch (error) {
-      console.error('Error creating story:', error)
+      console.error('Error refreshing stories after creation:', error)
     }
   }
 
