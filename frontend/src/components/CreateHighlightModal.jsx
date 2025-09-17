@@ -309,6 +309,50 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
             </div>
           </div>
 
+          {/* Additional photos */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Fotos do destaque</label>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => additionalInputRef.current?.click()}
+                  className="px-4 py-2 bg-vibe-blue text-white rounded-lg hover:bg-vibe-blue-dark"
+                >
+                  Adicionar fotos
+                </button>
+                <span className="text-sm text-gray-500">{additionalImages.length} selecionada(s)</span>
+              </div>
+
+              <input
+                ref={additionalInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleAdditionalSelect}
+                className="hidden"
+              />
+
+              {additionalPreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {additionalPreviews.map((src, idx) => (
+                    <div key={idx} className="relative w-full pt-[100%] bg-gray-100 rounded-lg overflow-hidden">
+                      <img src={src} alt={`Foto ${idx+1}`} className="absolute inset-0 w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeAdditionalAt(idx)}
+                        className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1"
+                        aria-label="Remover"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3">
