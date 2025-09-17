@@ -35,8 +35,8 @@ const getApiBaseUrl = () => {
     return `http://${hostname}:3010/api`
   }
 
-  // Fora de localhost/rede local e sem VITE_API_URL, usar modo demo (sem backend)
-  return null
+  // Fallback: usa nginx proxy para outros domínios
+  return `${protocol}//${hostname}/api`
 }
 
 const API_BASE_URL = getApiBaseUrl()
