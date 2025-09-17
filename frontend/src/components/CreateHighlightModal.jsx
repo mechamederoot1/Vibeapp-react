@@ -65,21 +65,15 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
   const handleFileSelect = (event) => {
     const file = event.target.files[0]
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setError('Por favor, selecione apenas arquivos de imagem')
         return
       }
-
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('A imagem deve ter no máximo 5MB')
         return
       }
-
       setCoverImage(file)
-      
-      // Create preview
       const reader = new FileReader()
       reader.onload = (e) => {
         setCoverImagePreview(e.target.result)
@@ -87,6 +81,33 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
       reader.readAsDataURL(file)
       setError(null)
     }
+  }
+
+  const handleAdditionalSelect = (event) => {
+    const files = Array.from(event.target.files || [])
+    const valid = []
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue
+      if (f.size > 5 * 1024 * 1024) continue
+      valid.push(f)
+    }
+    if (valid.length) {
+      valid.forEach((f) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setAdditionalPreviews(prev => [...prev, e.target.result])
+        }
+        reader.readAsDataURL(f)
+      })
+      setAdditionalImages(prev => [...prev, ...valid])
+    }
+    // reset value to allow re-selecting same files
+    event.target.value = ''
+  }
+
+  const removeAdditionalAt = (idx) => {
+    setAdditionalImages(prev => prev.filter((_, i) => i !== idx))
+    setAdditionalPreviews(prev => prev.filter((_, i) => i !== idx))
   }
 
   const handleSave = async () => {
