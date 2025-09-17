@@ -111,14 +111,16 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
   }
 
   const handleSave = async () => {
-    // Validation
     if (!formData.title.trim()) {
       setError('O nome do destaque é obrigatório')
       return
     }
-
     if (formData.title.length > 50) {
       setError('O nome do destaque deve ter no máximo 50 caracteres')
+      return
+    }
+    if (formData.coverType === 'none' && additionalImages.length === 0) {
+      setError('Selecione uma capa ou adicione pelo menos uma foto para o destaque')
       return
     }
 
@@ -130,7 +132,8 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
         title: formData.title.trim(),
         description: formData.description.trim() || null,
         coverStoryId: formData.coverType === 'story' ? formData.coverStoryId : null,
-        coverImage: formData.coverType === 'upload' ? coverImage : null
+        coverImage: formData.coverType === 'upload' ? coverImage : null,
+        additionalImages: additionalImages
       }
 
       await onSave(highlightData)
