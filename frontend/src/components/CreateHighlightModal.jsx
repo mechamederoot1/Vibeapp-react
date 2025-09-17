@@ -161,7 +161,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
+        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
           {/* Preview Area */}
           <div className="flex flex-col items-center space-y-3">
             <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
