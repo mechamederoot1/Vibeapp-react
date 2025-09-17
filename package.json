@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "npm run dev:frontend",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && python3 main.py",
+    "dev:backend": "cd backend && ./venv/bin/python main.py",
     "install:all": "npm run install:frontend && npm run install:backend",
     "install:frontend": "cd frontend && npm install",
     "install:backend": "cd backend && python3 -m pip install -r requirements.txt",
