@@ -15,7 +15,9 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
   const [coverImagePreview, setCoverImagePreview] = useState(null)
   const [additionalImages, setAdditionalImages] = useState([])
   const [additionalPreviews, setAdditionalPreviews] = useState([])
+  const [dragIndex, setDragIndex] = useState(null)
   const additionalInputRef = useRef(null)
+  const coverInputRef = useRef(null)
 
   // Reset form when modal opens/closes
   useEffect(() => {
@@ -32,17 +34,10 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
     }
   }, [isOpen, coverStoryId])
 
-  // Update preview when cover story changes
+  // Reset cover preview if cover file cleared
   useEffect(() => {
-    if (formData.coverType === 'story' && formData.coverStoryId) {
-      const selectedStory = userStories.find(story => story.id === parseInt(formData.coverStoryId))
-      if (selectedStory) {
-        setCoverImagePreview(selectedStory.mediaUrl || selectedStory.imageUrl)
-      }
-    } else {
-      setCoverImagePreview(null)
-    }
-  }, [formData.coverStoryId, formData.coverType, userStories])
+    if (!coverImage) setCoverImagePreview(null)
+  }, [coverImage])
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -52,15 +47,22 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
     setError(null)
   }
 
-  const handleCoverTypeChange = (type) => {
-    setFormData(prev => ({
-      ...prev,
-      coverType: type,
-      coverStoryId: type === 'story' ? (userStories[0]?.id || null) : null
-    }))
-    setCoverImage(null)
-    setCoverImagePreview(null)
+  // DnD reorder helpers
+  const handleDragStart = (index) => setDragIndex(index)
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) return
+    const imgs = [...additionalImages]
+    const prevs = [...additionalPreviews]
+    const [img] = imgs.splice(dragIndex, 1)
+    const [prv] = prevs.splice(dragIndex, 1)
+    imgs.splice(index, 0, img)
+    prevs.splice(index, 0, prv)
+    setAdditionalImages(imgs)
+    setAdditionalPreviews(prevs)
+    setDragIndex(index)
   }
+  const handleDragEnd = () => setDragIndex(null)
 
   const handleFileSelect = (event) => {
     const file = event.target.files[0]
@@ -164,23 +166,44 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
-          {/* Preview Area */}
-          <div className="flex flex-col items-center space-y-3">
-            <div className="w-20 h-20 rounded-full border-2 border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
-              {coverImagePreview ? (
-                <img
-                  src={coverImagePreview}
-                  alt="Preview"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Image size={24} className="text-gray-400" />
-              )}
+        <div className="p-4 space-y-5 flex-1 overflow-y-auto">
+          {/* Cover selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Capa do destaque *</label>
+            <div className="flex items-center space-x-4">
+              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-300 flex items-center justify-center">
+                {coverImagePreview ? (
+                  <img src={coverImagePreview} alt="Capa" className="w-full h-full object-cover" />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="w-full h-full flex items-center justify-center hover:bg-gray-200"
+                    title="Adicionar capa"
+                  >
+                    <Plus size={28} className="text-gray-500" />
+                  </button>
+                )}
+                {coverImagePreview && (
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow"
+                    title="Trocar capa"
+                  >
+                    <Plus size={16} className="text-gray-700" />
+                  </button>
+                )}
+              </div>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <div className="text-xs text-gray-500">PNG/JPG até 5MB</div>
             </div>
-            <p className="text-sm text-gray-600 text-center">
-              Preview do destaque
-            </p>
           </div>
 
           {/* Title Input */}
@@ -219,98 +242,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
             </p>
           </div>
 
-          {/* Cover Options */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Foto de capa
-            </label>
-            
-            <div className="space-y-3">
-              {/* No Cover Option */}
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="coverType"
-                  value="none"
-                  checked={formData.coverType === 'none'}
-                  onChange={() => handleCoverTypeChange('none')}
-                  className="h-4 w-4 text-vibe-blue border-gray-300 focus:ring-vibe-blue"
-                />
-                <span className="text-sm text-gray-700">Sem capa (usar primeira foto do destaque)</span>
-              </label>
-
-              {/* Story Cover Option */}
-              {userStories.length > 0 && (
-                <div>
-                  <label className="flex items-center space-x-3 cursor-pointer mb-2">
-                    <input
-                      type="radio"
-                      name="coverType"
-                      value="story"
-                      checked={formData.coverType === 'story'}
-                      onChange={() => handleCoverTypeChange('story')}
-                      className="h-4 w-4 text-vibe-blue border-gray-300 focus:ring-vibe-blue"
-                    />
-                    <span className="text-sm text-gray-700">Escolher de um story</span>
-                  </label>
-                  
-                  {formData.coverType === 'story' && (
-                    <div className="ml-7">
-                      <select
-                        value={formData.coverStoryId || ''}
-                        onChange={(e) => handleInputChange('coverStoryId', parseInt(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent text-sm"
-                      >
-                        <option value="">Selecione um story</option>
-                        {userStories.map((story) => (
-                          <option key={story.id} value={story.id}>
-                            {story.content || `Story ${story.id}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Upload Cover Option */}
-              <div>
-                <label className="flex items-center space-x-3 cursor-pointer mb-2">
-                  <input
-                    type="radio"
-                    name="coverType"
-                    value="upload"
-                    checked={formData.coverType === 'upload'}
-                    onChange={() => handleCoverTypeChange('upload')}
-                    className="h-4 w-4 text-vibe-blue border-gray-300 focus:ring-vibe-blue"
-                  />
-                  <span className="text-sm text-gray-700">Fazer upload de imagem</span>
-                </label>
-                
-                {formData.coverType === 'upload' && (
-                  <div className="ml-7">
-                    <label className="block">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-vibe-blue transition-colors cursor-pointer">
-                        <Upload size={24} className="mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                          {coverImage ? coverImage.name : 'Clique para selecionar uma imagem'}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          PNG, JPG até 5MB
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Removed old cover options; cover is selected above with + */}
 
           {/* Additional photos */}
           <div>
@@ -336,23 +268,45 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
                 className="hidden"
               />
 
-              {additionalPreviews.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {additionalPreviews.map((src, idx) => (
-                    <div key={idx} className="relative w-full pt-[100%] bg-gray-100 rounded-lg overflow-hidden">
-                      <img src={src} alt={`Foto ${idx+1}`} className="absolute inset-0 w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removeAdditionalAt(idx)}
-                        className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1"
-                        aria-label="Remover"
-                      >
-                        <X size={14} />
-                      </button>
+              <div className="grid grid-cols-3 gap-3">
+                {/* Add tile */}
+                <button
+                  type="button"
+                  onClick={() => additionalInputRef.current?.click()}
+                  className="relative w-full pt-[100%] rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 hover:border-vibe-blue hover:text-vibe-blue transition-colors"
+                  title="Adicionar fotos"
+                >
+                  <Plus size={24} />
+                </button>
+                {additionalPreviews.map((src, idx) => (
+                  <div
+                    key={idx}
+                    className={`relative w-full pt-[100%] rounded-lg overflow-hidden group border ${dragIndex===idx?'border-vibe-blue':'border-transparent'}`}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <img src={src} alt={`Foto ${idx+1}`} className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute top-1 left-1 bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded-full">{idx+1}</div>
+                    <button
+                      type="button"
+                      onClick={() => removeAdditionalAt(idx)}
+                      className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remover"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <div className="absolute bottom-1 left-1 right-1 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+                        <GripVertical size={14} />
+                        <span>Arraste para reordenar</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-500">Arraste para organizar a ordem das fotos</p>
             </div>
           </div>
 
