@@ -212,7 +212,7 @@ const Settings = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <SettingsIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+              <SettingsIcon className="h-6 w-6 text-vibe-blue dark:text-white" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Configurações</h1>
             </div>
             <button
