@@ -216,46 +216,29 @@ async def upload_story_media(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    """Upload de mídia para stories (imagem ou vídeo)"""
+    """Upload de mídia para stories (imagem ou vídeo). Returns data URL to be used by story creation endpoint."""
 
-    # Validar arquivo
+    # Validate file
     if file.content_type not in ALLOWED_STORY_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG, WebP, MP4, WebM ou QuickTime."
-        )
-
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
     if file.size and file.size > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo muito grande. Máximo 5MB."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "story_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "stories", filename)
-
-        # Para imagens, redimensionar
         if file.content_type in ALLOWED_IMAGE_TYPES:
-            await save_and_resize_image(file, filepath, (1080, 1920))  # Formato story 9:16
+            content_bytes, mime = await save_and_resize_image_to_bytes(file, (1080, 1920))
+            media_type = 'image'
         else:
-            # Para vídeos, salvar diretamente
-            async with aiofiles.open(filepath, 'wb') as f:
-                content = await file.read()
-                await f.write(content)
+            content_bytes = await file.read()
+            mime = file.content_type or 'application/octet-stream'
+            media_type = 'video'
 
-        # Retornar URL da mídia
-        media_url = f"/uploads/stories/{filename}"
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
 
         return {
             "message": "Mídia do story carregada com sucesso!",
-            "url": media_url,
-            "type": "image" if file.content_type in ALLOWED_IMAGE_TYPES else "video"
+            "url": data_url,
+            "type": media_type
         }
-
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da mídia: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da mídia: {str(e)}")
