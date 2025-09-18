@@ -97,6 +97,70 @@ async def update_user_profile(
     
     return current_user.to_dict()
 
+@router.get("/by-public-id/{public_id}")
+async def get_user_by_public_id(
+    public_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user profile by public profile id"""
+    user = db.query(User).filter(User.public_profile_id == public_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not can_view_profile(db, current_user.id, user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Este perfil é privado")
+
+    if user.id != current_user.id:
+        today = datetime.utcnow().date()
+        existing_view = db.query(ProfileView).filter(
+            ProfileView.viewer_id == current_user.id,
+            ProfileView.profile_owner_id == user.id,
+            ProfileView.created_at >= today
+        ).first()
+        if not existing_view:
+            profile_view = ProfileView(
+                viewer_id=current_user.id,
+                profile_owner_id=user.id
+            )
+            db.add(profile_view)
+            db.commit()
+
+    user_data = user.to_public_dict()
+    return filter_user_data(db, current_user.id, user_data)
+
+@router.get("/by-username/{username}")
+async def get_user_by_username(
+    username: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user profile by username"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if not can_view_profile(db, current_user.id, user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Este perfil é privado")
+
+    if user.id != current_user.id:
+        today = datetime.utcnow().date()
+        existing_view = db.query(ProfileView).filter(
+            ProfileView.viewer_id == current_user.id,
+            ProfileView.profile_owner_id == user.id,
+            ProfileView.created_at >= today
+        ).first()
+        if not existing_view:
+            profile_view = ProfileView(
+                viewer_id=current_user.id,
+                profile_owner_id=user.id
+            )
+            db.add(profile_view)
+            db.commit()
+
+    user_data = user.to_public_dict()
+    return filter_user_data(db, current_user.id, user_data)
+
 @router.get("/{user_id}")
 async def get_user_by_id(
     user_id: int,
