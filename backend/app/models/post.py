@@ -2,7 +2,9 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database.database import Base
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, LargeBinary
+
+# Added LargeBinary for storing media in DB
 
 class Post(Base):
     __tablename__ = "posts"
