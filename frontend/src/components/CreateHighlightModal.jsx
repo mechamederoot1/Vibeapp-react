@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react'
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Save, Image, Camera, Upload, FileImage } from 'lucide-react'
 
