@@ -135,22 +135,7 @@ async def remove_avatar(
     """Remover foto de perfil"""
     
     try:
-        # Remover arquivo se existir
-        if current_user.avatar:
-            if current_user.avatar.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.avatar)
-                filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.avatar.startswith("/uploads/"):
-                filepath = current_user.avatar[1:]  # Remove a barra inicial
-            else:
-                filepath = current_user.avatar
-
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        
-        # Remover URL/blob do banco
+        # Clear avatar blob and url from DB
         current_user.avatar = None
         current_user.avatar_blob = None
         current_user.avatar_mime = None
