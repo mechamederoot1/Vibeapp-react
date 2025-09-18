@@ -280,7 +280,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Aproveitando o sábado para relaxar na praia! 🏖️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
+            content: 'Aproveitando o sábado para relaxar na praia! ��️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
             imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
             createdAt: '2024-01-10T17:00:00Z',
             likes: 187,
@@ -1489,9 +1489,7 @@ const Profile = () => {
                   ) : (
                     highlightNewCounts[highlight.id] > 0 ? (
                       <span className="text-xs text-green-600 font-medium">{highlightNewCounts[highlight.id]} novos</span>
-                    ) : (
-                      <span className="text-xs text-gray-400">&nbsp;</span>
-                    )
+                    ) : null
                   )}
                 </div>
               ))
