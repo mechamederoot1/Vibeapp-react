@@ -121,10 +121,26 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         new_user.username = username
         print(f"📝 Usuário criado com username: {username}")
 
+        # Generate unique public profile id (12-digit numeric, database-unique)
+        import secrets
+        import string
+        def generate_numeric_id(n=12):
+            alphabet = string.digits
+            return ''.join(secrets.choice(alphabet) for _ in range(n))
+        public_id = generate_numeric_id()
+        attempts = 0
+        while db.query(User).filter(User.public_profile_id == public_id).first():
+            public_id = generate_numeric_id()
+            attempts += 1
+            if attempts > 5:
+                # on rare collisions, increase length
+                public_id = generate_numeric_id(16)
+        new_user.public_profile_id = public_id
+
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
-        print(f"✅ Usuário salvo no banco com ID: {new_user.id}")
+        print(f"✅ Usuário salvo no banco com ID: {new_user.id} e publicProfileId: {new_user.public_profile_id}")
 
         # Create access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
