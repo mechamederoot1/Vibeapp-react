@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  X, Heart, MessageCircle, Share, Bookmark, MoreHorizontal, 
-  Repeat2, Send, ChevronLeft, ChevronRight 
+import {
+  X, Heart, MessageCircle, Share, Bookmark, MoreHorizontal,
+  Repeat2, Send, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI } from '../services/api'
+import { postsAPI, reactionsAPI } from '../services/api'
+import ReactionPicker from './ReactionPicker'
 
 const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
   const { user } = useAuth()
@@ -16,16 +17,35 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
 
   useEffect(() => {
     if (isOpen && post) {
-      setCurrentPost(post)
-      loadComments()
+      // Load freshest version of the post from backend when possible
+      loadFullPost()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, post])
 
-  const loadComments = async () => {
-    if (!post?.id) return
-    
+  const loadFullPost = async () => {
     try {
-      const response = await postsAPI.getComments(post.id)
+      let full = post
+      if (post?.publicId) {
+        const res = await postsAPI.getByPublicId(post.publicId)
+        full = res.data
+      } else if (post?.id) {
+        const res = await postsAPI.getPost(post.id)
+        full = res.data
+      }
+      setCurrentPost(full)
+      await loadCommentsForPost(full)
+    } catch (error) {
+      console.error('Error loading post details:', error)
+      setCurrentPost(post)
+      await loadCommentsForPost(post)
+    }
+  }
+
+  const loadCommentsForPost = async (p) => {
+    if (!p?.id) return
+    try {
+      const response = await postsAPI.getComments(p.id)
       setComments(response.data.comments || [])
     } catch (error) {
       console.error('Error loading comments:', error)
