@@ -203,6 +203,37 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+        {/* Post/Media detail routes */}
+        <Route
+          path="/post/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/photo/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail mediaType="image" />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/video/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail mediaType="video" />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/visits"
           element={
