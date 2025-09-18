@@ -161,9 +161,8 @@ app.include_router(education_router, prefix="/api", tags=["education"])
 async def websocket_handler(websocket: WebSocket, token: str = Query(None)):
     await websocket_endpoint(websocket, token)
 
-# Mount static files (uploads)
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# Media router serves files stored in DB
+app.include_router(media_router, prefix="/api/media", tags=["media"])
 
 @app.get("/")
 async def root():
