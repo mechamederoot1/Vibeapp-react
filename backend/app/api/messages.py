@@ -311,27 +311,22 @@ async def upload_audio_message(
             detail="File must be an audio file"
         )
     
-    # Gerar nome único para o arquivo
-    file_extension = audio_file.filename.split(".")[-1] if "." in audio_file.filename else "ogg"
-    unique_filename = f"{uuid.uuid4()}.{file_extension}"
-    upload_dir = "uploads/audio"
-    os.makedirs(upload_dir, exist_ok=True)
-    file_path = os.path.join(upload_dir, unique_filename)
-    
-    # Salvar arquivo
-    async with aiofiles.open(file_path, 'wb') as f:
-        content = await audio_file.read()
-        await f.write(content)
-    
-    # Criar mensagem
+    # Read file bytes and store in DB
+    content = await audio_file.read()
     new_message = Message(
         sender_id=current_user.id,
         receiver_id=receiver_id,
         message_type="audio",
-        media_url=f"/uploads/audio/{unique_filename}"
+        media_blob=content,
+        media_mime=audio_file.content_type
     )
-    
+
     db.add(new_message)
+    db.commit()
+    db.refresh(new_message)
+
+    # Set media_url to the media serving route
+    new_message.media_url = f"/api/media/messages/{new_message.id}"
     db.commit()
     db.refresh(new_message)
     

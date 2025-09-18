@@ -83,8 +83,10 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
 
       const response = await postsAPI.createPost(postData)
       
+      const created = response.data
+
       if (onPost) {
-        onPost(response.data)
+        onPost(created)
       }
 
       // Reset form
@@ -95,6 +97,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
       setBackgroundColor(null)
       setShowColorPicker(false)
       onClose()
+
 
     } catch (error) {
       console.error('Error creating post:', error)

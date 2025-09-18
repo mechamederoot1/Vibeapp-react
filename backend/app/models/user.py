@@ -3,7 +3,9 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import bcrypt
 from ..database.database import Base
-from sqlalchemy import Column, Integer, String, Text, Date, Boolean, DateTime, Index
+from sqlalchemy import Column, Integer, String, Text, Date, Boolean, DateTime, Index, LargeBinary
+
+# avatar/cover stored as blobs
 
 class User(Base):
     __tablename__ = "users"
@@ -20,7 +22,11 @@ class User(Base):
     bio = Column(Text, nullable=True)
     avatar = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)  # For consistency with frontend
+    avatar_blob = Column(LargeBinary, nullable=True)
+    avatar_mime = Column(String, nullable=True)
     cover_photo = Column(String, nullable=True)
+    cover_blob = Column(LargeBinary, nullable=True)
+    cover_mime = Column(String, nullable=True)
     location = Column(String, nullable=True)
     website = Column(String, nullable=True)
     phone = Column(String, nullable=True)

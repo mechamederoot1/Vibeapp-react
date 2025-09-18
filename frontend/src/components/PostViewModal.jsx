@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  X, Heart, MessageCircle, Share, Bookmark, MoreHorizontal, 
-  Repeat2, Send, ChevronLeft, ChevronRight 
+import {
+  X, Heart, MessageCircle, Share, Bookmark, MoreHorizontal,
+  Repeat2, Send, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI } from '../services/api'
+import { postsAPI, reactionsAPI } from '../services/api'
+import ReactionPicker from './ReactionPicker'
 
 const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
   const { user } = useAuth()
@@ -16,16 +17,35 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
 
   useEffect(() => {
     if (isOpen && post) {
-      setCurrentPost(post)
-      loadComments()
+      // Load freshest version of the post from backend when possible
+      loadFullPost()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, post])
 
-  const loadComments = async () => {
-    if (!post?.id) return
-    
+  const loadFullPost = async () => {
     try {
-      const response = await postsAPI.getComments(post.id)
+      let full = post
+      if (post?.publicId) {
+        const res = await postsAPI.getByPublicId(post.publicId)
+        full = res.data
+      } else if (post?.id) {
+        const res = await postsAPI.getPost(post.id)
+        full = res.data
+      }
+      setCurrentPost(full)
+      await loadCommentsForPost(full)
+    } catch (error) {
+      console.error('Error loading post details:', error)
+      setCurrentPost(post)
+      await loadCommentsForPost(post)
+    }
+  }
+
+  const loadCommentsForPost = async (p) => {
+    if (!p?.id) return
+    try {
+      const response = await postsAPI.getComments(p.id)
       setComments(response.data.comments || [])
     } catch (error) {
       console.error('Error loading comments:', error)
@@ -35,7 +55,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
 
   const handleLike = async () => {
     if (!currentPost) return
-    
+
     try {
       const response = await postsAPI.likePost(currentPost.id)
       const updatedPost = {
@@ -47,6 +67,27 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
       onPostUpdate?.(updatedPost)
     } catch (error) {
       console.error('Error liking post:', error)
+    }
+  }
+
+  const handleReaction = async (reactionType) => {
+    if (!currentPost?.id) return
+    try {
+      if (reactionType) {
+        await reactionsAPI.addPostReaction(currentPost.id, reactionType)
+      } else {
+        await reactionsAPI.removePostReaction(currentPost.id)
+      }
+      // Reload post to reflect counts and user reaction
+      try {
+        const res = await postsAPI.getPost(currentPost.id)
+        setCurrentPost(res.data)
+        onPostUpdate?.(res.data)
+      } catch (e) {
+        // ignore
+      }
+    } catch (error) {
+      console.error('Error handling reaction:', error)
     }
   }
 
@@ -298,46 +339,43 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
             <div className="px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
-                  <button
-                    onClick={handleLike}
-                    className={`flex items-center space-x-2 transition-colors ${
-                      currentPost.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                    }`}
-                  >
-                    <Heart size={20} className={currentPost.isLiked ? 'fill-current' : ''} />
-                    <span className="text-sm font-medium">{currentPost.likesCount || 0}</span>
-                  </button>
-                  <button className="flex items-center space-x-2 text-gray-500 hover:text-vibe-blue transition-colors">
-                    <MessageCircle size={20} />
-                    <span className="text-sm font-medium">{currentPost.commentsCount || 0}</span>
-                  </button>
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowShareMenu(!showShareMenu)}
-                      className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors"
-                    >
-                      <Repeat2 size={20} />
-                      <span className="text-sm font-medium">{currentPost.repostsCount || 0}</span>
-                    </button>
+              <ReactionPicker
+                onReaction={handleReaction}
+                currentReaction={currentPost.userReaction}
+                likesCount={currentPost.likesCount}
+                reactionCounts={currentPost.reactionCounts || {}}
+              />
+              <button className="flex items-center space-x-2 text-gray-500 hover:text-vibe-blue transition-colors">
+                <MessageCircle size={20} />
+                <span className="text-sm font-medium">{currentPost.commentsCount || 0}</span>
+              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors"
+                >
+                  <Repeat2 size={20} />
+                  <span className="text-sm font-medium">{currentPost.repostsCount || 0}</span>
+                </button>
 
-                    {showShareMenu && (
-                      <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
-                        <button
-                          onClick={handleRepost}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                        >
-                          Repostar
-                        </button>
-                        <button
-                          onClick={handleShare}
-                          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                        >
-                          Compartilhar
-                        </button>
-                      </div>
-                    )}
+                {showShareMenu && (
+                  <div className="absolute bottom-full left-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
+                    <button
+                      onClick={handleRepost}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                    >
+                      Repostar
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                    >
+                      Compartilhar
+                    </button>
                   </div>
-                </div>
+                )}
+              </div>
+            </div>
                 <button className="text-gray-500 hover:text-vibe-blue transition-colors">
                   <Bookmark size={20} />
                 </button>

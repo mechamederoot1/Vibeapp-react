@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
@@ -200,21 +201,9 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
           )}
         </div>
       ) : post.type === 'image' && post.imageUrl ? (
-        <div className="w-full overflow-hidden" onClick={() => window.location.assign(`/photo/id/${post.publicId}`)}>
-          <img
-            src={post.imageUrl}
-            alt="Post"
-            className="w-full h-96 object-cover cursor-pointer"
-          />
-        </div>
+        <ImageClickable post={post} />
       ) : post.type === 'video' && post.videoUrl ? (
-        <div className="w-full overflow-hidden" onClick={() => window.location.assign(`/video/id/${post.publicId}`)}>
-          <video
-            src={post.videoUrl}
-            controls
-            className="w-full h-96 object-cover cursor-pointer"
-          />
-        </div>
+        <VideoClickable post={post} />
       ) : null}
       
       {/* Caption para posts com mídia */}
@@ -426,6 +415,32 @@ const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+const ImageClickable = ({ post }) => {
+  const navigate = useNavigate()
+  return (
+    <div className="w-full overflow-hidden" onClick={() => navigate(`/photo/id/${post.publicId}`)}>
+      <img
+        src={post.imageUrl}
+        alt="Post"
+        className="w-full h-96 object-cover cursor-pointer"
+      />
+    </div>
+  )
+}
+
+const VideoClickable = ({ post }) => {
+  const navigate = useNavigate()
+  return (
+    <div className="w-full overflow-hidden" onClick={() => navigate(`/video/id/${post.publicId}`)}>
+      <video
+        src={post.videoUrl}
+        controls
+        className="w-full h-96 object-cover cursor-pointer"
+      />
     </div>
   )
 }

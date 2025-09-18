@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from PIL import Image
 import aiofiles
@@ -12,17 +13,13 @@ from .auth import get_current_user
 router = APIRouter()
 
 # Configurações de upload
-UPLOAD_DIRECTORY = "uploads"
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 ALLOWED_STORY_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
 
-# Criar diretório de uploads se não existir
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/avatars", exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/covers", exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/stories", exist_ok=True)
+from io import BytesIO
+import base64
 
 def validate_image_file(file: UploadFile) -> bool:
     """Validar se o arquivo é uma imagem válida"""
@@ -40,34 +37,25 @@ def generate_filename(original_filename: str, prefix: str = "") -> str:
     unique_id = str(uuid.uuid4())
     return f"{prefix}{unique_id}.{ext}"
 
-async def save_and_resize_image(file: UploadFile, filepath: str, max_size: tuple = None):
-    """Salvar e redimensionar imagem"""
-    # Salvar arquivo temporário
-    temp_path = f"{filepath}.temp"
-    async with aiofiles.open(temp_path, 'wb') as f:
-        content = await file.read()
-        await f.write(content)
-    
-    # Abrir e processar imagem
+async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = None):
+    """Read image upload, optionally resize, and return bytes and mime"""
+    content = await file.read()
     try:
-        with Image.open(temp_path) as img:
-            # Converter para RGB se necessário
+        with Image.open(BytesIO(content)) as img:
+            # Convert to RGB if necessary
             if img.mode in ('RGBA', 'P'):
                 rgb_img = Image.new('RGB', img.size, (255, 255, 255))
                 rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = rgb_img
-            
-            # Redimensionar se especificado
             if max_size:
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
-            # Salvar imagem processada
-            img.save(filepath, 'JPEG', quality=85, optimize=True)
-    
-    finally:
-        # Remover arquivo temporário
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+            out = BytesIO()
+            img.save(out, format='JPEG', quality=85, optimize=True)
+            out.seek(0)
+            return out.read(), 'image/jpeg'
+    except Exception:
+        # Fallback: return original bytes
+        return content, file.content_type or 'application/octet-stream'
 
 @router.post("/avatar")
 async def upload_avatar(
@@ -75,56 +63,37 @@ async def upload_avatar(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload da foto de perfil (avatar)"""
-    
-    # Validar arquivo
-    if not validate_image_file(file):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG ou WebP com máximo 5MB."
-        )
-    
-    try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "avatar_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "avatars", filename)
-        
-        # Salvar e redimensionar imagem (400x400 para avatar)
-        await save_and_resize_image(file, filepath, (400, 400))
-        
-        # Remover avatar anterior se existir
-        if current_user.avatar:
-            if current_user.avatar.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.avatar)
-                old_filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.avatar.startswith("/uploads/"):
-                old_filepath = current_user.avatar[1:]  # Remove a barra inicial
-            else:
-                old_filepath = current_user.avatar
+    """Upload da foto de perfil (avatar) - stored in DB as blob and returned as data URL"""
+    # Validate file
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
+    if file.size and file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
-        
-        # Atualizar URL do avatar no banco (usando caminho relativo)
-        avatar_url = f"/uploads/avatars/{filename}"
-        current_user.avatar = avatar_url
+    try:
+        # Convert and resize image to bytes
+        content_bytes, mime = await save_and_resize_image_to_bytes(file, (400, 400))
+
+        # Store in DB
+        current_user.avatar_blob = content_bytes
+        current_user.avatar_mime = mime
+        current_user.avatar = f"/api/media/users/{current_user.id}/avatar"
+        current_user.avatar_url = current_user.avatar
         db.commit()
         db.refresh(current_user)
-        
+
+        # Return data URL for immediate use in frontend
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
+
         return {
             "message": "Avatar atualizado com sucesso!",
-            "avatar_url": avatar_url,
+            "avatar_url": current_user.avatar,
+            "data_url": data_url,
             "user": current_user.to_dict()
         }
-    
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload do avatar: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload do avatar: {str(e)}")
 
 @router.post("/cover")
 async def upload_cover_photo(
@@ -132,56 +101,32 @@ async def upload_cover_photo(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload da foto de capa"""
-    
-    # Validar arquivo
-    if not validate_image_file(file):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG ou WebP com máximo 5MB."
-        )
-    
-    try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "cover_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "covers", filename)
-        
-        # Salvar e redimensionar imagem (800x300 para capa)
-        await save_and_resize_image(file, filepath, (800, 300))
-        
-        # Remover capa anterior se existir
-        if current_user.cover_photo:
-            if current_user.cover_photo.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.cover_photo)
-                old_filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.cover_photo.startswith("/uploads/"):
-                old_filepath = current_user.cover_photo[1:]  # Remove a barra inicial
-            else:
-                old_filepath = current_user.cover_photo
+    """Upload da foto de capa - store in DB and return data URL"""
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
+    if file.size and file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
-        
-        # Atualizar URL da capa no banco (usando caminho relativo)
-        cover_url = f"/uploads/covers/{filename}"
-        current_user.cover_photo = cover_url
+    try:
+        content_bytes, mime = await save_and_resize_image_to_bytes(file, (800, 300))
+
+        current_user.cover_blob = content_bytes
+        current_user.cover_mime = mime
+        current_user.cover_photo = f"/api/media/users/{current_user.id}/cover"
         db.commit()
         db.refresh(current_user)
-        
+
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
+
         return {
             "message": "Foto de capa atualizada com sucesso!",
-            "cover_url": cover_url,
+            "cover_url": current_user.cover_photo,
+            "data_url": data_url,
             "user": current_user.to_dict()
         }
-    
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da foto de capa: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da foto de capa: {str(e)}")
 
 @router.delete("/avatar")
 async def remove_avatar(
@@ -191,26 +136,13 @@ async def remove_avatar(
     """Remover foto de perfil"""
     
     try:
-        # Remover arquivo se existir
-        if current_user.avatar:
-            if current_user.avatar.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.avatar)
-                filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.avatar.startswith("/uploads/"):
-                filepath = current_user.avatar[1:]  # Remove a barra inicial
-            else:
-                filepath = current_user.avatar
-
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        
-        # Remover URL do banco
+        # Clear avatar blob and url from DB
         current_user.avatar = None
+        current_user.avatar_blob = None
+        current_user.avatar_mime = None
         db.commit()
         db.refresh(current_user)
-        
+
         return {
             "message": "Avatar removido com sucesso!",
             "user": current_user.to_dict()
@@ -231,26 +163,13 @@ async def remove_cover_photo(
     """Remover foto de capa"""
     
     try:
-        # Remover arquivo se existir
-        if current_user.cover_photo:
-            if current_user.cover_photo.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.cover_photo)
-                filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.cover_photo.startswith("/uploads/"):
-                filepath = current_user.cover_photo[1:]  # Remove a barra inicial
-            else:
-                filepath = current_user.cover_photo
-
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        
-        # Remover URL do banco
+        # Clear cover blob and url from DB
         current_user.cover_photo = None
+        current_user.cover_blob = None
+        current_user.cover_mime = None
         db.commit()
         db.refresh(current_user)
-        
+
         return {
             "message": "Foto de capa removida com sucesso!",
             "user": current_user.to_dict()
@@ -268,46 +187,29 @@ async def upload_story_media(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
-    """Upload de mídia para stories (imagem ou vídeo)"""
+    """Upload de mídia para stories (imagem ou vídeo). Returns data URL to be used by story creation endpoint."""
 
-    # Validar arquivo
+    # Validate file
     if file.content_type not in ALLOWED_STORY_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG, WebP, MP4, WebM ou QuickTime."
-        )
-
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
     if file.size and file.size > MAX_FILE_SIZE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo muito grande. Máximo 5MB."
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "story_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "stories", filename)
-
-        # Para imagens, redimensionar
         if file.content_type in ALLOWED_IMAGE_TYPES:
-            await save_and_resize_image(file, filepath, (1080, 1920))  # Formato story 9:16
+            content_bytes, mime = await save_and_resize_image_to_bytes(file, (1080, 1920))
+            media_type = 'image'
         else:
-            # Para vídeos, salvar diretamente
-            async with aiofiles.open(filepath, 'wb') as f:
-                content = await file.read()
-                await f.write(content)
+            content_bytes = await file.read()
+            mime = file.content_type or 'application/octet-stream'
+            media_type = 'video'
 
-        # Retornar URL da mídia
-        media_url = f"/uploads/stories/{filename}"
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
 
         return {
             "message": "Mídia do story carregada com sucesso!",
-            "url": media_url,
-            "type": "image" if file.content_type in ALLOWED_IMAGE_TYPES else "video"
+            "url": data_url,
+            "type": media_type
         }
-
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da mídia: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da mídia: {str(e)}")

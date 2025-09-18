@@ -2,7 +2,9 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database.database import Base
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, LargeBinary
+
+# Added LargeBinary for storing media in DB
 
 class Post(Base):
     __tablename__ = "posts"
@@ -15,6 +17,10 @@ class Post(Base):
     content = Column(Text, nullable=True)  # Text content
     image_url = Column(String, nullable=True)  # Image URL
     video_url = Column(String, nullable=True)  # Video URL
+    image_blob = Column(LargeBinary, nullable=True)
+    image_mime = Column(String, nullable=True)
+    video_blob = Column(LargeBinary, nullable=True)
+    video_mime = Column(String, nullable=True)
     post_type = Column(String, nullable=False, default="text")  # text, image, video, profile_update
     background_color = Column(String, nullable=True)  # Background color for text posts
     profile_update_type = Column(String, nullable=True)  # avatar, cover (para posts de atualização de perfil)
@@ -67,8 +73,8 @@ class Post(Base):
             "authorId": self.author_id,
             "author": self.author.to_public_dict() if self.author else None,
             "content": self.content,
-            "imageUrl": self.image_url,
-            "videoUrl": self.video_url,
+            "imageUrl": (f"/api/media/posts/{self.id}/image" if getattr(self, 'image_blob', None) else self.image_url),
+            "videoUrl": (f"/api/media/posts/{self.id}/video" if getattr(self, 'video_blob', None) else self.video_url),
             "type": self.post_type,
             "backgroundColor": self.background_color,
             "profileUpdateType": self.profile_update_type,

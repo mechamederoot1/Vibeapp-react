@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
 from ..database.database import Base
+from sqlalchemy import LargeBinary
 
 class MessageType(str, Enum):
     TEXT = "text"
@@ -22,6 +23,8 @@ class Message(Base):
     content = Column(Text, nullable=True)
     message_type = Column(SQLEnum(MessageType), default=MessageType.TEXT)
     media_url = Column(String(500), nullable=True)  # Para áudio, imagem, vídeo
+    media_blob = Column(LargeBinary, nullable=True)
+    media_mime = Column(String(100), nullable=True)
     
     # Status da mensagem
     is_read = Column(Boolean, default=False)

@@ -23,8 +23,9 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import CreateHighlightModalV2 from '../components/CreateHighlightModalV2'
+import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
+import StoryViewer from '../components/StoryViewer'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
@@ -105,6 +106,11 @@ const Profile = () => {
   const [highlightsLoading, setHighlightsLoading] = useState(false)
   const [highlightNewCounts, setHighlightNewCounts] = useState({})
   const [highlightAddedTodayCounts, setHighlightAddedTodayCounts] = useState({})
+
+  // Story viewer for highlights
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [highlightStories, setHighlightStories] = useState([])
+  const [initialHighlightStoryIndex, setInitialHighlightStoryIndex] = useState(0)
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -615,7 +621,7 @@ const Profile = () => {
     }))
   }
 
-  // Funções de upload
+  // Fun��ões de upload
   const handleAvatarUpload = async (file) => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
@@ -776,8 +782,95 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      const response = await highlightsAPI.create(highlightData)
-      setHighlights(prev => [...prev, response.data.highlight])
+      // We'll create story records for each photo and for any cover image upload,
+      // then create the highlight and attach those stories to it so counts and previews work.
+      const photos = Array.isArray(highlightData.photos) ? highlightData.photos : []
+      const coverImageFile = highlightData.coverImage || null
+
+      const createdStoryIds = []
+
+      // Helper to upload a file and create a story record
+      const uploadAndCreateStory = async (file) => {
+        try {
+          // Upload media to server
+          const uploadRes = await uploadsAPI.uploadStoryMedia(file)
+          const mediaUrl = uploadRes.data?.url || uploadRes.data?.mediaUrl || uploadRes.data?.media_url || uploadRes.data?.url
+          if (!mediaUrl) throw new Error('Upload não retornou uma URL')
+
+          // Create story entry pointing to uploaded media
+          const storyPayload = {
+            type: 'image',
+            mediaUrl,
+            privacy: 'public',
+            duration: 24
+          }
+          const createRes = await storiesAPI.createStory(storyPayload)
+          // createRes expected to return the created story object
+          const story = createRes.data || createRes
+          return story.id || story.id
+        } catch (err) {
+          console.error('Erro ao criar story para highlight:', err)
+          return null
+        }
+      }
+
+      // First, create story records for the photos collection (preserving order)
+      for (let i = 0; i < photos.length; i++) {
+        const file = photos[i]
+        if (file instanceof File) {
+          const sid = await uploadAndCreateStory(file)
+          if (sid) createdStoryIds.push(sid)
+        }
+      }
+
+      // If there is a standalone coverImage (not part of photos), create a story for it too
+      let coverStoryIdToUse = null
+      if (coverImageFile && coverImageFile instanceof File) {
+        const sid = await uploadAndCreateStory(coverImageFile)
+        if (sid) {
+          createdStoryIds.unshift(sid) // prefer cover as first
+          coverStoryIdToUse = sid
+        }
+      }
+
+      // If frontend provided a coverFromCollection index (coverFromCollection), it would be file; handled above
+      // Prepare payload for highlight creation. If we have a cover story id, set coverStoryId so backend uses it and adds the story automatically
+      const payload = {
+        title: highlightData.title,
+        description: highlightData.description || null,
+        coverStoryId: coverStoryIdToUse || (createdStoryIds.length > 0 ? createdStoryIds[0] : highlightData.coverStoryId || null)
+      }
+
+      // Create highlight
+      const createHighlightRes = await highlightsAPI.create(payload)
+      const createdHighlight = createHighlightRes.data?.highlight || createHighlightRes.data || createHighlightRes
+      const highlightId = createdHighlight.id || createdHighlight.highlight?.id || createdHighlight
+
+      // Attach all created stories to the highlight (skip if they were already added by create endpoint via coverStoryId)
+      for (let i = 0; i < createdStoryIds.length; i++) {
+        const sid = createdStoryIds[i]
+        try {
+          // If coverStoryId was used and equals this sid and it was auto-added, skip re-adding
+          if (payload.coverStoryId && payload.coverStoryId === sid) continue
+          await highlightsAPI.addStory(highlightId, sid, i)
+        } catch (err) {
+          console.warn('Erro ao adicionar story ao destaque, continuing:', err)
+        }
+      }
+
+      // Reload highlights list from backend to ensure UI shows correct cover images and counts
+      try {
+        const highlightsRes = await highlightsAPI.get()
+        const remoteHighlights = highlightsRes.data.highlights || []
+        const normalized = remoteHighlights.map(h => ({
+          ...h,
+          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl
+        }))
+        setHighlights(normalized)
+      } catch (reloadErr) {
+        console.error('Erro ao recarregar destaques:', reloadErr)
+      }
+
       setUploadSuccess('Destaque criado com sucesso!')
 
       // Limpar mensagem após um tempo
@@ -814,44 +907,11 @@ const Profile = () => {
     }
   }
 
-  // Calcular quantos stories foram adicionados hoje para cada destaque
+  // Avoid expensive per-highlight requests on load. Rely on server-provided storiesCount
+  // and only fetch stories when user interacts (clicks a highlight). This improves profile load time.
   useEffect(() => {
-    if (!highlights || highlights.length === 0) {
-      setHighlightNewCounts({})
-      return
-    }
-
-    let cancelled = false
-    const fetchCounts = async () => {
-      const startOfToday = new Date()
-      startOfToday.setHours(0, 0, 0, 0)
-
-      try {
-        const results = await Promise.all(
-          highlights.map(h =>
-            highlightsAPI.getStories(h.id)
-              .then(res => ({ id: h.id, stories: res.data?.stories || [] }))
-              .catch(() => ({ id: h.id, stories: [] }))
-          )
-        )
-        if (cancelled) return
-        const map = {}
-        results.forEach(({ id, stories }) => {
-          const count = stories.filter(s => {
-            const ts = s?.createdAt || (s?.story && s.story.createdAt)
-            if (!ts) return false
-            return new Date(ts) >= startOfToday
-          }).length
-          map[id] = count
-        })
-        setHighlightNewCounts(map)
-      } catch (e) {
-        if (!cancelled) setHighlightNewCounts({})
-      }
-    }
-
-    fetchCounts()
-    return () => { cancelled = true }
+    // Reset any transient counters; additions performed during the session will update highlightAddedTodayCounts
+    setHighlightNewCounts({})
   }, [highlights])
 
   const openCreateHighlight = () => {
@@ -912,6 +972,22 @@ const Profile = () => {
   }
 
   const handlePostClick = (post) => {
+    // Prefer SPA navigation to the dedicated post/media route so URL contains the publicId
+    if (!post) return
+    if (post.publicId) {
+      if (post.type === 'image') {
+        navigate(`/photo/id/${post.publicId}`)
+        return
+      }
+      if (post.type === 'video') {
+        navigate(`/video/id/${post.publicId}`)
+        return
+      }
+      navigate(`/post/id/${post.publicId}`)
+      return
+    }
+
+    // Fallback to in-page modal when no publicId is available
     setSelectedPost(post)
     setShowPostModal(true)
   }
@@ -1476,7 +1552,17 @@ const Profile = () => {
               highlights.map((highlight) => (
                 <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
                   <div className="relative w-16 h-16 mb-2 mx-auto">
-                    <button className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
+                    <button onClick={async () => {
+                      try {
+                        const res = await highlightsAPI.getStories(highlight.id)
+                        const stories = res.data?.stories || res.data?.stories || []
+                        setHighlightStories(stories)
+                        setInitialHighlightStoryIndex(0)
+                        setShowStoryViewer(true)
+                      } catch (e) {
+                        console.error('Erro ao carregar stories do destaque:', e)
+                      }
+                    }} className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
                       {highlight.coverImageUrl ? (
                         <img
                           src={highlight.coverImageUrl}
@@ -1526,6 +1612,18 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Story Viewer for Highlights */}
+      <StoryViewer
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={highlightStories}
+        initialStoryIndex={initialHighlightStoryIndex}
+        currentUser={user}
+        highlights={highlights}
+        onAddToHighlight={handleAddToHighlight}
+        onCreateHighlight={handleCreateHighlight}
+      />
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
@@ -1840,7 +1938,7 @@ const Profile = () => {
 
 
       {/* Modal de Criar Destaque */}
-      <CreateHighlightModalV2
+      <CreateHighlightModal
         isOpen={showCreateHighlightModal}
         onClose={() => setShowCreateHighlightModal(false)}
         onSave={handleCreateHighlight}
