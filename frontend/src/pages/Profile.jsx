@@ -782,83 +782,17 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      // We'll create story records for each photo and for any cover image upload,
-      // then create the highlight and attach those stories to it so counts and previews work.
-      const photos = Array.isArray(highlightData.photos) ? highlightData.photos : []
-      const coverImageFile = highlightData.coverImage || null
-
-      const createdStoryIds = []
-
-      // Helper to upload a file and create a story record
-      const uploadAndCreateStory = async (file) => {
-        try {
-          // Upload media to server
-          const uploadRes = await uploadsAPI.uploadStoryMedia(file)
-          const mediaUrl = uploadRes.data?.url || uploadRes.data?.mediaUrl || uploadRes.data?.media_url || uploadRes.data?.url
-          if (!mediaUrl) throw new Error('Upload não retornou uma URL')
-
-          // Create story entry pointing to uploaded media
-          const storyPayload = {
-            type: 'image',
-            mediaUrl,
-            privacy: 'public',
-            duration: 24
-          }
-          const createRes = await storiesAPI.createStory(storyPayload)
-          // createRes expected to return the created story object
-          const story = createRes.data || createRes
-          return story.id || story.id
-        } catch (err) {
-          console.error('Erro ao criar story para highlight:', err)
-          return null
-        }
-      }
-
-      // First, create story records for the photos collection (preserving order)
-      for (let i = 0; i < photos.length; i++) {
-        const file = photos[i]
-        if (file instanceof File) {
-          const sid = await uploadAndCreateStory(file)
-          if (sid) createdStoryIds.push(sid)
-        }
-      }
-
-      // If there is a standalone coverImage (not part of photos), create a story for it too
-      let coverStoryIdToUse = null
-      if (coverImageFile && coverImageFile instanceof File) {
-        const sid = await uploadAndCreateStory(coverImageFile)
-        if (sid) {
-          createdStoryIds.unshift(sid) // prefer cover as first
-          coverStoryIdToUse = sid
-        }
-      }
-
-      // If frontend provided a coverFromCollection index (coverFromCollection), it would be file; handled above
-      // Prepare payload for highlight creation. If we have a cover story id, set coverStoryId so backend uses it and adds the story automatically
+      // Do NOT auto-create stories. Highlights should be independent.
       const payload = {
         title: highlightData.title,
         description: highlightData.description || null,
-        coverStoryId: coverStoryIdToUse || (createdStoryIds.length > 0 ? createdStoryIds[0] : highlightData.coverStoryId || null)
+        coverStoryId: highlightData.coverStoryId || null
       }
 
-      // Create highlight
       const createHighlightRes = await highlightsAPI.create(payload)
       const createdHighlight = createHighlightRes.data?.highlight || createHighlightRes.data || createHighlightRes
-      const highlightId = createdHighlight.id || createdHighlight.highlight?.id || createdHighlight
 
-      // Attach all created stories to the highlight (skip if they were already added by create endpoint via coverStoryId)
-      for (let i = 0; i < createdStoryIds.length; i++) {
-        const sid = createdStoryIds[i]
-        try {
-          // If coverStoryId was used and equals this sid and it was auto-added, skip re-adding
-          if (payload.coverStoryId && payload.coverStoryId === sid) continue
-          await highlightsAPI.addStory(highlightId, sid, i)
-        } catch (err) {
-          console.warn('Erro ao adicionar story ao destaque, continuing:', err)
-        }
-      }
-
-      // Reload highlights list from backend to ensure UI shows correct cover images and counts
+      // Refresh list
       try {
         const highlightsRes = await highlightsAPI.get()
         const remoteHighlights = highlightsRes.data.highlights || []
@@ -872,11 +806,7 @@ const Profile = () => {
       }
 
       setUploadSuccess('Destaque criado com sucesso!')
-
-      // Limpar mensagem após um tempo
-      setTimeout(() => {
-        setUploadSuccess(null)
-      }, 3000)
+      setTimeout(() => setUploadSuccess(null), 3000)
     } catch (error) {
       console.error('Erro ao criar destaque:', error)
       setUploadError('Erro ao criar destaque. Tente novamente.')
