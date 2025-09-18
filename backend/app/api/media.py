@@ -42,3 +42,11 @@ async def get_story_media(story_id: int, db: Session = Depends(get_db)):
     if not story or not getattr(story, 'media_blob', None):
         raise HTTPException(status_code=404, detail='Story media not found')
     return Response(content=story.media_blob, media_type=story.media_mime or 'image/jpeg')
+
+@router.get("/messages/{message_id}")
+async def get_message_media(message_id: int, db: Session = Depends(get_db)):
+    from ..models.message import Message
+    message = db.query(Message).filter(Message.id == message_id).first()
+    if not message or not getattr(message, 'media_blob', None):
+        raise HTTPException(status_code=404, detail='Message media not found')
+    return Response(content=message.media_blob, media_type=message.media_mime or 'audio/ogg')
