@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { X, Save, Image, Camera, Upload, FileImage } from 'lucide-react'
+import { X, Save, Image, Upload, Plus, GripVertical, Trash2 } from 'lucide-react'
 
 const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], coverStoryId = null }) => {
   const [formData, setFormData] = useState({
