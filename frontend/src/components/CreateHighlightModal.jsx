@@ -172,10 +172,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
       setError('O nome do destaque deve ter no máximo 50 caracteres')
       return
     }
-    if (photos.length === 0 && !coverImage && formData.coverType !== 'story') {
-      setError('Adicione pelo menos uma foto ou uma capa')
-      return
-    }
+    // Allow creating a highlight without auto-publishing stories or uploads
 
     setLoading(true)
     setError(null)
