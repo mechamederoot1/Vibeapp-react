@@ -74,7 +74,7 @@ const AppContent = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden w-screen max-w-screen relative">
       <Routes>
         {/* Public Routes */}
         <Route 
