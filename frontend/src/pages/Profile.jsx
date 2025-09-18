@@ -102,6 +102,8 @@ const Profile = () => {
   const [highlights, setHighlights] = useState([])
   const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
   const [highlightsLoading, setHighlightsLoading] = useState(false)
+  const [highlightNewCounts, setHighlightNewCounts] = useState({})
+  const [highlightAddedTodayCounts, setHighlightAddedTodayCounts] = useState({})
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -787,6 +789,11 @@ const Profile = () => {
       // Reload highlights to get updated counts
       const highlightsResponse = await highlightsAPI.get()
       setHighlights(highlightsResponse.data.highlights || [])
+      // Mark as added today for UI indicator
+      setHighlightAddedTodayCounts(prev => ({
+        ...prev,
+        [highlightId]: (prev[highlightId] || 0) + 1
+      }))
       setUploadSuccess('Story adicionado ao destaque!')
 
       setTimeout(() => {
@@ -797,6 +804,46 @@ const Profile = () => {
       setUploadError('Erro ao adicionar story ao destaque.')
     }
   }
+
+  // Calcular quantos stories foram adicionados hoje para cada destaque
+  useEffect(() => {
+    if (!highlights || highlights.length === 0) {
+      setHighlightNewCounts({})
+      return
+    }
+
+    let cancelled = false
+    const fetchCounts = async () => {
+      const startOfToday = new Date()
+      startOfToday.setHours(0, 0, 0, 0)
+
+      try {
+        const results = await Promise.all(
+          highlights.map(h =>
+            highlightsAPI.getStories(h.id)
+              .then(res => ({ id: h.id, stories: res.data?.stories || [] }))
+              .catch(() => ({ id: h.id, stories: [] }))
+          )
+        )
+        if (cancelled) return
+        const map = {}
+        results.forEach(({ id, stories }) => {
+          const count = stories.filter(s => {
+            const ts = s?.createdAt || (s?.story && s.story.createdAt)
+            if (!ts) return false
+            return new Date(ts) >= startOfToday
+          }).length
+          map[id] = count
+        })
+        setHighlightNewCounts(map)
+      } catch (e) {
+        if (!cancelled) setHighlightNewCounts({})
+      }
+    }
+
+    fetchCounts()
+    return () => { cancelled = true }
+  }, [highlights])
 
   const openCreateHighlight = () => {
     setShowCreateHighlightModal(true)
@@ -1415,23 +1462,37 @@ const Profile = () => {
             {highlights && highlights.length > 0 ? (
               highlights.map((highlight) => (
                 <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
-                  <button className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
-                    {highlight.coverImageUrl ? (
-                      <img
-                        src={highlight.coverImageUrl}
-                        alt={highlight.title}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-500 text-xs font-bold">
-                          {highlight.title.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </button>
+                  <div className="relative w-16 h-16 mb-2 mx-auto">
+                    <button className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
+                      {highlight.coverImageUrl ? (
+                        <img
+                          src={highlight.coverImageUrl}
+                          alt={highlight.title}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs font-bold">
+                            {highlight.title.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                    {/* Total de fotos no cantinho superior do círculo */}
+                    <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white">
+                      {highlight.storiesCount}
+                    </span>
+                  </div>
                   <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
-                  <span className="text-xs text-gray-400">{highlight.storiesCount} stories</span>
+                  {highlightAddedTodayCounts[highlight.id] > 0 ? (
+                    <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                  ) : (
+                    highlightNewCounts[highlight.id] > 0 ? (
+                      <span className="text-xs text-green-600 font-medium">{highlightNewCounts[highlight.id]} novos</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">&nbsp;</span>
+                    )
+                  )}
                 </div>
               ))
             ) : !viewAsVisitor ? (
