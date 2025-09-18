@@ -261,6 +261,13 @@ export const educationAPI = {
   delete: (id) => api.delete(`/education/${id}`)
 }
 
+// Reactions endpoints
+export const reactionsAPI = {
+  addPostReaction: (postId, reactionType) => api.post(`/reactions/posts/${postId}/reactions`, { reaction_type: reactionType }),
+  removePostReaction: (postId) => api.delete(`/reactions/posts/${postId}/reactions`),
+  getPostReactions: (postId) => api.get(`/reactions/posts/${postId}/reactions`),
+}
+
 // Highlights endpoints
 export const highlightsAPI = {
   get: (userId = null) => {
