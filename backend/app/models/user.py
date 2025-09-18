@@ -22,7 +22,11 @@ class User(Base):
     bio = Column(Text, nullable=True)
     avatar = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)  # For consistency with frontend
+    avatar_blob = Column(LargeBinary, nullable=True)
+    avatar_mime = Column(String, nullable=True)
     cover_photo = Column(String, nullable=True)
+    cover_blob = Column(LargeBinary, nullable=True)
+    cover_mime = Column(String, nullable=True)
     location = Column(String, nullable=True)
     website = Column(String, nullable=True)
     phone = Column(String, nullable=True)
