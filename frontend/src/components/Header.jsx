@@ -91,7 +91,7 @@ const Header = ({ onOpenPostModal }) => {
   }, [])
 
   return (
-    <header className="bg-white border-b border-gray-100 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 py-3 safe-area-top sticky top-0 z-10 w-full max-w-full overflow-hidden">
       <div className="flex items-center justify-between w-full max-w-full">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           <div className="flex items-center space-x-2">
@@ -107,10 +107,10 @@ const Header = ({ onOpenPostModal }) => {
         <div className="flex items-center space-x-3 flex-shrink-0">
           <button
             onClick={onOpenPostModal}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             title="Criar post"
           >
-            <Plus size={24} className="text-gray-600" />
+            <Plus size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
 
           {/* Notificações */}
@@ -119,7 +119,7 @@ const Header = ({ onOpenPostModal }) => {
             className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
             title="Notificações"
           >
-            <Bell size={24} className="text-gray-600" />
+            <Bell size={24} className="text-gray-600 dark:text-gray-300" />
             {unreadCounts.notifications > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {unreadCounts.notifications > 99 ? '99+' : unreadCounts.notifications}
@@ -130,17 +130,17 @@ const Header = ({ onOpenPostModal }) => {
           {/* Pesquisar */}
           <button
             onClick={() => navigate('/search')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             title="Pesquisar amigos"
           >
-            <Search size={24} className="text-gray-600" />
+            <Search size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
 
           {/* User Avatar with Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowAvatarDropdown(!showAvatarDropdown)}
-              className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             >
               {user?.avatar ? (
                 <img
