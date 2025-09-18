@@ -98,16 +98,6 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
       setShowColorPicker(false)
       onClose()
 
-      // Navigate to newly created post detail (if backend returned a publicId)
-      if (created?.publicId) {
-        if (created.type === 'image') {
-          navigate(`/photo/id/${created.publicId}`)
-        } else if (created.type === 'video') {
-          navigate(`/video/id/${created.publicId}`)
-        } else {
-          navigate(`/post/id/${created.publicId}`)
-        }
-      }
 
     } catch (error) {
       console.error('Error creating post:', error)
