@@ -55,6 +55,13 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully")
+        # Run lightweight migrations
+        try:
+            from migrate_public_profile_id import migrate as migrate_public_id
+            migrate_public_id()
+            print("✅ Migration public_profile_id applied")
+        except Exception as me:
+            print(f"⚠️ Migration public_profile_id failed or skipped: {me}")
     except Exception as e:
         print(f"❌ Error creating database tables: {e}")
     yield
