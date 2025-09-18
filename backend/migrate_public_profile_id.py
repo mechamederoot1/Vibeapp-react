@@ -27,16 +27,17 @@ def column_exists_sqlite(db, table_name: str, column_name: str) -> bool:
     return False
 
 
-def generate_numeric_id(n=12) -> str:
+def generate_numeric_id(n=10) -> str:
     return ''.join(random.SystemRandom().choice(string.digits) for _ in range(n))
 
 
 def migrate():
+    from sqlalchemy.exc import IntegrityError
     db = SessionLocal()
     try:
         if not column_exists_sqlite(db, 'users', 'public_profile_id'):
             print("🔄 Adicionando coluna 'public_profile_id' na tabela users...")
-            db.execute(text("ALTER TABLE users ADD COLUMN public_profile_id VARCHAR"))
+            db.execute(text("ALTER TABLE users ADD COLUMN public_profile_id TEXT"))
             db.commit()
         else:
             print("✅ Coluna 'public_profile_id' já existe")
@@ -51,12 +52,18 @@ def migrate():
         users = db.execute(text("SELECT id FROM users WHERE public_profile_id IS NULL OR public_profile_id = ''")).fetchall()
         print(f"Encontrados {len(users)} usuários sem public_profile_id")
         for (user_id,) in users:
-            public_id = generate_numeric_id()
-            # Garantir unicidade
-            while db.execute(text("SELECT 1 FROM users WHERE public_profile_id = :pid"), {"pid": public_id}).fetchone():
-                public_id = generate_numeric_id()
-            db.execute(text("UPDATE users SET public_profile_id = :pid WHERE id = :uid"), {"pid": public_id, "uid": user_id})
-        db.commit()
+            attempts = 0
+            while attempts < 10:
+                public_id = generate_numeric_id(10)
+                try:
+                    db.execute(text("UPDATE users SET public_profile_id = :pid WHERE id = :uid"), {"pid": public_id, "uid": user_id})
+                    db.commit()
+                    break
+                except IntegrityError:
+                    db.rollback()
+                    attempts += 1
+                    if attempts >= 10:
+                        raise
         print("✅ Migração concluída com sucesso!")
     except Exception as e:
         db.rollback()
