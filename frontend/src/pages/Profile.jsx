@@ -25,6 +25,7 @@ import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
+import StoryViewer from '../components/StoryViewer'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
@@ -1137,7 +1138,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Botão de opções da capa - s�� aparece se houver foto */}
+          {/* Bot��o de opções da capa - s�� aparece se houver foto */}
           {profileData.coverPhoto && !viewAsVisitor && (
             <div className="absolute top-4 right-4">
               <button
