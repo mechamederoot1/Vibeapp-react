@@ -945,7 +945,7 @@ const Profile = () => {
   return (
     <div className="bg-white min-h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
         <h2 className="text-xl font-bold">{currentProfileData.username}</h2>
         <div className="flex items-center justify-center flex-1">
           <button
