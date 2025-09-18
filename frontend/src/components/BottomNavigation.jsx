@@ -88,7 +88,7 @@ const BottomNavigation = () => {
   ]
 
   return (
-    <nav className="bg-white border-t border-gray-200 safe-area-bottom w-full max-w-full overflow-hidden">
+    <nav className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 safe-area-bottom w-full max-w-full overflow-hidden">
       <div className="flex justify-around py-2 w-full max-w-full">
         {navItems.map((item) => {
           const Icon = item.icon
