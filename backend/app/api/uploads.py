@@ -62,56 +62,37 @@ async def upload_avatar(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload da foto de perfil (avatar)"""
-    
-    # Validar arquivo
-    if not validate_image_file(file):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG ou WebP com máximo 5MB."
-        )
-    
-    try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "avatar_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "avatars", filename)
-        
-        # Salvar e redimensionar imagem (400x400 para avatar)
-        await save_and_resize_image(file, filepath, (400, 400))
-        
-        # Remover avatar anterior se existir
-        if current_user.avatar:
-            if current_user.avatar.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.avatar)
-                old_filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.avatar.startswith("/uploads/"):
-                old_filepath = current_user.avatar[1:]  # Remove a barra inicial
-            else:
-                old_filepath = current_user.avatar
+    """Upload da foto de perfil (avatar) - stored in DB as blob and returned as data URL"""
+    # Validate file
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
+    if file.size and file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
-        
-        # Atualizar URL do avatar no banco (usando caminho relativo)
-        avatar_url = f"/uploads/avatars/{filename}"
-        current_user.avatar = avatar_url
+    try:
+        # Convert and resize image to bytes
+        content_bytes, mime = await save_and_resize_image_to_bytes(file, (400, 400))
+
+        # Store in DB
+        current_user.avatar_blob = content_bytes
+        current_user.avatar_mime = mime
+        current_user.avatar = f"/api/media/users/{current_user.id}/avatar"
+        current_user.avatar_url = current_user.avatar
         db.commit()
         db.refresh(current_user)
-        
+
+        # Return data URL for immediate use in frontend
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
+
         return {
             "message": "Avatar atualizado com sucesso!",
-            "avatar_url": avatar_url,
+            "avatar_url": current_user.avatar,
+            "data_url": data_url,
             "user": current_user.to_dict()
         }
-    
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload do avatar: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload do avatar: {str(e)}")
 
 @router.post("/cover")
 async def upload_cover_photo(
