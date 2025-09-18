@@ -107,6 +107,11 @@ const Profile = () => {
   const [highlightNewCounts, setHighlightNewCounts] = useState({})
   const [highlightAddedTodayCounts, setHighlightAddedTodayCounts] = useState({})
 
+  // Story viewer for highlights
+  const [showStoryViewer, setShowStoryViewer] = useState(false)
+  const [highlightStories, setHighlightStories] = useState([])
+  const [initialHighlightStoryIndex, setInitialHighlightStoryIndex] = useState(0)
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     friendsCount: 0,
@@ -178,7 +183,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | ���🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -749,7 +754,7 @@ const Profile = () => {
     }
   }
 
-  // Funções para informações pessoais
+  // Funç��es para informações pessoais
   const handlePersonalInfoSave = async (data) => {
     setPersonalInfoLoading(true)
     try {
@@ -1138,7 +1143,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Bot��o de opções da capa - s�� aparece se houver foto */}
+          {/* Botão de opções da capa - s�� aparece se houver foto */}
           {profileData.coverPhoto && !viewAsVisitor && (
             <div className="absolute top-4 right-4">
               <button
