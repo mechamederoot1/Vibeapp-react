@@ -137,7 +137,28 @@ export const authAPI = {
 export const usersAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (userData) => api.put('/users/profile', userData),
-  getUserById: (userId) => api.get(`/users/${userId}`),
+  getUserById: async (identifier) => {
+    // Try public id first
+    try {
+      return await api.get(`/users/by-public-id/${identifier}`)
+    } catch (e) {
+      if (e.response?.status !== 404) throw e
+    }
+    // Try by username
+    try {
+      return await api.get(`/users/by-username/${identifier}`)
+    } catch (e) {
+      if (e.response?.status !== 404) throw e
+    }
+    // Fallback to numeric id
+    if (/^\d+$/.test(String(identifier))) {
+      return api.get(`/users/${identifier}`)
+    }
+    // If all failed, throw 404-like error
+    const err = new Error('User not found')
+    err.response = { status: 404 }
+    throw err
+  },
   getUserStats: (userId) => api.get(`/users/${userId}/stats`),
   getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
   searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
