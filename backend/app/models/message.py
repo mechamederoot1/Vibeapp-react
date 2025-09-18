@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from enum import Enum
 from ..database.database import Base
+from sqlalchemy import LargeBinary
 
 class MessageType(str, Enum):
     TEXT = "text"
