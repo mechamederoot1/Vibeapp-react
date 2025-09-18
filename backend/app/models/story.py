@@ -63,7 +63,7 @@ class Story(Base):
             "author": self.author.to_public_dict() if self.author else None,
             "type": self.story_type,
             "content": self.content,
-            "mediaUrl": self.media_url,
+            "mediaUrl": (f"/api/media/stories/{self.id}" if getattr(self, 'media_blob', None) else self.media_url),
             "backgroundGradient": self.background_gradient,
             "textElements": self.text_elements or [],
             "privacy": self.privacy,
