@@ -30,6 +30,7 @@ from app.api.personal_info import router as personal_info_router
 from app.api.highlights import router as highlights_router
 from app.api.work_experience import router as work_experience_router
 from app.api.education import router as education_router
+from app.api.media import router as media_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
