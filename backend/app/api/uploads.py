@@ -12,17 +12,13 @@ from .auth import get_current_user
 router = APIRouter()
 
 # Configurações de upload
-UPLOAD_DIRECTORY = "uploads"
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 ALLOWED_STORY_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
 
-# Criar diretório de uploads se não existir
-os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/avatars", exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/covers", exist_ok=True)
-os.makedirs(f"{UPLOAD_DIRECTORY}/stories", exist_ok=True)
+from io import BytesIO
+import base64
 
 def validate_image_file(file: UploadFile) -> bool:
     """Validar se o arquivo é uma imagem válida"""
