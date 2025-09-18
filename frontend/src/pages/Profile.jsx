@@ -1479,7 +1479,7 @@ const Profile = () => {
                       )}
                     </button>
                     {/* Total de fotos no cantinho superior do círculo */}
-                    <span className="absolute top-0 right-0 bg-white text-gray-900 text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white shadow">
+                    <span className="absolute -top-1 -right-1 bg-gray-100 text-gray-900 text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white border border-gray-300 shadow-md">
                       {highlight.storiesCount}
                     </span>
                   </div>
