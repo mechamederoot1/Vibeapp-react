@@ -36,34 +36,25 @@ def generate_filename(original_filename: str, prefix: str = "") -> str:
     unique_id = str(uuid.uuid4())
     return f"{prefix}{unique_id}.{ext}"
 
-async def save_and_resize_image(file: UploadFile, filepath: str, max_size: tuple = None):
-    """Salvar e redimensionar imagem"""
-    # Salvar arquivo temporário
-    temp_path = f"{filepath}.temp"
-    async with aiofiles.open(temp_path, 'wb') as f:
-        content = await file.read()
-        await f.write(content)
-    
-    # Abrir e processar imagem
+async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = None):
+    """Read image upload, optionally resize, and return bytes and mime"""
+    content = await file.read()
     try:
-        with Image.open(temp_path) as img:
-            # Converter para RGB se necessário
+        with Image.open(BytesIO(content)) as img:
+            # Convert to RGB if necessary
             if img.mode in ('RGBA', 'P'):
                 rgb_img = Image.new('RGB', img.size, (255, 255, 255))
                 rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = rgb_img
-            
-            # Redimensionar se especificado
             if max_size:
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
-            
-            # Salvar imagem processada
-            img.save(filepath, 'JPEG', quality=85, optimize=True)
-    
-    finally:
-        # Remover arquivo temporário
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+            out = BytesIO()
+            img.save(out, format='JPEG', quality=85, optimize=True)
+            out.seek(0)
+            return out.read(), 'image/jpeg'
+    except Exception:
+        # Fallback: return original bytes
+        return content, file.content_type or 'application/octet-stream'
 
 @router.post("/avatar")
 async def upload_avatar(
