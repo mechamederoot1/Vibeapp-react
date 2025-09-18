@@ -59,7 +59,7 @@ const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => 
 
 const Profile = () => {
   const { user, setUser } = useAuth()
-  const { userId } = useParams()
+  const { userId, publicId } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
