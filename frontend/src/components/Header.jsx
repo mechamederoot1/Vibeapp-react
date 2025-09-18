@@ -18,7 +18,13 @@ const Header = ({ onOpenPostModal }) => {
   const { lastMessage } = useWebSocket()
 
   const handleEditPhoto = () => {
-    navigate('/profile')
+    try {
+      const { getPublicProfileId } = require('../utils/profileId')
+      const pubId = getPublicProfileId(user)
+      navigate(`/profile/${pubId}`)
+    } catch (e) {
+      navigate('/profile')
+    }
     setShowAvatarDropdown(false)
   }
 
