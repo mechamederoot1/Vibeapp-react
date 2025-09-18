@@ -23,7 +23,7 @@ import CoverViewer from '../components/CoverViewer'
 import PostViewModal from '../components/PostViewModal'
 import ConnectionsModal from '../components/ConnectionsModal'
 import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
-import CreateHighlightModalV2 from '../components/CreateHighlightModalV2'
+import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
@@ -1882,7 +1882,7 @@ const Profile = () => {
 
 
       {/* Modal de Criar Destaque */}
-      <CreateHighlightModalV2
+      <CreateHighlightModal
         isOpen={showCreateHighlightModal}
         onClose={() => setShowCreateHighlightModal(false)}
         onSave={handleCreateHighlight}
