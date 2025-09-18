@@ -468,19 +468,12 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   const loadStories = async () => {
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
-      console.log('🔧 Modo demo - usando stories vazias')
-      setStories([])
-      return
-    }
-
     try {
       const response = await storiesAPI.getStories()
       setStories(response.data.storiesByAuthor || [])
     } catch (error) {
       console.error('Error loading stories:', error)
-      setStories([]) // Set empty array as fallback
+      setStories([])
     }
   }
 
@@ -562,10 +555,9 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     setShowStoryViewer(true)
   }
 
-  const handleStoryCreate = async (storyData) => {
+  const handleStoryCreate = async (created) => {
     try {
-      await storiesAPI.createStory(storyData)
-      // Reload stories after creating
+      // Após criar via SimpleStoryCreator, apenas recarregar carrossel
       await loadStories()
       console.log('Story created successfully')
     } catch (error) {
