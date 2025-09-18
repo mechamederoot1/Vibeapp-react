@@ -90,12 +90,46 @@ async def create_post(
         profile_update_type=post_data.profileUpdateType,
         privacy=post_data.privacy
     )
-    
-    db.add(new_post)
-    db.commit()
-    db.refresh(new_post)
-    
+
+    # Assign unique 10-digit public id with commit-retry
+    import secrets, string
+    from sqlalchemy.exc import IntegrityError
+
+    def gen_id(n=10):
+      return ''.join(secrets.choice(string.digits) for _ in range(n))
+
+    for attempt in range(10):
+      new_post.public_id = gen_id(10)
+      try:
+        db.add(new_post)
+        db.commit()
+        db.refresh(new_post)
+        break
+      except IntegrityError as e:
+        db.rollback()
+        if 'public_id' in str(e).lower():
+          if attempt == 9:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Could not generate unique post id')
+          continue
+        raise
+
     return new_post.to_dict(current_user.id)
+
+@router.get("/by-public-id/{public_id}")
+async def get_post_by_public_id(
+    public_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    post = db.query(Post).filter(
+        Post.public_id == public_id,
+        Post.is_active == True
+    ).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+    if not can_view_post(db, current_user.id, post.author_id, post.privacy):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permission to view this post")
+    return post.to_dict(current_user.id)
 
 @router.get("/{post_id}")
 async def get_post(
@@ -104,12 +138,12 @@ async def get_post(
     db: Session = Depends(get_db)
 ):
     """Get a specific post"""
-    
+
     post = db.query(Post).filter(
         Post.id == post_id,
         Post.is_active == True
     ).first()
-    
+
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -137,7 +137,28 @@ export const authAPI = {
 export const usersAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (userData) => api.put('/users/profile', userData),
-  getUserById: (userId) => api.get(`/users/${userId}`),
+  getUserById: async (identifier) => {
+    // Try public id first
+    try {
+      return await api.get(`/users/by-public-id/${identifier}`)
+    } catch (e) {
+      if (e.response?.status !== 404) throw e
+    }
+    // Try by username
+    try {
+      return await api.get(`/users/by-username/${identifier}`)
+    } catch (e) {
+      if (e.response?.status !== 404) throw e
+    }
+    // Fallback to numeric id
+    if (/^\d+$/.test(String(identifier))) {
+      return api.get(`/users/${identifier}`)
+    }
+    // If all failed, throw 404-like error
+    const err = new Error('User not found')
+    err.response = { status: 404 }
+    throw err
+  },
   getUserStats: (userId) => api.get(`/users/${userId}/stats`),
   getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
   searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
@@ -148,6 +169,7 @@ export const postsAPI = {
   getFeed: (page = 1, limit = 20) => api.get(`/posts/feed?page=${page}&limit=${limit}`),
   createPost: (postData) => api.post('/posts/', postData),
   getPost: (postId) => api.get(`/posts/${postId}`),
+  getByPublicId: (publicId) => api.get(`/posts/by-public-id/${publicId}`),
   likePost: (postId) => api.post(`/posts/${postId}/like`),
   sharePost: (postId) => api.post(`/posts/${postId}/share`),
   repostPost: (postId) => api.post(`/posts/${postId}/repost`),
@@ -237,6 +259,13 @@ export const educationAPI = {
   create: (educationData) => api.post('/education', educationData),
   update: (id, educationData) => api.put(`/education/${id}`, educationData),
   delete: (id) => api.delete(`/education/${id}`)
+}
+
+// Reactions endpoints
+export const reactionsAPI = {
+  addPostReaction: (postId, reactionType) => api.post(`/reactions/posts/${postId}/reactions`, { reaction_type: reactionType }),
+  removePostReaction: (postId) => api.delete(`/reactions/posts/${postId}/reactions`),
+  getPostReactions: (postId) => api.get(`/reactions/posts/${postId}/reactions`),
 }
 
 // Highlights endpoints

@@ -59,7 +59,7 @@ const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => 
 
 const Profile = () => {
   const { user, setUser } = useAuth()
-  const { userId } = useParams()
+  const { userId, publicId } = useParams()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
@@ -133,20 +133,21 @@ const Profile = () => {
 
       // Garantir URL com id público
       const myPublicId = getPublicProfileId(user)
-      if (!userId) {
-        navigate(`/profile/${myPublicId}`, { replace: true })
+      const identifier = publicId || userId
+      if (!identifier) {
+        navigate(`/profile/id/${myPublicId}`, { replace: true })
         return
       }
 
       // Determinar se é perfil próprio ou de outro usuário
-      const own = userId === user.id?.toString() || userId === user.username || userId === myPublicId
+      const own = identifier === user.id?.toString() || identifier === user.username || identifier === myPublicId
       setIsOwnProfile(!!own)
 
       if (!own) {
         // Carregar perfil de outro usuário
         setProfileLoading(true)
         try {
-          const response = await usersAPI.getUserById(userId)
+          const response = await usersAPI.getUserById(identifier)
           setProfileUser(response.data)
         } catch (error) {
           console.error('Erro ao carregar perfil do usuário:', error)

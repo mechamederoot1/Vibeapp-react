@@ -1,17 +1,21 @@
 export function getPublicProfileId(user) {
   try {
+    if (user?.publicProfileId) return String(user.publicProfileId)
     const keyBase = user?.id ? `uid:${user.id}` : (user?.email ? `email:${user.email}` : 'anon')
     const storageKey = `vibe:publicProfileId:${keyBase}`
     let id = localStorage.getItem(storageKey)
     if (!id) {
-      // Generate 9-10 digit numeric id
-      const rand = Math.floor(100000000 + Math.random() * 900000000)
+      // Generate 12 digit numeric id (client-side fallback)
+      let rand = ''
+      for (let i = 0; i < 12; i++) rand += Math.floor(Math.random() * 10)
       id = String(rand)
       localStorage.setItem(storageKey, id)
     }
     return id
   } catch (e) {
-    // Fallback: deterministic short id
-    return String(Math.floor(100000 + Math.random() * 900000))
+    // Fallback: 12-digit numeric
+    let rand = ''
+    for (let i = 0; i < 12; i++) rand += Math.floor(Math.random() * 10)
+    return rand
   }
 }

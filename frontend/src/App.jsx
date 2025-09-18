@@ -11,6 +11,7 @@ import Messages from './pages/Messages'
 import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
 import Visits from './pages/Visits'
+import PostDetail from './pages/PostDetail'
 import Friends from './pages/Friends'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
@@ -184,11 +185,52 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/profile/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Profile />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile/:userId"
           element={
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Profile />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        {/* Post/Media detail routes */}
+        <Route
+          path="/post/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/photo/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail mediaType="image" />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/video/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail mediaType="video" />
               </Layout>
             </ProtectedRoute>
           }

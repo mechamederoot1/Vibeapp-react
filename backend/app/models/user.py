@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import bcrypt
 from ..database.database import Base
+from sqlalchemy import Column, Integer, String, Text, Date, Boolean, DateTime, Index
 
 class User(Base):
     __tablename__ = "users"
@@ -10,6 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     username = Column(String, unique=True, index=True, nullable=True)
+    public_profile_id = Column(String, unique=True, index=True, nullable=True)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
@@ -89,6 +91,7 @@ class User(Base):
             "id": self.id,
             "email": self.email,
             "username": self.username,
+            "publicProfileId": self.public_profile_id,
             "firstName": self.first_name,
             "lastName": self.last_name,
             "fullName": self.full_name,
@@ -116,6 +119,7 @@ class User(Base):
         return {
             "id": self.id,
             "username": self.username,
+            "publicProfileId": self.public_profile_id,
             "firstName": self.first_name,
             "lastName": self.last_name,
             "fullName": self.full_name,
