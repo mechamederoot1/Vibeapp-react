@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 from ..database.database import Base
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, JSON, LargeBinary
 
 class Story(Base):
     __tablename__ = "stories"
