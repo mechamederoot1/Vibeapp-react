@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI } from '../services/api'
+import { getPublicProfileId } from '../utils/profileId'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -128,13 +129,20 @@ const Profile = () => {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user?.id) return
+      if (!user) return
+
+      // Garantir URL com id público
+      const myPublicId = getPublicProfileId(user)
+      if (!userId) {
+        navigate(`/profile/${myPublicId}`, { replace: true })
+        return
+      }
 
       // Determinar se é perfil próprio ou de outro usuário
-      const isOwnProfile = !userId || userId === user.id.toString()
-      setIsOwnProfile(isOwnProfile)
+      const own = userId === user.id?.toString() || userId === user.username || userId === myPublicId
+      setIsOwnProfile(!!own)
 
-      if (!isOwnProfile) {
+      if (!own) {
         // Carregar perfil de outro usuário
         setProfileLoading(true)
         try {
