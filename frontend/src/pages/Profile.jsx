@@ -183,7 +183,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | ���🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -754,7 +754,7 @@ const Profile = () => {
     }
   }
 
-  // Funç��es para informações pessoais
+  // Funções para informações pessoais
   const handlePersonalInfoSave = async (data) => {
     setPersonalInfoLoading(true)
     try {
@@ -1585,7 +1585,17 @@ const Profile = () => {
               highlights.map((highlight) => (
                 <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
                   <div className="relative w-16 h-16 mb-2 mx-auto">
-                    <button className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
+                    <button onClick={async () => {
+                      try {
+                        const res = await highlightsAPI.getStories(highlight.id)
+                        const stories = res.data?.stories || res.data?.stories || []
+                        setHighlightStories(stories)
+                        setInitialHighlightStoryIndex(0)
+                        setShowStoryViewer(true)
+                      } catch (e) {
+                        console.error('Erro ao carregar stories do destaque:', e)
+                      }
+                    }} className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
                       {highlight.coverImageUrl ? (
                         <img
                           src={highlight.coverImageUrl}
