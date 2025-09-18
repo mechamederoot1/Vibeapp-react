@@ -280,7 +280,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Aproveitando o sábado para relaxar na praia! ��️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
+            content: 'Aproveitando o sábado para relaxar na praia! 🏖️ Às vezes precisamos desacelerar para voltar com mais criatividade na segunda. #vibes #weekend',
             imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
             createdAt: '2024-01-10T17:00:00Z',
             likes: 187,
@@ -1479,7 +1479,7 @@ const Profile = () => {
                       )}
                     </button>
                     {/* Total de fotos no cantinho superior do círculo */}
-                    <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white">
+                    <span className="absolute top-0 right-0 bg-white text-gray-900 text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white shadow">
                       {highlight.storiesCount}
                     </span>
                   </div>
@@ -1488,7 +1488,7 @@ const Profile = () => {
                     <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
                   ) : (
                     highlightNewCounts[highlight.id] > 0 ? (
-                      <span className="text-xs text-green-600 font-medium">{highlightNewCounts[highlight.id]} novos</span>
+                      <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
                     ) : null
                   )}
                 </div>
