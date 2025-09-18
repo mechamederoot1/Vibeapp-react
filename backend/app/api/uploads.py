@@ -192,11 +192,13 @@ async def remove_cover_photo(
             if os.path.exists(filepath):
                 os.remove(filepath)
         
-        # Remover URL do banco
+        # Remover URL/blob do banco
         current_user.cover_photo = None
+        current_user.cover_blob = None
+        current_user.cover_mime = None
         db.commit()
         db.refresh(current_user)
-        
+
         return {
             "message": "Foto de capa removida com sucesso!",
             "user": current_user.to_dict()
