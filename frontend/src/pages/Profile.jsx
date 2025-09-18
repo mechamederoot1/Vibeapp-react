@@ -776,8 +776,29 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      const response = await highlightsAPI.create(highlightData)
-      setHighlights(prev => [...prev, response.data.highlight])
+      const payload = { ...highlightData }
+
+      // If coverImage is a File, upload it first and replace with URL
+      if (payload.coverImage && typeof payload.coverImage === 'object' && payload.coverImage instanceof File) {
+        try {
+          const uploadRes = await uploadsAPI.uploadStoryMedia(payload.coverImage)
+          payload.coverImage = uploadRes.data.url || uploadRes.data?.mediaUrl || uploadRes.data?.url
+        } catch (uploadErr) {
+          console.error('Erro ao enviar imagem da capa do destaque:', uploadErr)
+          // Continue without breaking; backend may accept file uploads directly
+        }
+      }
+
+      await highlightsAPI.create(payload)
+
+      // Reload highlights list from backend to ensure UI shows correct cover images and counts
+      try {
+        const highlightsRes = await highlightsAPI.get()
+        setHighlights(highlightsRes.data.highlights || [])
+      } catch (reloadErr) {
+        console.error('Erro ao recarregar destaques:', reloadErr)
+      }
+
       setUploadSuccess('Destaque criado com sucesso!')
 
       // Limpar mensagem após um tempo
