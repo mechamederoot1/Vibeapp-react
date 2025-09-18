@@ -799,7 +799,7 @@ const Profile = () => {
           if (!coverStoryId && i === 0) {
             await highlightsAPI.update(created.id, { coverStoryId: st.data.id })
           }
-          await highlightsAPI.addStory(created.id, st.data.id)
+          await highlightsAPI.addStory(created.id, st.data.id, i)
         }
       }
 
