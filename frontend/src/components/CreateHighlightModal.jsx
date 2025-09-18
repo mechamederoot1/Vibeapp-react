@@ -329,7 +329,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
           </button>
           <button
             onClick={handleSave}
-            disabled={loading || !formData.title.trim()}
+            disabled={loading || !formData.title.trim() || !coverImage}
             className="btn-primary flex items-center space-x-2 disabled:opacity-50"
           >
             {loading ? (
