@@ -100,8 +100,27 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
 
   const handleSave = async () => {
     setLoading(true)
+    // Sanitize payload to avoid 422 for date fields
+    const sanitizeDate = (val) => (val && typeof val === 'string' ? val : null)
+    const payload = {
+      ...formData,
+      work: formData.work ? {
+        ...formData.work,
+        startDate: sanitizeDate(formData.work.startDate),
+        endDate: formData.work.isCurrent ? null : sanitizeDate(formData.work.endDate)
+      } : undefined,
+      education: formData.education ? {
+        ...formData.education,
+        startDate: sanitizeDate(formData.education.startDate),
+        endDate: formData.education.isCurrent ? null : sanitizeDate(formData.education.endDate)
+      } : undefined,
+      relationship: formData.relationship ? {
+        ...formData.relationship,
+        anniversary: sanitizeDate(formData.relationship.anniversary)
+      } : undefined
+    }
     try {
-      await onSave(formData)
+      await onSave(payload)
       onClose()
     } catch (error) {
       console.error('Erro ao salvar informações pessoais:', error)
@@ -123,10 +142,10 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+      <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-xl font-bold text-gray-900">Editar Informações Pessoais</h2>
           <button
             onClick={onClose}
@@ -137,7 +156,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         </div>
 
         {/* Tabs */}
-        <div className="flex overflow-x-auto border-b border-gray-200 px-6 scrollbar-hide">
+        <div className="flex overflow-x-auto border-b border-gray-200 px-6 scrollbar-hide flex-shrink-0">
           {tabs.map((tab) => {
             const Icon = tab.icon
             return (
@@ -158,7 +177,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Tab: Trabalho */}
           {activeTab === 'work' && (
             <div className="space-y-4">
@@ -541,7 +560,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <GraduationCap size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Educação</span>
+                    <span className="text-sm font-medium">Informações de Educa��ão</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showEducationInfo', !formData.privacy.showEducationInfo)}
@@ -595,7 +614,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
