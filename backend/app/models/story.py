@@ -13,6 +13,8 @@ class Story(Base):
     story_type = Column(String, nullable=False, default="text")  # text, image, video
     content = Column(Text, nullable=True)  # Text content for text stories
     media_url = Column(String, nullable=True)  # Media URL for image/video stories
+    media_blob = Column(LargeBinary, nullable=True)
+    media_mime = Column(String, nullable=True)
     background_gradient = Column(String, nullable=True)  # Background gradient ID
     text_elements = Column(JSON, nullable=True)  # Text elements positioned on the story
     
