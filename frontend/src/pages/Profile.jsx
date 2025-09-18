@@ -907,44 +907,11 @@ const Profile = () => {
     }
   }
 
-  // Calcular quantos stories foram adicionados hoje para cada destaque
+  // Avoid expensive per-highlight requests on load. Rely on server-provided storiesCount
+  // and only fetch stories when user interacts (clicks a highlight). This improves profile load time.
   useEffect(() => {
-    if (!highlights || highlights.length === 0) {
-      setHighlightNewCounts({})
-      return
-    }
-
-    let cancelled = false
-    const fetchCounts = async () => {
-      const startOfToday = new Date()
-      startOfToday.setHours(0, 0, 0, 0)
-
-      try {
-        const results = await Promise.all(
-          highlights.map(h =>
-            highlightsAPI.getStories(h.id)
-              .then(res => ({ id: h.id, stories: res.data?.stories || [] }))
-              .catch(() => ({ id: h.id, stories: [] }))
-          )
-        )
-        if (cancelled) return
-        const map = {}
-        results.forEach(({ id, stories }) => {
-          const count = stories.filter(s => {
-            const ts = s?.createdAt || (s?.story && s.story.createdAt)
-            if (!ts) return false
-            return new Date(ts) >= startOfToday
-          }).length
-          map[id] = count
-        })
-        setHighlightNewCounts(map)
-      } catch (e) {
-        if (!cancelled) setHighlightNewCounts({})
-      }
-    }
-
-    fetchCounts()
-    return () => { cancelled = true }
+    // Reset any transient counters; additions performed during the session will update highlightAddedTodayCounts
+    setHighlightNewCounts({})
   }, [highlights])
 
   const openCreateHighlight = () => {
