@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react'
 import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Heart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { personalInfoAPI } from '../services/api'
 
-const ProfileEditModal = ({ isOpen, onClose }) => {
+const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
   const { user, updateProfile } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -68,10 +69,41 @@ const ProfileEditModal = ({ isOpen, onClose }) => {
         return
       }
 
+      // Map overlapping fields to personal-info so the "Informações Pessoais" section reflects updates
+      const piPayload = {
+        location: {
+          currentCity: formData.location || null,
+          hometown: null,
+          country: null,
+        },
+        contact: {
+          websitePersonal: formData.website || null,
+          websiteProfessional: null,
+          phoneMobile: formData.phone || null,
+          phoneWork: null,
+        },
+        additional: {
+          languages: null,
+          interests: null,
+          aboutMe: formData.bio || null,
+        }
+      }
+      try {
+        await personalInfoAPI.update(piPayload)
+      } catch (e) {
+        // Non-blocking: if this fails, at least user profile is updated
+        console.warn('Falha ao sincronizar informações pessoais:', e?.response?.data || e.message)
+      }
+
+      // Notify parent to refresh personal info section if provided
+      if (onUpdated) {
+        try { await onUpdated() } catch {}
+      }
+
       setSuccess('Perfil atualizado com sucesso!')
       setTimeout(() => {
         onClose()
-      }, 1500)
+      }, 800)
 
     } catch (error) {
       console.error('Error saving profile:', error)
