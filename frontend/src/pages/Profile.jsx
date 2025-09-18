@@ -794,7 +794,12 @@ const Profile = () => {
       // Reload highlights list from backend to ensure UI shows correct cover images and counts
       try {
         const highlightsRes = await highlightsAPI.get()
-        setHighlights(highlightsRes.data.highlights || [])
+        const remoteHighlights = highlightsRes.data.highlights || []
+        const normalized = remoteHighlights.map(h => ({
+          ...h,
+          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl
+        }))
+        setHighlights(normalized)
       } catch (reloadErr) {
         console.error('Erro ao recarregar destaques:', reloadErr)
       }
