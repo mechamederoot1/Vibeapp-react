@@ -961,17 +961,17 @@ const Profile = () => {
           </button>
         </div>
         <div className="flex items-center space-x-3">
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <MoreHorizontal size={24} className="text-gray-600" />
+          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+            <MoreHorizontal size={24} className="text-gray-600 dark:text-gray-300" />
           </button>
           <button
             onClick={() => {
               console.log('🔧 Botão configurações clicado')
               navigate('/settings')
             }}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
           >
-            <Settings size={24} className="text-gray-600" />
+            <Settings size={24} className="text-vibe-blue dark:text-white" />
           </button>
         </div>
       </div>
