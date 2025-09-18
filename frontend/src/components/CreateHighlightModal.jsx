@@ -367,7 +367,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
 
                         {/* Position selector */}
                         <div className="absolute left-1 bottom-1 bg-white bg-opacity-80 rounded px-1 text-xs">
-                          <select value={idx} onChange={(e) => movePhotoTo(idx, Number(e.target.value) - 1)} className="bg-transparent text-xs">
+                          <select value={idx + 1} onChange={(e) => movePhotoTo(idx, Number(e.target.value) - 1)} className="bg-transparent text-xs">
                             {photos.map((__, i) => (
                               <option key={i} value={i+1}>{i+1}</option>
                             ))}
