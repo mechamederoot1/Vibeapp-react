@@ -1646,6 +1646,18 @@ const Profile = () => {
         </div>
       </div>
 
+      {/* Story Viewer for Highlights */}
+      <StoryViewer
+        isOpen={showStoryViewer}
+        onClose={() => setShowStoryViewer(false)}
+        stories={highlightStories}
+        initialStoryIndex={initialHighlightStoryIndex}
+        currentUser={user}
+        highlights={highlights}
+        onAddToHighlight={handleAddToHighlight}
+        onCreateHighlight={handleCreateHighlight}
+      />
+
       {/* Tabs */}
       <div className="flex border-b border-gray-200">
         <button
