@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { X, Image, Video, Type, Send, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
+import { useNavigate } from 'react-router-dom'
 
 const PostModal = ({ isOpen, onClose, onPost }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [postType, setPostType] = useState('text')
   const [content, setContent] = useState('')
   const [imageFile, setImageFile] = useState(null)
