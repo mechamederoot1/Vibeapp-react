@@ -1925,6 +1925,14 @@ const Profile = () => {
         <ProfileEditModal
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
+          onUpdated={async () => {
+            try {
+              const res = await personalInfoAPI.get()
+              setPersonalInfo(res.data.personalInfo)
+            } catch (e) {
+              console.warn('Não foi possível recarregar informações pessoais após editar perfil:', e?.response?.data || e.message)
+            }
+          }}
         />
       )}
 
