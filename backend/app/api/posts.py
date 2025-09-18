@@ -80,11 +80,13 @@ async def create_post(
             detail="Invalid privacy setting. Must be 'public', 'friends', or 'private'"
         )
 
+    import base64, re
+
     new_post = Post(
         author_id=current_user.id,
         content=post_data.content,
-        image_url=post_data.imageUrl,
-        video_url=post_data.videoUrl,
+        image_url=None,
+        video_url=None,
         post_type=post_data.type,
         background_color=post_data.backgroundColor,
         profile_update_type=post_data.profileUpdateType,
@@ -112,6 +114,33 @@ async def create_post(
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Could not generate unique post id')
           continue
         raise
+
+    # If image/video provided as data URL, store as blob
+    dataurl_pattern = re.compile(r'data:(?P<mime>[-\w+/]+(?:;[-\w=]+)?)?(;base64)?,(?P<data>.*)')
+    try:
+      if post_data.imageUrl and post_data.imageUrl.startswith('data:'):
+        m = dataurl_pattern.match(post_data.imageUrl)
+        if m:
+          mime = m.group('mime') or 'application/octet-stream'
+          data = base64.b64decode(m.group('data'))
+          new_post.image_blob = data
+          new_post.image_mime = mime
+          new_post.image_url = f"/api/media/posts/{new_post.id}/image"
+
+      if post_data.videoUrl and post_data.videoUrl.startswith('data:'):
+        m = dataurl_pattern.match(post_data.videoUrl)
+        if m:
+          mime = m.group('mime') or 'application/octet-stream'
+          data = base64.b64decode(m.group('data'))
+          new_post.video_blob = data
+          new_post.video_mime = mime
+          new_post.video_url = f"/api/media/posts/{new_post.id}/video"
+
+      db.commit()
+      db.refresh(new_post)
+    except Exception as e:
+      db.rollback()
+      print('Error storing media blob:', e)
 
     return new_post.to_dict(current_user.id)
 
