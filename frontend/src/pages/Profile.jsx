@@ -615,7 +615,7 @@ const Profile = () => {
     }))
   }
 
-  // Funções de upload
+  // Fun��ões de upload
   const handleAvatarUpload = async (file) => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
@@ -912,6 +912,22 @@ const Profile = () => {
   }
 
   const handlePostClick = (post) => {
+    // Prefer SPA navigation to the dedicated post/media route so URL contains the publicId
+    if (!post) return
+    if (post.publicId) {
+      if (post.type === 'image') {
+        navigate(`/photo/id/${post.publicId}`)
+        return
+      }
+      if (post.type === 'video') {
+        navigate(`/video/id/${post.publicId}`)
+        return
+      }
+      navigate(`/post/id/${post.publicId}`)
+      return
+    }
+
+    // Fallback to in-page modal when no publicId is available
     setSelectedPost(post)
     setShowPostModal(true)
   }
