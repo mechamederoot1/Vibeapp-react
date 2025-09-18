@@ -21,7 +21,7 @@ const Header = ({ onOpenPostModal }) => {
     try {
       const { getPublicProfileId } = require('../utils/profileId')
       const pubId = getPublicProfileId(user)
-      navigate(`/profile/${pubId}`)
+      navigate(`/profile/id/${pubId}`)
     } catch (e) {
       navigate('/profile')
     }
