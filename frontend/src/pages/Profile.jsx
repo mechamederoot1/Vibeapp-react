@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI } from '../services/api'
+import { getPublicProfileId } from '../utils/profileId'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
 import ProfileEditModal from '../components/ProfileEditModal'
@@ -102,6 +103,8 @@ const Profile = () => {
   const [highlights, setHighlights] = useState([])
   const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
   const [highlightsLoading, setHighlightsLoading] = useState(false)
+  const [highlightNewCounts, setHighlightNewCounts] = useState({})
+  const [highlightAddedTodayCounts, setHighlightAddedTodayCounts] = useState({})
 
   // Real data from backend
   const [userStats, setUserStats] = useState({
@@ -126,13 +129,20 @@ const Profile = () => {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user?.id) return
+      if (!user) return
+
+      // Garantir URL com id público
+      const myPublicId = getPublicProfileId(user)
+      if (!userId) {
+        navigate(`/profile/${myPublicId}`, { replace: true })
+        return
+      }
 
       // Determinar se é perfil próprio ou de outro usuário
-      const isOwnProfile = !userId || userId === user.id.toString()
-      setIsOwnProfile(isOwnProfile)
+      const own = userId === user.id?.toString() || userId === user.username || userId === myPublicId
+      setIsOwnProfile(!!own)
 
-      if (!isOwnProfile) {
+      if (!own) {
         // Carregar perfil de outro usuário
         setProfileLoading(true)
         try {
@@ -787,6 +797,11 @@ const Profile = () => {
       // Reload highlights to get updated counts
       const highlightsResponse = await highlightsAPI.get()
       setHighlights(highlightsResponse.data.highlights || [])
+      // Mark as added today for UI indicator
+      setHighlightAddedTodayCounts(prev => ({
+        ...prev,
+        [highlightId]: (prev[highlightId] || 0) + 1
+      }))
       setUploadSuccess('Story adicionado ao destaque!')
 
       setTimeout(() => {
@@ -797,6 +812,46 @@ const Profile = () => {
       setUploadError('Erro ao adicionar story ao destaque.')
     }
   }
+
+  // Calcular quantos stories foram adicionados hoje para cada destaque
+  useEffect(() => {
+    if (!highlights || highlights.length === 0) {
+      setHighlightNewCounts({})
+      return
+    }
+
+    let cancelled = false
+    const fetchCounts = async () => {
+      const startOfToday = new Date()
+      startOfToday.setHours(0, 0, 0, 0)
+
+      try {
+        const results = await Promise.all(
+          highlights.map(h =>
+            highlightsAPI.getStories(h.id)
+              .then(res => ({ id: h.id, stories: res.data?.stories || [] }))
+              .catch(() => ({ id: h.id, stories: [] }))
+          )
+        )
+        if (cancelled) return
+        const map = {}
+        results.forEach(({ id, stories }) => {
+          const count = stories.filter(s => {
+            const ts = s?.createdAt || (s?.story && s.story.createdAt)
+            if (!ts) return false
+            return new Date(ts) >= startOfToday
+          }).length
+          map[id] = count
+        })
+        setHighlightNewCounts(map)
+      } catch (e) {
+        if (!cancelled) setHighlightNewCounts({})
+      }
+    }
+
+    fetchCounts()
+    return () => { cancelled = true }
+  }, [highlights])
 
   const openCreateHighlight = () => {
     setShowCreateHighlightModal(true)
@@ -1284,7 +1339,7 @@ const Profile = () => {
 
 
         {/* Seção de Visitas Recentes - só aparece para o dono do perfil */}
-        {!viewAsVisitor && (
+        {false && (
           <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
             <button
@@ -1394,6 +1449,10 @@ const Profile = () => {
         </div>
         )}
 
+        <div className="border-t border-gray-200 my-6" />
+        <div className="mb-1 flex items-center px-1">
+          <h3 className="font-semibold text-gray-800">Destaques</h3>
+        </div>
         {/* Stories/Highlights */}
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
@@ -1415,23 +1474,35 @@ const Profile = () => {
             {highlights && highlights.length > 0 ? (
               highlights.map((highlight) => (
                 <div key={highlight.id} className="flex-shrink-0 w-20 text-center">
-                  <button className="w-16 h-16 rounded-full border-2 border-gray-300 p-0.5 mb-2 mx-auto hover:border-vibe-blue transition-colors cursor-pointer">
-                    {highlight.coverImageUrl ? (
-                      <img
-                        src={highlight.coverImageUrl}
-                        alt={highlight.title}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                        <span className="text-gray-500 text-xs font-bold">
-                          {highlight.title.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </button>
+                  <div className="relative w-16 h-16 mb-2 mx-auto">
+                    <button className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
+                      {highlight.coverImageUrl ? (
+                        <img
+                          src={highlight.coverImageUrl}
+                          alt={highlight.title}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-gray-500 text-xs font-bold">
+                            {highlight.title.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                    {/* Total de fotos no cantinho superior do círculo */}
+                    <span className="absolute -top-1 -right-1 bg-vibe-blue text-white text-[10px] leading-none rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center ring-2 ring-white shadow-md font-semibold">
+                      {highlight.storiesCount}
+                    </span>
+                  </div>
                   <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
-                  <span className="text-xs text-gray-400">{highlight.storiesCount} stories</span>
+                  {highlightAddedTodayCounts[highlight.id] > 0 ? (
+                    <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                  ) : (
+                    highlightNewCounts[highlight.id] > 0 ? (
+                      <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
+                    ) : null
+                  )}
                 </div>
               ))
             ) : !viewAsVisitor ? (
