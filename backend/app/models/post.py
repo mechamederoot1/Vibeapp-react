@@ -2,13 +2,15 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database.database import Base
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
 
 class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
+    public_id = Column(String, unique=True, index=True, nullable=True)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
+
     # Content
     content = Column(Text, nullable=True)  # Text content
     image_url = Column(String, nullable=True)  # Image URL
@@ -61,6 +63,7 @@ class Post(Base):
 
         return {
             "id": self.id,
+            "publicId": self.public_id,
             "authorId": self.author_id,
             "author": self.author.to_public_dict() if self.author else None,
             "content": self.content,
