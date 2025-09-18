@@ -1331,7 +1331,7 @@ const Profile = () => {
 
 
         {/* Seção de Visitas Recentes - só aparece para o dono do perfil */}
-        {!viewAsVisitor && (
+        {false && (
           <div className="mb-6">
           <div className="bg-gray-50 rounded-lg">
             <button
@@ -1441,6 +1441,10 @@ const Profile = () => {
         </div>
         )}
 
+        <div className="border-t border-gray-200 my-6" />
+        <div className="mb-1 flex items-center px-1">
+          <h3 className="font-semibold text-gray-800">Destaques</h3>
+        </div>
         {/* Stories/Highlights */}
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
