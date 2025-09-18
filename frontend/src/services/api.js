@@ -169,6 +169,7 @@ export const postsAPI = {
   getFeed: (page = 1, limit = 20) => api.get(`/posts/feed?page=${page}&limit=${limit}`),
   createPost: (postData) => api.post('/posts/', postData),
   getPost: (postId) => api.get(`/posts/${postId}`),
+  getByPublicId: (publicId) => api.get(`/posts/by-public-id/${publicId}`),
   likePost: (postId) => api.post(`/posts/${postId}/like`),
   sharePost: (postId) => api.post(`/posts/${postId}/share`),
   repostPost: (postId) => api.post(`/posts/${postId}/repost`),
