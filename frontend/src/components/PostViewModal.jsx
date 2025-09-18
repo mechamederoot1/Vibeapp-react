@@ -55,7 +55,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
 
   const handleLike = async () => {
     if (!currentPost) return
-    
+
     try {
       const response = await postsAPI.likePost(currentPost.id)
       const updatedPost = {
@@ -67,6 +67,27 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
       onPostUpdate?.(updatedPost)
     } catch (error) {
       console.error('Error liking post:', error)
+    }
+  }
+
+  const handleReaction = async (reactionType) => {
+    if (!currentPost?.id) return
+    try {
+      if (reactionType) {
+        await reactionsAPI.addPostReaction(currentPost.id, reactionType)
+      } else {
+        await reactionsAPI.removePostReaction(currentPost.id)
+      }
+      // Reload post to reflect counts and user reaction
+      try {
+        const res = await postsAPI.getPost(currentPost.id)
+        setCurrentPost(res.data)
+        onPostUpdate?.(res.data)
+      } catch (e) {
+        // ignore
+      }
+    } catch (error) {
+      console.error('Error handling reaction:', error)
     }
   }
 
