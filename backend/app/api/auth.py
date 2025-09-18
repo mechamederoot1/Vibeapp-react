@@ -121,26 +121,36 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         new_user.username = username
         print(f"📝 Usuário criado com username: {username}")
 
-        # Generate unique public profile id (12-digit numeric, database-unique)
+        # Generate unique public profile id (10-digit numeric) with commit-retry to avoid scans
         import secrets
         import string
-        def generate_numeric_id(n=12):
+        from sqlalchemy.exc import IntegrityError
+
+        def generate_numeric_id(n=10):
             alphabet = string.digits
             return ''.join(secrets.choice(alphabet) for _ in range(n))
-        public_id = generate_numeric_id()
-        attempts = 0
-        while db.query(User).filter(User.public_profile_id == public_id).first():
-            public_id = generate_numeric_id()
-            attempts += 1
-            if attempts > 5:
-                # on rare collisions, increase length
-                public_id = generate_numeric_id(16)
-        new_user.public_profile_id = public_id
 
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        print(f"✅ Usuário salvo no banco com ID: {new_user.id} e publicProfileId: {new_user.public_profile_id}")
+        max_attempts = 10
+        for attempt in range(max_attempts):
+            new_user.public_profile_id = generate_numeric_id(10)
+            try:
+                db.add(new_user)
+                db.commit()
+                db.refresh(new_user)
+                print(f"✅ Usuário salvo no banco com ID: {new_user.id} e publicProfileId: {new_user.public_profile_id}")
+                break
+            except IntegrityError as e:
+                db.rollback()
+                # Retry only for public_profile_id collisions
+                if 'public_profile_id' in str(e).lower():
+                    if attempt == max_attempts - 1:
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Could not generate unique public profile id"
+                        )
+                    continue
+                # Other integrity errors should bubble up
+                raise
 
         # Create access token
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
