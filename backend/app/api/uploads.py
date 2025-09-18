@@ -100,56 +100,32 @@ async def upload_cover_photo(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload da foto de capa"""
-    
-    # Validar arquivo
-    if not validate_image_file(file):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Arquivo inválido. Use JPEG, PNG ou WebP com máximo 5MB."
-        )
-    
-    try:
-        # Gerar nome único para o arquivo
-        filename = generate_filename(file.filename, "cover_")
-        filepath = os.path.join(UPLOAD_DIRECTORY, "covers", filename)
-        
-        # Salvar e redimensionar imagem (800x300 para capa)
-        await save_and_resize_image(file, filepath, (800, 300))
-        
-        # Remover capa anterior se existir
-        if current_user.cover_photo:
-            if current_user.cover_photo.startswith("http"):
-                # URL completa, extrair apenas o path
-                from urllib.parse import urlparse
-                parsed = urlparse(current_user.cover_photo)
-                old_filepath = parsed.path[1:]  # Remove a barra inicial
-            elif current_user.cover_photo.startswith("/uploads/"):
-                old_filepath = current_user.cover_photo[1:]  # Remove a barra inicial
-            else:
-                old_filepath = current_user.cover_photo
+    """Upload da foto de capa - store in DB and return data URL"""
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
+    if file.size and file.size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
-            if os.path.exists(old_filepath):
-                os.remove(old_filepath)
-        
-        # Atualizar URL da capa no banco (usando caminho relativo)
-        cover_url = f"/uploads/covers/{filename}"
-        current_user.cover_photo = cover_url
+    try:
+        content_bytes, mime = await save_and_resize_image_to_bytes(file, (800, 300))
+
+        current_user.cover_blob = content_bytes
+        current_user.cover_mime = mime
+        current_user.cover_photo = f"/api/media/users/{current_user.id}/cover"
         db.commit()
         db.refresh(current_user)
-        
+
+        data_url = f"data:{mime};base64,{base64.b64encode(content_bytes).decode('utf-8')}"
+
         return {
             "message": "Foto de capa atualizada com sucesso!",
-            "cover_url": cover_url,
+            "cover_url": current_user.cover_photo,
+            "data_url": data_url,
             "user": current_user.to_dict()
         }
-    
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erro ao fazer upload da foto de capa: {str(e)}"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da foto de capa: {str(e)}")
 
 @router.delete("/avatar")
 async def remove_avatar(
