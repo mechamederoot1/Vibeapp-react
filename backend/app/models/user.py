@@ -3,7 +3,9 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 import bcrypt
 from ..database.database import Base
-from sqlalchemy import Column, Integer, String, Text, Date, Boolean, DateTime, Index
+from sqlalchemy import Column, Integer, String, Text, Date, Boolean, DateTime, Index, LargeBinary
+
+# avatar/cover stored as blobs
 
 class User(Base):
     __tablename__ = "users"
