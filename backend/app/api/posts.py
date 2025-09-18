@@ -115,6 +115,22 @@ async def create_post(
 
     return new_post.to_dict(current_user.id)
 
+@router.get("/by-public-id/{public_id}")
+async def get_post_by_public_id(
+    public_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    post = db.query(Post).filter(
+        Post.public_id == public_id,
+        Post.is_active == True
+    ).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+    if not can_view_post(db, current_user.id, post.author_id, post.privacy):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You don't have permission to view this post")
+    return post.to_dict(current_user.id)
+
 @router.get("/{post_id}")
 async def get_post(
     post_id: int,
@@ -122,12 +138,12 @@ async def get_post(
     db: Session = Depends(get_db)
 ):
     """Get a specific post"""
-    
+
     post = db.query(Post).filter(
         Post.id == post_id,
         Post.is_active == True
     ).first()
-    
+
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
