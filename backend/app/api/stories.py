@@ -98,12 +98,13 @@ async def create_story(
             detail="Story must have content, media, or text elements"
         )
     
+    import base64, re
     try:
         new_story = Story(
             author_id=current_user.id,
             story_type=story_data.type,
             content=story_data.content,
-            media_url=story_data.mediaUrl,
+            media_url=None,
             background_gradient=story_data.backgroundGradient,
             text_elements=story_data.textElements,
             privacy=story_data.privacy,
@@ -113,6 +114,19 @@ async def create_story(
         db.add(new_story)
         db.commit()
         db.refresh(new_story)
+
+        # If mediaUrl is a data URL, store as blob
+        dataurl_pattern = re.compile(r'data:(?P<mime>[-\w+/]+(?:;[-\w=]+)?)?(;base64)?,(?P<data>.*)')
+        if story_data.mediaUrl and story_data.mediaUrl.startswith('data:'):
+            m = dataurl_pattern.match(story_data.mediaUrl)
+            if m:
+                mime = m.group('mime') or 'application/octet-stream'
+                data = base64.b64decode(m.group('data'))
+                new_story.media_blob = data
+                new_story.media_mime = mime
+                new_story.media_url = f"/api/media/stories/{new_story.id}"
+                db.commit()
+                db.refresh(new_story)
 
         return new_story.to_dict(current_user.id)
     except Exception as e:
