@@ -150,11 +150,13 @@ async def remove_avatar(
             if os.path.exists(filepath):
                 os.remove(filepath)
         
-        # Remover URL do banco
+        # Remover URL/blob do banco
         current_user.avatar = None
+        current_user.avatar_blob = None
+        current_user.avatar_mime = None
         db.commit()
         db.refresh(current_user)
-        
+
         return {
             "message": "Avatar removido com sucesso!",
             "user": current_user.to_dict()
