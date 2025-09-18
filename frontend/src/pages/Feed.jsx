@@ -200,19 +200,19 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
           )}
         </div>
       ) : post.type === 'image' && post.imageUrl ? (
-        <div className="w-full overflow-hidden">
-          <img 
-            src={post.imageUrl} 
+        <div className="w-full overflow-hidden" onClick={() => window.location.assign(`/photo/id/${post.publicId}`)}>
+          <img
+            src={post.imageUrl}
             alt="Post"
-            className="w-full h-96 object-cover"
+            className="w-full h-96 object-cover cursor-pointer"
           />
         </div>
       ) : post.type === 'video' && post.videoUrl ? (
-        <div className="w-full overflow-hidden">
-          <video 
-            src={post.videoUrl} 
+        <div className="w-full overflow-hidden" onClick={() => window.location.assign(`/video/id/${post.publicId}`)}>
+          <video
+            src={post.videoUrl}
             controls
-            className="w-full h-96 object-cover"
+            className="w-full h-96 object-cover cursor-pointer"
           />
         </div>
       ) : null}
