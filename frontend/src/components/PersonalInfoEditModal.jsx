@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { X, Save, Briefcase, GraduationCap, MapPin, Heart, Globe, Phone, Eye, EyeOff, User, Calendar } from 'lucide-react'
+import { X, Save, Briefcase, GraduationCap, MapPin, Heart, Globe, Phone, Eye, EyeOff, User, Calendar, Plus, Trash2 } from 'lucide-react'
+
+import { workExperienceAPI, personalInfoAPI } from '../services/api'
 
 const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
   const [formData, setFormData] = useState({
@@ -51,6 +53,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
 
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('work')
+  const [newWorkItems, setNewWorkItems] = useState([])
 
   // Opções de status de relacionamento
   const relationshipOptions = [
@@ -75,6 +78,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         additional: personalInfo.additional || formData.additional,
         privacy: personalInfo.privacy || formData.privacy
       })
+      setNewWorkItems([])
     }
   }, [isOpen, personalInfo])
 
@@ -120,7 +124,38 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
       } : undefined
     }
     try {
+      // 1) Salvar informações básicas
       await onSave(payload)
+
+      // 2) Criar novas experiências de trabalho adicionadas no "+"
+      const itemsToCreate = newWorkItems
+        .map(i => ({ company: (i.company || '').trim(), position: (i.position || '').trim() }))
+        .filter(i => i.company && i.position)
+      for (const item of itemsToCreate) {
+        try {
+          await workExperienceAPI.create({
+            company: item.company,
+            position: item.position,
+            description: null,
+            start_date: null,
+            end_date: null,
+            is_current: false,
+            order_index: 0
+          })
+        } catch (e) {
+          console.warn('Falha ao criar experiência de trabalho:', e?.response?.data || e.message)
+        }
+      }
+
+      // 3) Atualizar dados no modal para refletir criações
+      try {
+        const refreshed = await personalInfoAPI.get()
+        setFormData(prev => ({
+          ...prev,
+          work: refreshed.data?.personalInfo?.work || prev.work
+        }))
+      } catch {}
+
       onClose()
     } catch (error) {
       console.error('Erro ao salvar informações pessoais:', error)
@@ -181,6 +216,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
           {/* Tab: Trabalho */}
           {activeTab === 'work' && (
             <div className="space-y-4">
+              {/* Posição/Empresa atual */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Cargo / Posição
@@ -204,6 +240,61 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                   placeholder="Ex: TechCorp"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
                 />
+              </div>
+
+              {/* Adicionar múltiplos cargos */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-gray-800">Experiências adicionais</h4>
+                  <button
+                    onClick={() => setNewWorkItems(prev => [...prev, { position: '', company: '' }])}
+                    className="btn-secondary flex items-center space-x-2 px-3 py-1.5"
+                    type="button"
+                  >
+                    <Plus size={16} />
+                    <span>Adicionar cargo</span>
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {newWorkItems.map((item, idx) => (
+                    <div key={idx} className="grid grid-cols-1 md:grid-cols-7 gap-2">
+                      <div className="md:col-span-3">
+                        <input
+                          type="text"
+                          value={item.position}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setNewWorkItems(list => list.map((w,i) => i===idx ? {...w, position: val} : w))
+                          }}
+                          placeholder="Cargo / Posição"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+                        />
+                      </div>
+                      <div className="md:col-span-3">
+                        <input
+                          type="text"
+                          value={item.company}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            setNewWorkItems(list => list.map((w,i) => i===idx ? {...w, company: val} : w))
+                          }}
+                          placeholder="Empresa / Organização"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+                        />
+                      </div>
+                      <div className="md:col-span-1 flex items-center justify-end">
+                        <button
+                          onClick={() => setNewWorkItems(list => list.filter((_,i) => i!==idx))}
+                          className="p-2 hover:bg-gray-100 rounded-lg"
+                          type="button"
+                          title="Remover"
+                        >
+                          <Trash2 size={16} className="text-gray-500" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
