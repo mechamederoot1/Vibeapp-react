@@ -9,6 +9,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [loading, setLoading] = useState(false)
   const [caption, setCaption] = useState('')
+  const [originalDataUrl, setOriginalDataUrl] = useState(null)
   
   const canvasRef = useRef(null)
   const imageRef = useRef(null)
@@ -25,6 +26,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
         centerImage(img)
       }
       img.src = currentImage
+      setOriginalDataUrl(currentImage)
     }
   }, [isOpen, currentImage])
 
@@ -34,16 +36,8 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     if (!canvas) return
 
     const canvasSize = 300
-    const aspectRatio = img.width / img.height
-    
-    // Calcular escala inicial para fit dentro do círculo
-    let initialScale
-    if (aspectRatio > 1) {
-      initialScale = canvasSize / img.width
-    } else {
-      initialScale = canvasSize / img.height
-    }
-    
+    // Fit entire image inside the circle initially (no auto zoom)
+    const initialScale = canvasSize / Math.max(img.width, img.height)
     setScale(initialScale)
     setPosition({ x: 0, y: 0 })
   }
@@ -65,12 +59,14 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
 
     const reader = new FileReader()
     reader.onload = (event) => {
+      const dataUrl = event.target.result
+      setOriginalDataUrl(dataUrl)
       const img = new Image()
       img.onload = () => {
         setImage(img)
         centerImage(img)
       }
-      img.src = event.target.result
+      img.src = dataUrl
     }
     reader.readAsDataURL(file)
   }
@@ -213,7 +209,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
       const canvas = canvasRef.current
       canvas.toBlob(async (blob) => {
         const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
-        await onSave(file, caption)
+        await onSave(file, caption, originalDataUrl)
         onClose()
       }, 'image/jpeg', 0.9)
     } catch (error) {
@@ -310,7 +306,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   </button>
                   <input
                     type="range"
-                    min="0.5"
+                    min={Math.min(scale, 1e9) && image ? (300 / Math.max(image.width, image.height)) : 0.5}
                     max="3"
                     step="0.1"
                     value={scale}
