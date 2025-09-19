@@ -45,7 +45,7 @@ const PostDetail = ({ mediaType }) => {
   if (loading) return <div className="p-4">Carregando...</div>
   if (error || !post) return <div className="p-4">{error || 'Erro'}</div>
 
-  const isImage = post.type === 'image' || mediaType === 'image'
+  const isImage = post.type === 'image' || post.type === 'profile_update' || mediaType === 'image'
   const isVideo = post.type === 'video' || mediaType === 'video'
 
   const handleReaction = async (reactionType) => {
