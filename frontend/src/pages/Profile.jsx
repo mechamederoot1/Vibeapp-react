@@ -116,6 +116,10 @@ const Profile = () => {
   const [highlightStories, setHighlightStories] = useState([])
   const [initialHighlightStoryIndex, setInitialHighlightStoryIndex] = useState(0)
 
+  // Story viewer for profile avatar
+  const [showUserStoryViewer, setShowUserStoryViewer] = useState(false)
+  const [initialUserStoryIndex, setInitialUserStoryIndex] = useState(0)
+
   // Real data from backend
   const [userStats, setUserStats] = useState({
     friendsCount: 0,
@@ -934,9 +938,13 @@ const Profile = () => {
 
   // Funções para controlar os novos modais
   const handleAvatarClick = () => {
-    console.log('🖼️ Botão do avatar clicado - abrindo galeria')
-    // Abrir editor de avatar diretamente quando clicar no avatar
-    setShowAvatarEditor(true)
+    // Se tiver stories, abrir o StoryViewer; caso contrário, abrir editor
+    if (userStories && userStories.length > 0) {
+      setInitialUserStoryIndex(0)
+      setShowUserStoryViewer(true)
+    } else {
+      setShowAvatarEditor(true)
+    }
   }
 
   const handleCameraButtonClick = (e) => {
@@ -1578,7 +1586,7 @@ const Profile = () => {
                     }} className="w-full h-full rounded-full border-2 border-gray-300 p-0.5 hover:border-vibe-blue transition-colors cursor-pointer overflow-hidden">
                       {highlight.coverImageUrl ? (
                         <img
-                          src={highlight.coverImageUrl}
+                          src={`${highlight.coverImageUrl}${highlight.coverImageUrl.includes('?') ? '&' : '?'}v=${Date.now()}`}
                           alt={highlight.title}
                           className="w-full h-full rounded-full object-cover"
                         />
@@ -1636,6 +1644,18 @@ const Profile = () => {
         onClose={() => setShowStoryViewer(false)}
         stories={highlightStories}
         initialStoryIndex={initialHighlightStoryIndex}
+        currentUser={user}
+        highlights={highlights}
+        onAddToHighlight={handleAddToHighlight}
+        onCreateHighlight={handleCreateHighlight}
+      />
+
+      {/* Story Viewer for User Avatar */}
+      <StoryViewer
+        isOpen={showUserStoryViewer}
+        onClose={() => setShowUserStoryViewer(false)}
+        stories={userStories}
+        initialStoryIndex={initialUserStoryIndex}
         currentUser={user}
         highlights={highlights}
         onAddToHighlight={handleAddToHighlight}
