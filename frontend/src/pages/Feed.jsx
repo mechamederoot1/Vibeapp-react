@@ -11,7 +11,7 @@ import ReactionPicker from '../components/ReactionPicker'
 import ReactionSummary from '../components/ReactionSummary'
 import ShareModal from '../components/ShareModal'
 
-const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
+const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }) => {
   const { user } = useAuth()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
@@ -94,17 +94,19 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
       <div className="flex items-center justify-between p-3">
         <div className="flex items-center space-x-3 min-w-0 flex-1">
           {post.author?.avatar ? (
-            <img 
-              src={post.author.avatar} 
-              alt={post.author.fullName}
-              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-            />
+            <button onClick={() => onAvatarClick?.(post.author)} className="flex-shrink-0">
+              <img
+                src={post.author.avatar}
+                alt={post.author.fullName}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            </button>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center flex-shrink-0">
+            <button onClick={() => onAvatarClick?.(post.author)} className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center flex-shrink-0">
               <span className="text-white text-sm font-bold">
                 {post.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
               </span>
-            </div>
+            </button>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-2">
@@ -503,7 +505,29 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const loadStories = async () => {
     try {
       const response = await storiesAPI.getStories()
-      setStories(response.data.storiesByAuthor || [])
+      let groups = response.data.storiesByAuthor || []
+
+      // Excluir stories que foram adicionados a Destaques do usuário atual
+      try {
+        if (user) {
+          const hlRes = await highlightsAPI.get()
+          const userHighlights = hlRes.data?.highlights || []
+          setHighlights(userHighlights)
+          if (userHighlights.length > 0) {
+            const idsArrays = await Promise.all(
+              userHighlights.map(h => highlightsAPI.getStories(h.id).then(r => (r.data?.stories || []).map(s => s.id)).catch(() => []))
+            )
+            const exclude = new Set(idsArrays.flat())
+            groups = groups
+              .map(g => g.author?.id === user.id ? { ...g, stories: (g.stories || []).filter(s => !exclude.has(s.id)) } : g)
+              .filter(g => (g.stories || []).length > 0)
+          }
+        }
+      } catch (e) {
+        console.warn('Não foi possível filtrar stories por destaques:', e)
+      }
+
+      setStories(groups)
     } catch (error) {
       console.error('Error loading stories:', error)
       setStories([])
@@ -717,6 +741,24 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 onShare={handleSharePost}
                 onStoryShare={handleStoryShare}
                 onReaction={handleReaction}
+                onAvatarClick={async (author) => {
+                  try {
+                    const group = stories.find(g => g.author?.id === author?.id)
+                    if (group && (group.stories || []).length > 0) {
+                      handleOpenStories(group, 0)
+                    } else if (author?.id) {
+                      const res = await storiesAPI.getUserStories(author.id)
+                      const userGroup = { author: res.data?.author, stories: res.data?.stories || [] }
+                      if ((userGroup.stories || []).length > 0) {
+                        setCurrentUserStories(userGroup.stories)
+                        setInitialStoryIndex(0)
+                        setShowStoryViewer(true)
+                      }
+                    }
+                  } catch (e) {
+                    console.error('Erro ao abrir stories do usuário:', e)
+                  }
+                }}
               />
             ))
           )}
