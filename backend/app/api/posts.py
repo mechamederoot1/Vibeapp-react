@@ -93,6 +93,12 @@ async def create_post(
         privacy=post_data.privacy
     )
 
+    # If plain URLs provided, keep them as external media
+    if post_data.imageUrl and not str(post_data.imageUrl).startswith('data:'):
+        new_post.image_url = post_data.imageUrl
+    if post_data.videoUrl and not str(post_data.videoUrl).startswith('data:'):
+        new_post.video_url = post_data.videoUrl
+
     # Assign unique 10-digit public id with commit-retry
     import secrets, string
     from sqlalchemy.exc import IntegrityError

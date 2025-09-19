@@ -798,11 +798,15 @@ const Profile = () => {
   const handlePersonalInfoSave = async (data) => {
     setPersonalInfoLoading(true)
     try {
-      const response = await personalInfoAPI.update(data)
-      setPersonalInfo(response.data.personalInfo)
+      await personalInfoAPI.update(data)
+      try {
+        const res = await personalInfoAPI.get()
+        setPersonalInfo(res.data.personalInfo)
+      } catch (e) {
+        console.warn('Não foi possível recarregar informações pessoais após salvar:', e?.response?.data || e.message)
+      }
       setUploadSuccess('Informações pessoais atualizadas com sucesso!')
 
-      // Limpar mensagem após um tempo
       setTimeout(() => {
         setUploadSuccess(null)
       }, 3000)
@@ -1226,8 +1230,8 @@ const Profile = () => {
 
       {/* Informações do Perfil */}
       <div className="px-4">
-        {/* Nome e verificação */}
-        <div className="text-center mb-4">
+        {/* Nome e username (sem cartões) */}
+        <div className="text-center mb-3">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
             {currentProfileData.isVerified && (
@@ -1239,50 +1243,52 @@ const Profile = () => {
           <p className="text-gray-600">@{currentProfileData.username}</p>
         </div>
 
-        {/* Stats */}
-        <div className="flex justify-center items-center space-x-6 mb-6">
-          <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
-            <p className="font-bold text-lg">{profileData.posts}</p>
-            <p className="text-gray-600 text-sm">Posts</p>
+        {/* Indicadores */}
+        <div className="mx-auto mb-4 max-w-xs">
+          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
+            <div className="px-2">
+              <p className="text-sm font-semibold text-gray-900">{profileData.posts}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
+            </div>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="px-2 hover:text-vibe-blue transition-colors"
+            >
+              <p className="text-sm font-semibold">{profileData.followers}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguidores</p>
+            </button>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="px-2 hover:text-vibe-blue transition-colors"
+            >
+              <p className="text-sm font-semibold">{profileData.following}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
+            </button>
           </div>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-          >
-            <p className="font-bold text-lg">{profileData.followers}</p>
-            <p className="text-gray-600 text-sm">Seguidores</p>
-          </button>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-          >
-            <p className="font-bold text-lg">{profileData.following}</p>
-            <p className="text-gray-600 text-sm">Seguindo</p>
-          </button>
         </div>
 
-        {/* Bio */}
-        <div className="text-center mb-6">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
-            {profileData.bio}
-          </p>
-        </div>
+        {/* Biografia */}
+        {profileData.bio?.trim() ? (
+          <div className="mx-auto max-w-md mb-6 bg-gray-50/90 border border-gray-200 rounded-xl px-4 py-3">
+            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+              {profileData.bio}
+            </p>
+          </div>
+        ) : null}
 
-        {/* Botões de Ação */}
+        {/* Ações */}
         <div className="flex space-x-2 mb-6">
           {viewAsVisitor ? (
-            /* Botões para visitante */
             <>
-              <button className="btn-primary flex-1">
+              <button className="btn-primary flex-1 flex items-center justify-center">
                 <UserPlus size={20} className="mr-2" />
                 Adicionar
               </button>
-              <button className="btn-secondary px-4">
-                <MessageCircle size={20} />
+              <button className="btn-secondary w-11 h-11 p-0 flex items-center justify-center">
+                <MessageCircle size={18} />
               </button>
             </>
           ) : (
-            /* Botões para dono do perfil - sem mensagem */
             <>
               <button
                 onClick={() => setShowEditModal(true)}
@@ -1292,7 +1298,7 @@ const Profile = () => {
               </button>
               <button
                 onClick={() => setShowConnections(true)}
-                className="btn-secondary px-4 flex items-center space-x-2"
+                className="btn-secondary w-auto px-4 flex items-center space-x-2"
               >
                 <Users size={20} />
                 <span className="hidden sm:inline">Conexões</span>
@@ -1767,6 +1773,18 @@ const Profile = () => {
                   alt={`Post ${post.id}`}
                   className="w-full h-full object-cover"
                 />
+              ) : (post.type === 'profile_update') ? (
+                (post.imageUrl || (post.profileUpdateType === 'avatar' ? (profileData?.avatar) : (profileData?.coverPhoto))) ? (
+                  <img
+                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData?.avatar : profileData?.coverPhoto)}
+                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">Atualiza��ão</span>
+                  </div>
+                )
               ) : post.type === 'video' && post.videoUrl ? (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                   <div className="text-white text-center">
@@ -1871,10 +1889,10 @@ const Profile = () => {
               )}
 
               {/* Posts com fotos de perfil/capa */}
-              {post.type === 'profile_update' && post.imageUrl && (
+              {post.type === 'profile_update' && (
                 <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <img
-                    src={post.imageUrl}
+                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData.avatar : profileData.coverPhoto)}
                     alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
                     className={`w-full object-cover hover:opacity-95 transition-opacity ${
                       post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
