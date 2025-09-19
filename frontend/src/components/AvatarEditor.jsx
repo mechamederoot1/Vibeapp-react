@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, Move, Check, Camera } from 'lucide-react'
+import { X, RotateCcw, Check, Camera } from 'lucide-react'
 
 const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
