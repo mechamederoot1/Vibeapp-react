@@ -153,7 +153,7 @@ const AddToHighlightModal = ({ isOpen, onClose, onAddToHighlight, onCreateHighli
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                     {highlight.coverImageUrl ? (
                       <img
-                        src={highlight.coverImageUrl}
+                        src={`${highlight.coverImageUrl}${highlight.coverImageUrl.includes('?') ? '&' : '?'}v=${Date.now()}`}
                         alt={highlight.title}
                         className="w-full h-full object-cover"
                       />
