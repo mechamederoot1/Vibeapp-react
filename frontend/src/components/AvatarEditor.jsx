@@ -136,6 +136,14 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     drawCanvas()
   }, [drawCanvas])
 
+  // Keep position within bounds whenever scale changes
+  useEffect(() => {
+    if (!image) return
+    const scaledWidth = image.width * scale
+    const scaledHeight = image.height * scale
+    setPosition((pos) => clampPosition(pos.x, pos.y, scaledWidth, scaledHeight))
+  }, [scale, image])
+
   const handleMouseDown = (e) => {
     setIsDragging(true)
     const rect = canvasRef.current.getBoundingClientRect()
@@ -146,13 +154,15 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   }
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return
-    
+    if (!isDragging || !image) return
     const rect = canvasRef.current.getBoundingClientRect()
     const newX = e.clientX - rect.left - dragStart.x
     const newY = e.clientY - rect.top - dragStart.y
-    
-    setPosition({ x: newX, y: newY })
+
+    const scaledWidth = image.width * scale
+    const scaledHeight = image.height * scale
+    const clamped = clampPosition(newX, newY, scaledWidth, scaledHeight)
+    setPosition(clamped)
   }
 
   const handleMouseUp = () => {
@@ -188,15 +198,21 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   }
 
   const handleTouchMove = (e) => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current || !image) return
     const rect = canvasRef.current.getBoundingClientRect()
     if (e.touches.length === 1 && isDragging) {
       const p = getTouchPoint(e.touches[0], rect)
-      setPosition({ x: p.x - dragStart.x, y: p.y - dragStart.y })
+      const newX = p.x - dragStart.x
+      const newY = p.y - dragStart.y
+      const scaledWidth = image.width * scale
+      const scaledHeight = image.height * scale
+      const clamped = clampPosition(newX, newY, scaledWidth, scaledHeight)
+      setPosition(clamped)
     } else if (e.touches.length === 2 && pinchRef.current.active) {
       const newDist = distanceBetween(e.touches[0], e.touches[1])
       const factor = newDist / (pinchRef.current.startDistance || 1)
-      const next = Math.min(3, Math.max(0.5, pinchRef.current.startScale * factor))
+      const minScale = getMinCoverScale(image)
+      const next = Math.min(3, Math.max(minScale, pinchRef.current.startScale * factor))
       setScale(next)
     }
   }
@@ -209,11 +225,15 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   }
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev * 1.1, 3))
+    if (!image) return
+    const minScale = getMinCoverScale(image)
+    setScale(prev => Math.min(Math.max(prev * 1.1, minScale), 3))
   }
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev / 1.1, 0.5))
+    if (!image) return
+    const minScale = getMinCoverScale(image)
+    setScale(prev => Math.max(prev / 1.1, minScale))
   }
 
   const handleReset = () => {
@@ -327,11 +347,16 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   </button>
                   <input
                     type="range"
-                    min={Math.min(scale, 1e9) && image ? (300 / Math.max(image.width, image.height)) : 0.5}
+                    min={image ? getMinCoverScale(image) : 0.5}
                     max="3"
                     step="0.1"
                     value={scale}
-                    onChange={(e) => setScale(parseFloat(e.target.value))}
+                    onChange={(e) => {
+                      if (!image) return
+                      const minScale = getMinCoverScale(image)
+                      const next = Math.max(parseFloat(e.target.value), minScale)
+                      setScale(next)
+                    }}
                     className="flex-1"
                   />
                   <button
