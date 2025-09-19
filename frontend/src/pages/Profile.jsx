@@ -840,6 +840,14 @@ const Profile = () => {
         console.error('Erro ao recarregar destaques:', reloadErr)
       }
 
+      // Marcar +1 hoje se criou com uma story de capa
+      if (highlightData.coverStoryId) {
+        setHighlightAddedTodayCounts(prev => ({
+          ...prev,
+          [createdHighlight.id]: (prev[createdHighlight.id] || 0) + 1
+        }))
+      }
+
       setUploadSuccess('Destaque criado com sucesso!')
       setTimeout(() => setUploadSuccess(null), 3000)
     } catch (error) {
