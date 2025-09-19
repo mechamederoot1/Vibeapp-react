@@ -492,7 +492,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     try {
       setLoading(true)
       const response = await postsAPI.getFeed(page)
-      setPosts(response.data.posts || [])
+      let fetched = response.data.posts || []
+
+      // Always include my own recent posts at the top
+      if (user?.id) {
+        try {
+          const mineRes = await postsAPI.getUserPosts(user.id, 1, 20)
+          const mine = mineRes.data?.posts || []
+          const seen = new Set()
+          const merged = [...mine, ...fetched].filter(p => {
+            const key = p?.id || p?.publicId || `${p?.authorId}:${p?.createdAt}`
+            if (!key || seen.has(key)) return false
+            seen.add(key)
+            return true
+          })
+          setPosts(merged)
+        } catch (e) {
+          // Fallback to fetched when my posts request fails
+          setPosts(fetched)
+        }
+      } else {
+        setPosts(fetched)
+      }
     } catch (error) {
       console.error('Error loading feed:', error)
       setError('Erro ao carregar feed')
