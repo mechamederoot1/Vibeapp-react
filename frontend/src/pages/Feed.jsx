@@ -481,8 +481,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [highlights, setHighlights] = useState([])
 
   const loadFeed = async () => {
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
+    // Modo offline/demo - só pular se VITE_DEMO=true
+    if (import.meta.env.VITE_DEMO === 'true') {
       console.log('🔧 Modo demo - usando feed vazio')
       setPosts([])
       setLoading(false)
