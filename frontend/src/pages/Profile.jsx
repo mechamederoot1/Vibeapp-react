@@ -1244,33 +1244,37 @@ const Profile = () => {
         </div>
 
         {/* Indicadores */}
-        <div className="flex justify-center items-center space-x-6 mb-4">
-          <div className="text-center p-2 min-w-[80px] flex flex-col items-center">
-            <p className="font-bold text-lg">{profileData.posts}</p>
-            <p className="text-gray-600 text-sm">Posts</p>
+        <div className="mx-auto mb-4 max-w-xs">
+          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
+            <div className="px-2">
+              <p className="text-sm font-semibold text-gray-900">{profileData.posts}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
+            </div>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="px-2 hover:text-vibe-blue transition-colors"
+            >
+              <p className="text-sm font-semibold">{profileData.followers}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguidores</p>
+            </button>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="px-2 hover:text-vibe-blue transition-colors"
+            >
+              <p className="text-sm font-semibold">{profileData.following}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
+            </button>
           </div>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center p-2 min-w-[80px] flex flex-col items-center hover:text-vibe-blue"
-          >
-            <p className="font-bold text-lg">{profileData.followers}</p>
-            <p className="text-gray-600 text-sm">Seguidores</p>
-          </button>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center p-2 min-w-[80px] flex flex-col items-center hover:text-vibe-blue"
-          >
-            <p className="font-bold text-lg">{profileData.following}</p>
-            <p className="text-gray-600 text-sm">Seguindo</p>
-          </button>
         </div>
 
         {/* Biografia */}
-        <div className="text-center mb-6">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
-            {profileData.bio}
-          </p>
-        </div>
+        {profileData.bio?.trim() ? (
+          <div className="mx-auto max-w-md mb-6 bg-gray-50/90 border border-gray-200 rounded-xl px-4 py-3">
+            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+              {profileData.bio}
+            </p>
+          </div>
+        ) : null}
 
         {/* Ações */}
         <div className="flex space-x-2 mb-6">
