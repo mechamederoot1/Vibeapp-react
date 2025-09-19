@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Upload } from 'lucide-react'
+import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Camera } from 'lucide-react'
 
 const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -242,7 +242,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center space-x-2 px-3 py-1.5 bg-vibe-blue text-white text-sm rounded-lg hover:bg-vibe-blue-dark"
             >
-              <Upload size={16} />
+              <Camera size={16} />
               <span>{image ? 'Trocar foto' : 'Selecionar foto'}</span>
             </button>
           </div>
@@ -259,7 +259,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             /* Área de seleção de foto */
             <div className="flex flex-col items-center justify-center space-y-6 py-12">
               <div className="text-center">
-                <Upload size={64} className="mx-auto mb-4 text-gray-400" />
+                <Camera size={64} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Selecione uma foto de capa</h3>
                 <p className="text-gray-500 text-sm mb-6">Escolha uma imagem que represente você</p>
 
@@ -308,7 +308,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                     className="bg-black bg-opacity-50 text-white p-1.5 rounded-full hover:bg-opacity-70 transition-all text-xs"
                     title="Trocar foto"
                   >
-                    <Upload size={14} />
+                    <Camera size={14} />
                   </button>
                 </div>
               </div>
