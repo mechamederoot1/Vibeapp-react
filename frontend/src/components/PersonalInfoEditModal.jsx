@@ -640,7 +640,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Briefcase size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Trabalho</span>
+                    <span className="text-sm font-medium">Informações de trabalho</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showWorkInfo', !formData.privacy.showWorkInfo)}
@@ -653,7 +653,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <GraduationCap size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Educa��ão</span>
+                    <span className="text-sm font-medium">Informações de educação</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showEducationInfo', !formData.privacy.showEducationInfo)}
@@ -666,7 +666,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <MapPin size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Localização</span>
+                    <span className="text-sm font-medium">Informações de localização</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showLocationInfo', !formData.privacy.showLocationInfo)}
@@ -679,7 +679,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Heart size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Relacionamento</span>
+                    <span className="text-sm font-medium">Informações de relacionamento</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showRelationshipInfo', !formData.privacy.showRelationshipInfo)}
@@ -692,7 +692,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Phone size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Contato</span>
+                    <span className="text-sm font-medium">Informações de contato</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showContactInfo', !formData.privacy.showContactInfo)}
