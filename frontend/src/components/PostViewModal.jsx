@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, reactionsAPI } from '../services/api'
 import ReactionPicker from './ReactionPicker'
 
-const PostViewModal = ({ isOpen, onClose, post, onPostUpdate }) => {
+const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth()
   const [currentPost, setCurrentPost] = useState(post)
   const [comments, setComments] = useState([])
