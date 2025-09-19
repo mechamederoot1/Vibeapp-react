@@ -698,7 +698,7 @@ const Profile = () => {
           content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto do perfil',
           type: 'profile_update',
           profileUpdateType: 'avatar',
-          imageUrl: updatedUser.avatar
+          imageUrl: response.data?.data_url || updatedUser.avatar
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
