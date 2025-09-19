@@ -2,12 +2,16 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Foreign
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from ..database.database import Base
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey, LargeBinary, Index
 
 # Added LargeBinary for storing media in DB
 
 class Post(Base):
     __tablename__ = "posts"
+    __table_args__ = (
+        Index('ix_posts_created_at', 'created_at'),
+        Index('ix_posts_author_id_created_at', 'author_id', 'created_at'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     public_id = Column(String, unique=True, index=True, nullable=True)
@@ -94,6 +98,9 @@ class Post(Base):
 
 class PostLike(Base):
     __tablename__ = "post_likes"
+    __table_args__ = (
+        Index('ix_post_likes_user_id_post_id', 'user_id', 'post_id'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -107,6 +114,9 @@ class PostLike(Base):
 
 class Comment(Base):
     __tablename__ = "comments"
+    __table_args__ = (
+        Index('ix_comments_post_id_created_at', 'post_id', 'created_at'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -157,6 +167,9 @@ class Comment(Base):
 
 class Share(Base):
     __tablename__ = "shares"
+    __table_args__ = (
+        Index('ix_shares_post_id_created_at', 'post_id', 'created_at'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
