@@ -1802,6 +1802,7 @@ const Profile = () => {
           </p>
         </div>
       ) : viewMode === 'grid' ? (
+        <>
         /* Grid de Posts */
         <div className="grid grid-cols-3 gap-1">
           {userPosts.map((post) => (
@@ -1896,6 +1897,13 @@ const Profile = () => {
             </div>
           ))}
         </div>
+        <div ref={profileEndRef} />
+        {userPostsLoadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="w-6 h-6 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        </>
       ) : (
         /* Lista de Posts */
         <div className="space-y-6">
