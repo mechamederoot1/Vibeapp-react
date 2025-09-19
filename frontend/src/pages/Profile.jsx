@@ -1052,6 +1052,47 @@ const Profile = () => {
     )
   }
 
+  const loadMoreUserPosts = async () => {
+    if (!targetUserIdState) return
+    if (userPostsLoadingMore || !userPostsHasMore) return
+    setUserPostsLoadingMore(true)
+    const nextPage = userPostsPage + 1
+    try {
+      const res = await postsAPI.getUserPosts(targetUserIdState, nextPage, getCurrentLimit())
+      const newPosts = res.data?.posts || []
+      setUserPosts(prev => {
+        const seen = new Set(prev.map(p => p.id || p.publicId))
+        const toAdd = newPosts.filter(p => {
+          const key = p?.id || p?.publicId
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        return [...prev, ...toAdd]
+      })
+      setUserPostsPage(nextPage)
+      setUserPostsHasMore(newPosts.length === getCurrentLimit())
+    } catch (e) {
+      console.error('Erro ao carregar mais posts do usuário:', e)
+    } finally {
+      setUserPostsLoadingMore(false)
+    }
+  }
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && userPostsHasMore && !userPostsLoadingMore && !loading) {
+          loadMoreUserPosts()
+        }
+      },
+      { root: null, rootMargin: '300px', threshold: 0 }
+    )
+    const el = profileEndRef.current
+    if (el) obs.observe(el)
+    return () => obs.disconnect()
+  }, [userPostsHasMore, userPostsLoadingMore, loading, viewMode, targetUserIdState])
+
   // Loading para perfil de outro usuário
   if (!isOwnProfile && profileLoading) {
     return (
