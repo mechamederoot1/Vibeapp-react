@@ -660,7 +660,7 @@ const Profile = () => {
   }
 
   // Fun��ões de upload
-  const handleAvatarUpload = async (file, captionText = '') => {
+  const handleAvatarUpload = async (file, captionText = '', originalImageUrl = null) => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
     setUploadSuccess(null)
