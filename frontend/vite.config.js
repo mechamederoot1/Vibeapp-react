@@ -44,12 +44,6 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '0.0.0.0',
       port: 4001,
-      allowedHosts: [
-        'localhost',
-        'meuvibe.com',
-        'www.meuvibe.com',
-        '.fly.dev'
-      ],
       proxy: {
         '/api': {
           target: apiBase,
