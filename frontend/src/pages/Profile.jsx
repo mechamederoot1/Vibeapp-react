@@ -1767,6 +1767,18 @@ const Profile = () => {
                   alt={`Post ${post.id}`}
                   className="w-full h-full object-cover"
                 />
+              ) : (post.type === 'profile_update') ? (
+                (post.imageUrl || (post.profileUpdateType === 'avatar' ? (profileData?.avatar) : (profileData?.coverPhoto))) ? (
+                  <img
+                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData?.avatar : profileData?.coverPhoto)}
+                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">Atualização</span>
+                  </div>
+                )
               ) : post.type === 'video' && post.videoUrl ? (
                 <div className="w-full h-full bg-black flex items-center justify-center">
                   <div className="text-white text-center">
