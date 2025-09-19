@@ -486,12 +486,14 @@ const Profile = () => {
       try {
         setLoading(true)
 
+        setTargetUserIdState(targetUserId)
+
         const requests = {
           stats: usersAPI.getUserStats(targetUserId).catch((error) => {
             console.error('Error loading user stats:', error)
             return null
           }),
-          posts: postsAPI.getUserPosts(targetUserId).catch((error) => {
+          posts: postsAPI.getUserPosts(targetUserId, 1, getCurrentLimit()).catch((error) => {
             console.error('Error loading user posts:', error)
             return null
           }),
