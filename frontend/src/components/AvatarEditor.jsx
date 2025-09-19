@@ -30,15 +30,36 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     }
   }, [isOpen, currentImage])
 
+  const getMinCoverScale = (img) => {
+    const canvasSize = 300
+    // To fully cover the circular crop, the smaller image side must fill the canvas
+    return canvasSize / Math.min(img.width, img.height)
+  }
+
+  const clampPosition = (x, y, scaledWidth, scaledHeight) => {
+    const canvasSize = 300
+    // If image is larger than canvas, confine so edges can't reveal background
+    const minX = Math.min(0, canvasSize - scaledWidth)
+    const maxX = Math.max(0, canvasSize - scaledWidth)
+    const minY = Math.min(0, canvasSize - scaledHeight)
+    const maxY = Math.max(0, canvasSize - scaledHeight)
+
+    // When scaled dimension is smaller than canvas (shouldn't happen due to min scale), center it
+    const centeredX = (canvasSize - scaledWidth) / 2
+    const centeredY = (canvasSize - scaledHeight) / 2
+
+    const clampedX = scaledWidth >= canvasSize ? Math.max(minX, Math.min(x, 0)) : centeredX
+    const clampedY = scaledHeight >= canvasSize ? Math.max(minY, Math.min(y, 0)) : centeredY
+    return { x: clampedX, y: clampedY }
+  }
+
   const centerImage = (img) => {
     if (!img) return
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const canvasSize = 300
-    // Fit entire image inside the circle initially (no auto zoom)
-    const initialScale = canvasSize / Math.max(img.width, img.height)
-    setScale(initialScale)
+    const minScale = getMinCoverScale(img)
+    setScale(minScale)
     setPosition({ x: 0, y: 0 })
   }
 
