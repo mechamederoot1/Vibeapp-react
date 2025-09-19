@@ -138,12 +138,6 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
                   alt="Foto de perfil atualizada"
                   className="w-full h-full object-cover"
                 />
-              ) : post.author?.avatar ? (
-                <img
-                  src={post.author.avatar}
-                  alt="Foto de perfil atualizada"
-                  className="w-full h-full object-cover"
-                />
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                   <span className="text-gray-500 text-sm">Sem foto</span>
