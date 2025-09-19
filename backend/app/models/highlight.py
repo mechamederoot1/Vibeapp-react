@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..database.database import Base
 
 class Highlight(Base):
@@ -30,6 +30,14 @@ class Highlight(Base):
 
     def to_dict(self, include_stories=False):
         """Convert highlight to dictionary for API responses"""
+        # Compute additions in the last 24 hours for "+X hoje" indicator
+        cutoff = datetime.utcnow() - timedelta(hours=24)
+        added_last_24h = 0
+        try:
+            added_last_24h = sum(1 for hs in (self.stories or []) if getattr(hs, 'added_at', None) and hs.added_at >= cutoff)
+        except Exception:
+            added_last_24h = 0
+
         result = {
             "id": self.id,
             "userId": self.user_id,
@@ -40,13 +48,14 @@ class Highlight(Base):
             "orderIndex": self.order_index,
             "isActive": self.is_active,
             "storiesCount": len(self.stories) if self.stories else 0,
+            "addedLast24h": added_last_24h,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat()
         }
-        
+
         if include_stories:
-            result["stories"] = [hs.story.to_dict() for hs in self.stories if hs.story and hs.story.is_active]
-        
+            result["stories"] = [hs.story.to_dict() for hs in (self.stories or []) if hs.story and hs.story.is_active]
+
         return result
 
 

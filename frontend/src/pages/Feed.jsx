@@ -339,44 +339,64 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction }) => {
   )
 }
 
-const Story = ({ user, hasStory = false, hasUnviewed = false, storiesCount = 0, onClick }) => (
-  <div
-    className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
-    onClick={onClick}
-  >
-    <div className={`w-16 h-16 rounded-full p-0.5 ${
-      hasUnviewed
-        ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
-        : hasStory
-        ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
-        : 'bg-gray-300'
-    }`}>
-      <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5">
-        {user?.avatar ? (
-          <img
-            src={user.avatar}
-            alt={user.fullName}
-            className="w-full h-full rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
-            <span className="text-white text-sm font-bold">
-              {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-            </span>
-          </div>
-        )}
+const Story = ({ storyGroup, hasUnviewed = false, onClick }) => {
+  const user = storyGroup?.author
+  const stories = storyGroup?.stories || []
+  // Choose a media thumbnail from published stories
+  const imageStory = stories.find(s => s.type === 'image' && s.mediaUrl)
+  const videoStory = stories.find(s => s.type === 'video' && s.mediaUrl)
+  const hasStory = stories.length > 0
+  const thumbnailUrl = imageStory?.mediaUrl || null
+
+  return (
+    <div
+      className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+      onClick={onClick}
+    >
+      <div className={`w-16 h-16 rounded-full p-0.5 ${
+        hasUnviewed
+          ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+          : hasStory
+          ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
+          : 'bg-gray-300'
+      }`}>
+        <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5 overflow-hidden">
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={user?.fullName || 'Story'}
+              className="w-full h-full rounded-full object-cover"
+            />
+          ) : videoStory ? (
+            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+              <span className="text-white text-sm">▶</span>
+            </div>
+          ) : hasStory ? (
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center px-1 text-center">
+              <span className="text-white text-[10px] font-semibold line-clamp-2">
+                {(stories[0]?.content || 'Story')}
+              </span>
+            </div>
+          ) : (
+            <div className="w-full h-full rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
+              <span className="text-white text-sm font-bold">
+                {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-    <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
-      {user?.firstName || 'Usuário'}
-    </span>
-    {storiesCount > 1 && (
-      <span className="text-xs text-gray-400">
-        {storiesCount} stories
+      <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+        {user?.firstName || 'Usuário'}
       </span>
-    )}
-  </div>
-)
+      {stories.length > 1 && (
+        <span className="text-xs text-gray-400">
+          {stories.length} stories
+        </span>
+      )}
+    </div>
+  )
+}
 
 const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
   const { user } = useAuth()
@@ -406,10 +426,8 @@ const Stories = ({ onOpenStoryCreator, stories = [], onStoryClick }) => {
           {stories.map((storyGroup, index) => (
             <Story
               key={index}
-              user={storyGroup.author}
-              hasStory={true}
+              storyGroup={storyGroup}
               hasUnviewed={storyGroup.hasUnviewed}
-              storiesCount={storyGroup.stories.length}
               onClick={() => onStoryClick(storyGroup, 0)}
             />
           ))}

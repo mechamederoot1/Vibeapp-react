@@ -100,6 +100,10 @@ const Profile = () => {
   const [personalInfo, setPersonalInfo] = useState(null)
   const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
 
+  // Versões para bust de cache de imagens
+  const [avatarVersion, setAvatarVersion] = useState(0)
+  const [coverVersion, setCoverVersion] = useState(0)
+
   // Estados para destaques
   const [highlights, setHighlights] = useState([])
   const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
@@ -135,30 +139,35 @@ const Profile = () => {
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
-      if (!user) return
+      if (!user) {
+        setLoading(false)
+        return
+      }
 
       // Garantir URL com id público
       const myPublicId = getPublicProfileId(user)
-      const identifier = publicId || userId
+      const identifier = publicId || userId || myPublicId
       if (!identifier) {
         navigate(`/profile/id/${myPublicId}`, { replace: true })
         return
       }
 
-      // Determinar se é perfil próprio ou de outro usuário
+      // Determinar se é perfil próprio ou de outro usuário e resolver targetId
       const own = identifier === user.id?.toString() || identifier === user.username || identifier === myPublicId
       setIsOwnProfile(!!own)
 
+      let targetUserId = user.id
       if (!own) {
-        // Carregar perfil de outro usuário
         setProfileLoading(true)
         try {
           const response = await usersAPI.getUserById(identifier)
           setProfileUser(response.data)
+          targetUserId = response.data?.id
+          if (!targetUserId) throw new Error('ID do usuário alvo não encontrado')
         } catch (error) {
           console.error('Erro ao carregar perfil do usuário:', error)
-          // Redirecionar para 404 ou mostrar erro
           navigate('/feed')
+          setLoading(false)
           return
         } finally {
           setProfileLoading(false)
@@ -465,13 +474,44 @@ const Profile = () => {
       try {
         setLoading(true)
 
-        // Load user stats
-        try {
-          const statsResponse = await usersAPI.getUserStats(user.id)
-          setUserStats(statsResponse.data)
-        } catch (error) {
-          console.error('Error loading user stats:', error)
-          // Use default stats
+        const requests = {
+          stats: usersAPI.getUserStats(targetUserId).catch((error) => {
+            console.error('Error loading user stats:', error)
+            return null
+          }),
+          posts: postsAPI.getUserPosts(targetUserId).catch((error) => {
+            console.error('Error loading user posts:', error)
+            return null
+          }),
+          stories: storiesAPI.getUserStories(targetUserId).catch((error) => {
+            console.error('Error loading user stories:', error)
+            return null
+          }),
+          personalInfo: personalInfoAPI.get(targetUserId).catch((error) => {
+            console.error('Error loading personal info:', error)
+            return null
+          }),
+          highlights: highlightsAPI.get(targetUserId).catch((error) => {
+            console.error('Error loading highlights:', error)
+            return null
+          })
+        }
+
+        if (own && privacySettings.showVisitors) {
+          requests.visitors = usersAPI.getProfileVisitors(targetUserId).catch((error) => {
+            console.log('Could not load visitors:', error?.response?.data?.detail || error.message)
+            return null
+          })
+        }
+
+        const results = await Promise.all(Object.values(requests))
+        const keys = Object.keys(requests)
+        const mapped = Object.fromEntries(results.map((res, idx) => [keys[idx], res]))
+
+        // Stats
+        if (mapped.stats?.data) {
+          setUserStats(mapped.stats.data)
+        } else {
           setUserStats({
             followersCount: 0,
             followingCount: 0,
@@ -481,55 +521,49 @@ const Profile = () => {
           })
         }
 
-        // Load user posts
-        try {
-          const postsResponse = await postsAPI.getUserPosts(user.id)
-          setUserPosts(postsResponse.data.posts || [])
-        } catch (error) {
-          console.error('Error loading user posts:', error)
+        // Posts
+        if (mapped.posts?.data) {
+          setUserPosts(mapped.posts.data.posts || [])
+        } else {
           setUserPosts([])
         }
-// Load user stories
-        try {
-          const storiesResponse = await storiesAPI.getUserStories(user.id)
-          setUserStories(storiesResponse.data.stories || [])
-          // Set hasStory flag for avatar ring
-          setProfileData(prev => ({ 
-            ...prev, 
-            hasStory: (storiesResponse.data.total || 0) > 0 
+
+        // Stories
+        if (mapped.stories?.data) {
+          const storiesData = mapped.stories.data
+          setUserStories(storiesData.stories || [])
+          setProfileData(prev => ({
+            ...prev,
+            hasStory: (storiesData.total || (storiesData.stories?.length || 0)) > 0
           }))
-        } catch (error) {
-          console.error('Error loading user stories:', error)
+        } else {
           setUserStories([])
         }
 
-        // Load profile visitors (only if user wants to show them)
-        if (privacySettings.showVisitors) {
-          try {
-            const visitorsResponse = await usersAPI.getProfileVisitors(user.id)
-            setProfileVisitors(visitorsResponse.data || [])
-          } catch (error) {
-            // User might not have permission to see visitors
-            console.log('Could not load visitors:', error.response?.data?.detail)
-            setProfileVisitors([])
-          }
+        // Visitors (only when own profile and allowed)
+        if (mapped.visitors?.data) {
+          setProfileVisitors(mapped.visitors.data || [])
+        } else {
+          setProfileVisitors([])
         }
 
-        // Load personal info
-        try {
-          const personalInfoResponse = await personalInfoAPI.get()
-          setPersonalInfo(personalInfoResponse.data.personalInfo || null)
-        } catch (error) {
-          console.error('Error loading personal info:', error)
+        // Personal info
+        if (mapped.personalInfo?.data) {
+          setPersonalInfo(mapped.personalInfo.data.personalInfo || mapped.personalInfo.data || null)
+        } else {
           setPersonalInfo(null)
         }
 
-        // Load highlights
-        try {
-          const highlightsResponse = await highlightsAPI.get()
-          setHighlights(highlightsResponse.data.highlights || [])
-        } catch (error) {
-          console.error('Error loading highlights:', error)
+        // Highlights
+        if (mapped.highlights?.data) {
+          const remoteHighlights = mapped.highlights.data.highlights || mapped.highlights.data || []
+          const normalized = remoteHighlights.map(h => ({
+            ...h,
+            coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover,
+            addedLast24h: h.addedLast24h || h.addedTodayCount || 0
+          }))
+          setHighlights(normalized)
+        } else {
           setHighlights([])
         }
 
@@ -541,7 +575,7 @@ const Profile = () => {
     }
 
     loadUserData()
-  }, [user?.id, privacySettings.showVisitors])
+  }, [user?.id, userId, publicId, privacySettings.showVisitors])
 
   // Use real user data from auth context, fallback to defaults
   const [profileData, setProfileData] = useState({
@@ -639,6 +673,7 @@ const Profile = () => {
         ...prev,
         avatar: updatedUser.avatar
       }))
+      setAvatarVersion(v => v + 1)
 
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de perfil atualizada com sucesso!')
@@ -689,6 +724,7 @@ const Profile = () => {
         ...prev,
         coverPhoto: updatedUser.coverPhoto
       }))
+      setCoverVersion(v => v + 1)
 
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de capa atualizada com sucesso!')
@@ -782,17 +818,64 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      // Do NOT auto-create stories. Highlights should be independent.
-      const payload = {
+      // 1) Criar o destaque básico
+      const basePayload = {
         title: highlightData.title,
         description: highlightData.description || null,
         coverStoryId: highlightData.coverStoryId || null
       }
+      const createRes = await highlightsAPI.create(basePayload)
+      const createdHighlight = createRes.data?.highlight || createRes.data
+      const highlightId = createdHighlight.id
 
-      const createHighlightRes = await highlightsAPI.create(payload)
-      const createdHighlight = createHighlightRes.data?.highlight || createHighlightRes.data || createHighlightRes
+      // 2) Se houver fotos/coleção ou capa por upload, criar stories e adicionar ao destaque
+      const createdStoryIds = []
 
-      // Refresh list
+      const createStoryFromFile = async (file) => {
+        // Upload -> retorna data URL
+        const up = await uploadsAPI.uploadStoryMedia(file)
+        const url = up.data?.url
+        const type = up.data?.type || 'image'
+        // Criar story
+        const st = await storiesAPI.createStory({ type, mediaUrl: url })
+        return st.data?.id || st.id
+      }
+
+      // Coleção de fotos
+      if (Array.isArray(highlightData.photos) && highlightData.photos.length > 0) {
+        for (const file of highlightData.photos) {
+          try {
+            const storyId = await createStoryFromFile(file)
+            createdStoryIds.push(storyId)
+            await highlightsAPI.addStory(highlightId, storyId)
+          } catch (e) {
+            console.error('Erro ao adicionar foto ao destaque:', e)
+          }
+        }
+      }
+
+      // Capa via upload (quando usuário escolhe apenas uma imagem de capa)
+      if (highlightData.coverImage && !highlightData.coverStoryId) {
+        try {
+          const storyId = await createStoryFromFile(highlightData.coverImage)
+          createdStoryIds.push(storyId)
+          await highlightsAPI.addStory(highlightId, storyId)
+          await highlightsAPI.update(highlightId, { coverStoryId: storyId })
+        } catch (e) {
+          console.error('Erro ao criar story de capa:', e)
+        }
+      }
+
+      // Se usuário escolheu uma story existente como capa
+      if (highlightData.coverStoryId) {
+        try {
+          await highlightsAPI.update(highlightId, { coverStoryId: Number(highlightData.coverStoryId) })
+        } catch (e) {
+          console.error('Erro ao definir story de capa:', e)
+        }
+      }
+
+      // 3) Recarregar lista a partir do servidor (traz storiesCount e addedLast24h corretos)
       try {
         const highlightsRes = await highlightsAPI.get()
         const remoteHighlights = highlightsRes.data.highlights || []
@@ -1009,7 +1092,7 @@ const Profile = () => {
           {currentProfileData.coverPhoto ? (
             <>
               <img
-                src={currentProfileData.coverPhoto}
+                src={`${currentProfileData.coverPhoto}${currentProfileData.coverPhoto.includes('?') ? '&' : '?'}v=${coverVersion}`}
                 alt="Capa do perfil"
                 className="w-full h-full object-cover"
               />
@@ -1085,7 +1168,7 @@ const Profile = () => {
           >
             {currentProfileData.avatar ? (
               <img
-                src={currentProfileData.avatar}
+                src={`${currentProfileData.avatar}${currentProfileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
@@ -1513,12 +1596,16 @@ const Profile = () => {
                     </span>
                   </div>
                   <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
-                  {highlightAddedTodayCounts[highlight.id] > 0 ? (
-                    <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                  {highlight.addedLast24h > 0 ? (
+                    <span className="text-xs text-green-600 font-medium">+{highlight.addedLast24h} hoje</span>
                   ) : (
-                    highlightNewCounts[highlight.id] > 0 ? (
-                      <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
-                    ) : null
+                    highlightAddedTodayCounts[highlight.id] > 0 ? (
+                      <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                    ) : (
+                      highlightNewCounts[highlight.id] > 0 ? (
+                        <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
+                      ) : null
+                    )
                   )}
                 </div>
               ))
@@ -1699,7 +1786,7 @@ const Profile = () => {
                 {profileData.avatar ? (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
                     <img
-                      src={profileData.avatar}
+                      src={`${profileData.avatar}${profileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                       alt="Avatar"
                       className="w-full h-full rounded-full object-cover"
                     />
