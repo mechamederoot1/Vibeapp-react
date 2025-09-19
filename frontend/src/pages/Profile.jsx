@@ -749,7 +749,7 @@ const Profile = () => {
           content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto de capa',
           type: 'profile_update',
           profileUpdateType: 'cover',
-          imageUrl: updatedUser.coverPhoto
+          imageUrl: response.data?.data_url || updatedUser.coverPhoto
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -1236,7 +1236,7 @@ const Profile = () => {
             <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
             {currentProfileData.isVerified && (
               <div className="w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✓</span>
+                <span className="text-white text-xs">���</span>
               </div>
             )}
           </div>
