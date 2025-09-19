@@ -1,20 +1,9 @@
 import axios from 'axios'
 
-// Detecta se está rodando no Builder.io
-const isBuilderEnvironment = () => {
-  const hostname = window.location.hostname
-  return hostname.includes('fly.dev') || hostname.includes('builder.io') || hostname.includes('netlify.app')
-}
-
 // Configuração base da API
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL
-  }
-
-  // Se está no Builder.io ou ambiente de produção, não tenta conectar backend local
-  if (isBuilderEnvironment()) {
-    return null // Indica que deve usar modo demo
   }
 
   const hostname = window.location.hostname
@@ -25,39 +14,34 @@ const getApiBaseUrl = () => {
     return 'http://localhost:3010/api'
   }
 
-  // Para domínios de produção (ex: meuvibe.com), usa nginx proxy
-  if (hostname === 'meuvibe.com' || hostname === 'www.meuvibe.com') {
-    return `${protocol}//${hostname}/api`
-  }
-
   // Para rede local (ex: 192.168.x.x), usa porta específica
   if (hostname.startsWith('192.168.') || hostname.startsWith('10.0.')) {
     return `http://${hostname}:3010/api`
   }
 
-  // Fallback: usa nginx proxy para outros domínios
+  // Fallback: usa mesmo domínio com proxy /api (inclui builder.io, fly.dev, netlify, produção etc.)
   return `${protocol}//${hostname}/api`
 }
 
 const API_BASE_URL = getApiBaseUrl()
 
-// Cria instância da API apenas se não estiver no modo demo
-const api = API_BASE_URL ? axios.create({
+// Cria instância da API
+const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
-}) : null
+})
 
 // Create special instance for uploads with longer timeout
-const uploadApi = API_BASE_URL ? axios.create({
+const uploadApi = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 2 minutes for uploads
   headers: {
     'Content-Type': 'application/json',
   },
-}) : null
+})
 
 // Function to add interceptors
 const addInterceptors = (apiInstance) => {
