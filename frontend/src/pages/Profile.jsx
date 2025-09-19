@@ -559,7 +559,8 @@ const Profile = () => {
           const remoteHighlights = mapped.highlights.data.highlights || mapped.highlights.data || []
           const normalized = remoteHighlights.map(h => ({
             ...h,
-            coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover
+            coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover,
+            addedLast24h: h.addedLast24h || h.addedTodayCount || 0
           }))
           setHighlights(normalized)
         } else {
@@ -1556,12 +1557,16 @@ const Profile = () => {
                     </span>
                   </div>
                   <span className="text-xs text-gray-600 truncate block">{highlight.title}</span>
-                  {highlightAddedTodayCounts[highlight.id] > 0 ? (
-                    <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                  {highlight.addedLast24h > 0 ? (
+                    <span className="text-xs text-green-600 font-medium">+{highlight.addedLast24h} hoje</span>
                   ) : (
-                    highlightNewCounts[highlight.id] > 0 ? (
-                      <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
-                    ) : null
+                    highlightAddedTodayCounts[highlight.id] > 0 ? (
+                      <span className="text-xs text-green-600 font-medium">+{highlightAddedTodayCounts[highlight.id]} hoje</span>
+                    ) : (
+                      highlightNewCounts[highlight.id] > 0 ? (
+                        <span className="text-xs text-green-600 font-medium">+{highlightNewCounts[highlight.id]} hoje</span>
+                      ) : null
+                    )
                   )}
                 </div>
               ))
