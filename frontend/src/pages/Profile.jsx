@@ -1883,10 +1883,10 @@ const Profile = () => {
               )}
 
               {/* Posts com fotos de perfil/capa */}
-              {post.type === 'profile_update' && post.imageUrl && (
+              {post.type === 'profile_update' && (
                 <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
                   <img
-                    src={post.imageUrl}
+                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData.avatar : profileData.coverPhoto)}
                     alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
                     className={`w-full object-cover hover:opacity-95 transition-opacity ${
                       post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
