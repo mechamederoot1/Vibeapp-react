@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Camera } from 'lucide-react'
+import { X, RotateCcw, Check, Camera } from 'lucide-react'
 
 const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -30,15 +30,36 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     }
   }, [isOpen, currentImage])
 
+  const getMinCoverScale = (img) => {
+    const canvasSize = 300
+    // To fully cover the circular crop, the smaller image side must fill the canvas
+    return canvasSize / Math.min(img.width, img.height)
+  }
+
+  const clampPosition = (x, y, scaledWidth, scaledHeight) => {
+    const canvasSize = 300
+    // If image is larger than canvas, confine so edges can't reveal background
+    const minX = Math.min(0, canvasSize - scaledWidth)
+    const maxX = Math.max(0, canvasSize - scaledWidth)
+    const minY = Math.min(0, canvasSize - scaledHeight)
+    const maxY = Math.max(0, canvasSize - scaledHeight)
+
+    // When scaled dimension is smaller than canvas (shouldn't happen due to min scale), center it
+    const centeredX = (canvasSize - scaledWidth) / 2
+    const centeredY = (canvasSize - scaledHeight) / 2
+
+    const clampedX = scaledWidth >= canvasSize ? Math.max(minX, Math.min(x, 0)) : centeredX
+    const clampedY = scaledHeight >= canvasSize ? Math.max(minY, Math.min(y, 0)) : centeredY
+    return { x: clampedX, y: clampedY }
+  }
+
   const centerImage = (img) => {
     if (!img) return
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const canvasSize = 300
-    // Fit entire image inside the circle initially (no auto zoom)
-    const initialScale = canvasSize / Math.max(img.width, img.height)
-    setScale(initialScale)
+    const minScale = getMinCoverScale(img)
+    setScale(minScale)
     setPosition({ x: 0, y: 0 })
   }
 
@@ -115,6 +136,14 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     drawCanvas()
   }, [drawCanvas])
 
+  // Keep position within bounds whenever scale changes
+  useEffect(() => {
+    if (!image) return
+    const scaledWidth = image.width * scale
+    const scaledHeight = image.height * scale
+    setPosition((pos) => clampPosition(pos.x, pos.y, scaledWidth, scaledHeight))
+  }, [scale, image])
+
   const handleMouseDown = (e) => {
     setIsDragging(true)
     const rect = canvasRef.current.getBoundingClientRect()
@@ -125,13 +154,15 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   }
 
   const handleMouseMove = (e) => {
-    if (!isDragging) return
-    
+    if (!isDragging || !image) return
     const rect = canvasRef.current.getBoundingClientRect()
     const newX = e.clientX - rect.left - dragStart.x
     const newY = e.clientY - rect.top - dragStart.y
-    
-    setPosition({ x: newX, y: newY })
+
+    const scaledWidth = image.width * scale
+    const scaledHeight = image.height * scale
+    const clamped = clampPosition(newX, newY, scaledWidth, scaledHeight)
+    setPosition(clamped)
   }
 
   const handleMouseUp = () => {
@@ -167,15 +198,21 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   }
 
   const handleTouchMove = (e) => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current || !image) return
     const rect = canvasRef.current.getBoundingClientRect()
     if (e.touches.length === 1 && isDragging) {
       const p = getTouchPoint(e.touches[0], rect)
-      setPosition({ x: p.x - dragStart.x, y: p.y - dragStart.y })
+      const newX = p.x - dragStart.x
+      const newY = p.y - dragStart.y
+      const scaledWidth = image.width * scale
+      const scaledHeight = image.height * scale
+      const clamped = clampPosition(newX, newY, scaledWidth, scaledHeight)
+      setPosition(clamped)
     } else if (e.touches.length === 2 && pinchRef.current.active) {
       const newDist = distanceBetween(e.touches[0], e.touches[1])
       const factor = newDist / (pinchRef.current.startDistance || 1)
-      const next = Math.min(3, Math.max(0.5, pinchRef.current.startScale * factor))
+      const minScale = getMinCoverScale(image)
+      const next = Math.min(3, Math.max(minScale, pinchRef.current.startScale * factor))
       setScale(next)
     }
   }
@@ -187,12 +224,14 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     setIsDragging(false)
   }
 
-  const handleZoomIn = () => {
-    setScale(prev => Math.min(prev * 1.1, 3))
-  }
-
-  const handleZoomOut = () => {
-    setScale(prev => Math.max(prev / 1.1, 0.5))
+  const handleWheel = (e) => {
+    if (!image) return
+    e.preventDefault()
+    const minScale = getMinCoverScale(image)
+    const delta = e.deltaY
+    const factor = delta < 0 ? 1.05 : 1 / 1.05
+    const next = Math.min(3, Math.max(minScale, scale * factor))
+    setScale(next)
   }
 
   const handleReset = () => {
@@ -206,12 +245,37 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
 
     setLoading(true)
     try {
-      const canvas = canvasRef.current
-      canvas.toBlob(async (blob) => {
+      const displayCanvas = canvasRef.current
+      const canvasSize = 300
+      const exportSize = 1080
+      const scaleFactor = exportSize / canvasSize
+
+      const exportCanvas = document.createElement('canvas')
+      exportCanvas.width = exportSize
+      exportCanvas.height = exportSize
+      const ctx = exportCanvas.getContext('2d')
+
+      // Clip circle
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(exportSize / 2, exportSize / 2, exportSize / 2, 0, Math.PI * 2)
+      ctx.clip()
+
+      // Compute transformed draw based on current scale/position
+      const scaledWidth = image.width * scale * scaleFactor
+      const scaledHeight = image.height * scale * scaleFactor
+      const x = (exportSize - scaledWidth) / 2 + position.x * scaleFactor
+      const y = (exportSize - scaledHeight) / 2 + position.y * scaleFactor
+
+      ctx.drawImage(image, x, y, scaledWidth, scaledHeight)
+      ctx.restore()
+
+      exportCanvas.toBlob(async (blob) => {
+        if (!blob) throw new Error('Falha ao gerar imagem do avatar')
         const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
         await onSave(file, caption, originalDataUrl)
         onClose()
-      }, 'image/jpeg', 0.9)
+      }, 'image/jpeg', 0.95)
     } catch (error) {
       console.error('Erro ao salvar avatar:', error)
     } finally {
@@ -261,6 +325,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onWheel={handleWheel}
                 style={{ touchAction: 'none' }}
               />
               {!image && (
@@ -289,58 +354,6 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             </div>
           </div>
 
-          {/* Controles de zoom e posição */}
-          {image && (
-            <div className="space-y-4">
-              {/* Zoom */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zoom
-                </label>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={handleZoomOut}
-                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <ZoomOut size={16} />
-                  </button>
-                  <input
-                    type="range"
-                    min={Math.min(scale, 1e9) && image ? (300 / Math.max(image.width, image.height)) : 0.5}
-                    max="3"
-                    step="0.1"
-                    value={scale}
-                    onChange={(e) => setScale(parseFloat(e.target.value))}
-                    className="flex-1"
-                  />
-                  <button
-                    onClick={handleZoomIn}
-                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <ZoomIn size={16} />
-                  </button>
-                </div>
-                <div className="text-center text-sm text-gray-500 mt-1">
-                  {Math.round(scale * 100)}%
-                </div>
-              </div>
-
-              {/* Instruções */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <Move size={16} className="text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium">Como usar:</p>
-                    <ul className="mt-1 space-y-1 text-xs">
-                      <li>• Arraste a imagem para posicioná-la</li>
-                      <li>• Use o controle de zoom para ajustar o tamanho</li>
-                      <li>• Clique em "Resetar" para centralizar</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
 

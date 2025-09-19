@@ -29,9 +29,9 @@ import StoryViewer from '../components/StoryViewer'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
-    sm: 'w-12 h-12',
-    md: 'w-14 h-14',
-    lg: 'w-16 h-16'
+    sm: 'w-14 h-14',
+    md: 'w-16 h-16',
+    lg: 'w-20 h-20'
   }
 
   const hasStory = user.hasStory || (userStories && userStories.length > 0)
@@ -196,7 +196,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com João Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n����� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com Jo��o Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -1182,7 +1182,7 @@ const Profile = () => {
       <div className="flex justify-center px-4 -mt-12 mb-4 relative z-10">
         <div className="relative">
           <div
-            className="w-24 h-24 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
+            className="w-32 h-32 rounded-full border-4 border-white bg-white p-1 cursor-pointer transition-all duration-200 hover:scale-105 shadow-lg"
             onClick={handleAvatarClick}
           >
             {currentProfileData.avatar ? (
@@ -2095,6 +2095,7 @@ const Profile = () => {
         onClose={handleClosePostModal}
         post={selectedPost}
         onPostUpdate={handlePostUpdate}
+        onPostDelete={(postId) => setUserPosts(prev => prev.filter(p => p.id !== postId))}
       />
 
     </div>

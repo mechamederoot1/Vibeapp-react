@@ -11,12 +11,13 @@ import ReactionPicker from '../components/ReactionPicker'
 import ReactionSummary from '../components/ReactionSummary'
 import ShareModal from '../components/ShareModal'
 
-const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }) => {
+const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, onUpdatePost, onDeletePost }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
 
   const handleLike = async () => {
     try {
@@ -127,9 +128,52 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
             </div>
           </div>
         </div>
-        <button className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full">
-          <MoreHorizontal size={20} className="text-gray-600" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowOptions(v => !v)}
+            className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full"
+          >
+            <MoreHorizontal size={20} className="text-gray-600" />
+          </button>
+          {showOptions && (
+            <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
+              {user?.id === post?.author?.id && (
+                <>
+                  <button
+                    onClick={async () => {
+                      const current = post.content || ''
+                      const next = window.prompt('Editar legenda do post', current)
+                      if (next == null) return
+                      try {
+                        await onUpdatePost?.(post.id, { content: next })
+                        setShowOptions(false)
+                      } catch (e) {
+                        console.error('Erro ao editar post:', e)
+                      }
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                  >
+                    Editar post
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm('Deseja excluir este post?')) return
+                      try {
+                        await onDeletePost?.(post.id)
+                        setShowOptions(false)
+                      } catch (e) {
+                        console.error('Erro ao excluir post:', e)
+                      }
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                  >
+                    Excluir post
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Conteúdo do Post */}
@@ -335,6 +379,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
         onShare={handleAdvancedShare}
         currentUser={user}
       />
+
+      {showOptions && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
+      )}
     </div>
   )
 }
@@ -589,6 +637,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleUpdatePost = async (postId, data) => {
+    try {
+      const res = await postsAPI.updatePost(postId, data)
+      const updated = res.data
+      setPosts(prev => prev.map(p => (p.id === postId ? updated : p)))
+      return updated
+    } catch (e) {
+      console.error('Erro ao atualizar post:', e)
+      throw e
+    }
+  }
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await postsAPI.deletePost(postId)
+      setPosts(prev => prev.filter(p => p.id !== postId))
+    } catch (e) {
+      console.error('Erro ao excluir post:', e)
+      throw e
+    }
+  }
+
   const handleStoryShare = async (storyData) => {
     try {
       // Story was created, reload stories
@@ -760,6 +830,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 onShare={handleSharePost}
                 onStoryShare={handleStoryShare}
                 onReaction={handleReaction}
+                onUpdatePost={handleUpdatePost}
+                onDeletePost={handleDeletePost}
                 onAvatarClick={async (author) => {
                   try {
                     const group = stories.find(g => g.author?.id === author?.id)
