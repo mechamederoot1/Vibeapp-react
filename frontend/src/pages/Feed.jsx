@@ -379,6 +379,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
         onShare={handleAdvancedShare}
         currentUser={user}
       />
+
+      {showOptions && (
+        <div className="fixed inset-0 z-40" onClick={() => setShowOptions(false)} />
+      )}
     </div>
   )
 }
