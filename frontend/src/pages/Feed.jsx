@@ -13,6 +13,7 @@ import ShareModal from '../components/ShareModal'
 
 const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -140,37 +141,31 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
               <p className="text-gray-800 break-words">{post.content}</p>
             </div>
           )}
-          <div className="w-full bg-white py-6 flex justify-center">
-            {/* Renderizar foto de perfil como QUADRADO (imagem inteira) ou foto de capa retangular */}
+          <div className="px-3 pb-3">
+            {/* Renderizar foto de perfil sem moldura, 40x40, clicável */}
             {post.profileUpdateType === 'avatar' ? (
-              <div className="w-72 h-72 rounded-lg border-4 border-white shadow-lg overflow-hidden bg-gray-50">
-                {post.imageUrl ? (
-                  <img
-                    src={post.imageUrl}
-                    alt="Foto de perfil atualizada"
-                    className="w-full h-full object-contain bg-white"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">Sem foto</span>
-                  </div>
-                )}
-              </div>
+              post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de perfil atualizada"
+                  className="w-10 h-10 object-contain"
+                  onClick={() => navigate(`/photo/id/${post.publicId}`)}
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gray-200" />
+              )
             ) : (
-              // Foto de capa - mostrar retangular maior
-              <div className="w-full max-w-lg rounded-lg overflow-hidden shadow-lg">
-                {post.imageUrl ? (
-                  <img
-                    src={post.imageUrl}
-                    alt="Foto de capa atualizada"
-                    className="w-full h-64 object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500">Foto de capa não disponível</span>
-                  </div>
-                )}
-              </div>
+              // Foto de capa - manter retangular sem moldura extra
+              post.imageUrl ? (
+                <img
+                  src={post.imageUrl}
+                  alt="Foto de capa atualizada"
+                  className="w-full object-contain"
+                  onClick={() => navigate(`/photo/id/${post.publicId}`)}
+                />
+              ) : (
+                <div className="w-full h-64 bg-gray-200" />
+              )
             )}
           </div>
         </>
