@@ -65,7 +65,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
 
-  // Estados para perfil de outros usuários
+  // Estados para perfil de outros usu��rios
   const [profileUser, setProfileUser] = useState(null)
   const [isOwnProfile, setIsOwnProfile] = useState(true)
   const [profileLoading, setProfileLoading] = useState(false)
@@ -1111,7 +1111,7 @@ const Profile = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">Perfil não encontrado</h2>
-          <p className="text-gray-600 mb-4">O usuário que você está procurando não existe.</p>
+          <p className="text-gray-600 mb-4">O usuário que voc�� está procurando não existe.</p>
           <button
             onClick={() => navigate('/feed')}
             className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
@@ -2064,6 +2064,12 @@ const Profile = () => {
               </div>
             </div>
           ))}
+          <div ref={profileEndRef} />
+          {userPostsLoadingMore && (
+            <div className="flex justify-center py-4">
+              <div className="w-6 h-6 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
         </div>
       )}
 
