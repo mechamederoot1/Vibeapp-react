@@ -177,9 +177,52 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
             <X size={24} />
           </button>
           <h2 className="font-semibold">Post</h2>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
-            <MoreHorizontal size={24} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowOptions(v => !v)}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <MoreHorizontal size={24} />
+            </button>
+            {showOptions && user?.id === currentPost?.author?.id && (
+              <div className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]">
+                <button
+                  onClick={async () => {
+                    const current = currentPost.content || ''
+                    const next = window.prompt('Editar legenda do post', current)
+                    if (next == null) return
+                    try {
+                      const res = await postsAPI.updatePost(currentPost.id, { content: next })
+                      setCurrentPost(res.data)
+                      onPostUpdate?.(res.data)
+                      setShowOptions(false)
+                    } catch (e) {
+                      console.error('Erro ao editar post:', e)
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
+                >
+                  Editar post
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Deseja excluir este post?')) return
+                    try {
+                      await postsAPI.deletePost(currentPost.id)
+                      onPostDelete?.(currentPost.id)
+                      setShowOptions(false)
+                      onClose()
+                    } catch (e) {
+                      console.error('Erro ao excluir post:', e)
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                >
+                  Excluir post
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
