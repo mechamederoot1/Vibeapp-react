@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Camera } from 'lucide-react'
+import { X, RotateCcw, Move, Check, Camera } from 'lucide-react'
 
 const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -224,18 +224,6 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     setIsDragging(false)
   }
 
-  const handleZoomIn = () => {
-    if (!image) return
-    const minScale = getMinCoverScale(image)
-    setScale(prev => Math.min(Math.max(prev * 1.1, minScale), 3))
-  }
-
-  const handleZoomOut = () => {
-    if (!image) return
-    const minScale = getMinCoverScale(image)
-    setScale(prev => Math.max(prev / 1.1, minScale))
-  }
-
   const handleReset = () => {
     if (image) {
       centerImage(image)
@@ -333,44 +321,6 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
           {/* Controles de zoom e posição */}
           {image && (
             <div className="space-y-4">
-              {/* Zoom */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Zoom
-                </label>
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={handleZoomOut}
-                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <ZoomOut size={16} />
-                  </button>
-                  <input
-                    type="range"
-                    min={image ? getMinCoverScale(image) : 0.5}
-                    max="3"
-                    step="0.1"
-                    value={scale}
-                    onChange={(e) => {
-                      if (!image) return
-                      const minScale = getMinCoverScale(image)
-                      const next = Math.max(parseFloat(e.target.value), minScale)
-                      setScale(next)
-                    }}
-                    className="flex-1"
-                  />
-                  <button
-                    onClick={handleZoomIn}
-                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    <ZoomIn size={16} />
-                  </button>
-                </div>
-                <div className="text-center text-sm text-gray-500 mt-1">
-                  {Math.round(scale * 100)}%
-                </div>
-              </div>
-
               {/* Instruções */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-start space-x-2">
@@ -378,8 +328,8 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   <div className="text-sm text-blue-800">
                     <p className="font-medium">Como usar:</p>
                     <ul className="mt-1 space-y-1 text-xs">
-                      <li>• Arraste a imagem para posicioná-la</li>
-                      <li>• Use o controle de zoom para ajustar o tamanho</li>
+                      <li>��� Arraste a imagem para posicioná-la</li>
+                      <li>• Use o gesto de pinça (dois dedos) para dar zoom</li>
                       <li>• Clique em "Resetar" para centralizar</li>
                     </ul>
                   </div>
