@@ -124,10 +124,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
       } : undefined
     }
     try {
-      // 1) Salvar informações básicas
-      await onSave(payload)
-
-      // 2) Criar novas experiências de trabalho adicionadas no "+"
+      // 1) Criar novas experiências de trabalho primeiro
       const itemsToCreate = newWorkItems
         .map(i => ({ company: (i.company || '').trim(), position: (i.position || '').trim() }))
         .filter(i => i.company && i.position)
@@ -147,12 +144,17 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         }
       }
 
+      // 2) Salvar informações básicas e permitir que o pai recarregue já com as novas experiências
+      await onSave(payload)
+
       // 3) Atualizar dados no modal para refletir criações
       try {
         const refreshed = await personalInfoAPI.get()
         setFormData(prev => ({
           ...prev,
-          work: refreshed.data?.personalInfo?.work || prev.work
+          work: refreshed.data?.personalInfo?.work || prev.work,
+          // útil para exibir contadores corretos dentro do modal após salvar
+          workExperiences: refreshed.data?.personalInfo?.workExperiences || prev.workExperiences
         }))
       } catch {}
 
