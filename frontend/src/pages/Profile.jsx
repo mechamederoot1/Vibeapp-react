@@ -1236,7 +1236,7 @@ const Profile = () => {
             <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
             {currentProfileData.isVerified && (
               <div className="w-5 h-5 bg-vibe-blue rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">���</span>
+                <span className="text-white text-xs">✓</span>
               </div>
             )}
           </div>
@@ -1781,10 +1781,10 @@ const Profile = () => {
                   )}
                 </>
               ) : (post.type === 'profile_update') ? (
-                (post.imageUrl || (post.profileUpdateType === 'avatar' ? (profileData?.avatar) : (profileData?.coverPhoto))) ? (
+                post.imageUrl ? (
                   <>
                     <img
-                      src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData?.avatar : profileData?.coverPhoto)}
+                      src={post.imageUrl}
                       alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
                       className="w-full h-full object-cover"
                     />
@@ -1796,7 +1796,7 @@ const Profile = () => {
                   </>
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Atualiza��ão</span>
+                    <span className="text-gray-400">Sem mídia</span>
                   </div>
                 )
               ) : post.type === 'video' && post.videoUrl ? (
@@ -1920,13 +1920,19 @@ const Profile = () => {
               {/* Posts com fotos de perfil/capa */}
               {post.type === 'profile_update' && (
                 <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
-                  <img
-                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData.avatar : profileData.coverPhoto)}
-                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
-                    className={`w-full object-cover hover:opacity-95 transition-opacity ${
-                      post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
-                    }`}
-                  />
+                  {post.imageUrl ? (
+                    <img
+                      src={post.imageUrl}
+                      alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                      className={`w-full object-cover hover:opacity-95 transition-opacity ${
+                        post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
+                      }`}
+                    />
+                  ) : (
+                    <div className={`w-full bg-gray-200 flex items-center justify-center ${post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'}`}>
+                      <span className="text-gray-500">Sem mídia</span>
+                    </div>
+                  )}
                   {post.content && (
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
                       <p className="text-white text-sm leading-tight line-clamp-3">{post.content}</p>
