@@ -25,7 +25,9 @@ try:
     from app.models.friendship import Friendship
     from app.models.profile_view import ProfileView
     from app.models.notification import Notification
-    
+    from app.models.work_experience import WorkExperience
+    from app.models.education import Education
+
     print("✅ Modelos importados!")
     
     # Listar tabelas que serão criadas

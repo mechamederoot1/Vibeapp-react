@@ -124,10 +124,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
       } : undefined
     }
     try {
-      // 1) Salvar informações básicas
-      await onSave(payload)
-
-      // 2) Criar novas experiências de trabalho adicionadas no "+"
+      // 1) Criar novas experiências de trabalho primeiro
       const itemsToCreate = newWorkItems
         .map(i => ({ company: (i.company || '').trim(), position: (i.position || '').trim() }))
         .filter(i => i.company && i.position)
@@ -147,12 +144,17 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
         }
       }
 
+      // 2) Salvar informações básicas e permitir que o pai recarregue já com as novas experiências
+      await onSave(payload)
+
       // 3) Atualizar dados no modal para refletir criações
       try {
         const refreshed = await personalInfoAPI.get()
         setFormData(prev => ({
           ...prev,
-          work: refreshed.data?.personalInfo?.work || prev.work
+          work: refreshed.data?.personalInfo?.work || prev.work,
+          // útil para exibir contadores corretos dentro do modal após salvar
+          workExperiences: refreshed.data?.personalInfo?.workExperiences || prev.workExperiences
         }))
       } catch {}
 
@@ -181,7 +183,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
       <div className="bg-white h-full w-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-xl font-bold text-gray-900">Editar Informações Pessoais</h2>
+          <h2 className="text-xl font-bold text-gray-900">Editar informações pessoais</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -638,7 +640,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Briefcase size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Trabalho</span>
+                    <span className="text-sm font-medium">Informações de trabalho</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showWorkInfo', !formData.privacy.showWorkInfo)}
@@ -651,7 +653,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <GraduationCap size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Educa��ão</span>
+                    <span className="text-sm font-medium">Informações de educação</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showEducationInfo', !formData.privacy.showEducationInfo)}
@@ -664,7 +666,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <MapPin size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Localização</span>
+                    <span className="text-sm font-medium">Informações de localização</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showLocationInfo', !formData.privacy.showLocationInfo)}
@@ -677,7 +679,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Heart size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Relacionamento</span>
+                    <span className="text-sm font-medium">Informações de relacionamento</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showRelationshipInfo', !formData.privacy.showRelationshipInfo)}
@@ -690,7 +692,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <Phone size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium">Informações de Contato</span>
+                    <span className="text-sm font-medium">Informações de contato</span>
                   </div>
                   <button
                     onClick={() => handlePrivacyChange('showContactInfo', !formData.privacy.showContactInfo)}

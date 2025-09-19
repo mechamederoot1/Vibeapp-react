@@ -1312,7 +1312,7 @@ const Profile = () => {
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-gray-800 flex items-center">
               <Users size={18} className="mr-2" />
-              Informações Pessoais
+              Informações pessoais
             </h3>
             {!viewAsVisitor && (
               <button

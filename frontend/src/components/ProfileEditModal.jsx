@@ -369,7 +369,7 @@ const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-blue-800 text-sm">
                 💡 <strong>Dica:</strong> Para editar informações detalhadas de trabalho, educação e outras informações pessoais, 
-                use o botão "Editar" na seção "Informações Pessoais" do seu perfil.
+                use o botão "Editar" na seção "Informações pessoais" do seu perfil.
               </p>
             </div>
           </div>
