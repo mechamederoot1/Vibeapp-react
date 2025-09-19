@@ -82,6 +82,11 @@ const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
           phoneMobile: formData.phone || null,
           phoneWork: null,
         },
+        relationship: formData.relationship ? {
+          status: formData.relationship,
+          partnerName: null,
+          anniversary: null,
+        } : undefined,
         additional: {
           languages: null,
           interests: null,
@@ -352,10 +357,11 @@ const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
               >
                 <option value="">Selecione</option>
                 <option value="single">Solteiro(a)</option>
-                <option value="in_a_relationship">Em um relacionamento</option>
+                <option value="in_relationship">Em um relacionamento</option>
                 <option value="married">Casado(a)</option>
-                <option value="its_complicated">É complicado</option>
-                <option value="prefer_not_to_say">Prefiro não dizer</option>
+                <option value="complicated">É complicado</option>
+                <option value="divorced">Divorciado(a)</option>
+                <option value="widowed">Viúvo(a)</option>
               </select>
             </div>
 
