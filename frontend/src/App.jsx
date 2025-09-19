@@ -12,6 +12,7 @@ import CreatePost from './pages/CreatePost'
 import Settings from './pages/Settings'
 import Visits from './pages/Visits'
 import PostDetail from './pages/PostDetail'
+import ProfilePhotoView from './pages/ProfilePhotoView'
 import Friends from './pages/Friends'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
@@ -221,6 +222,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <PostDetail mediaType="image" />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/photo/id/:photoId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <ProfilePhotoView />
               </Layout>
             </ProtectedRoute>
           }

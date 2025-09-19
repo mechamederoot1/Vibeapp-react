@@ -160,6 +160,7 @@ export const postsAPI = {
   getComments: (postId, page = 1, limit = 20) => api.get(`/posts/${postId}/comments?page=${page}&limit=${limit}`),
   createComment: (postId, content) => api.post(`/posts/${postId}/comments`, { content }),
   deletePost: (postId) => api.delete(`/posts/${postId}`),
+  updatePost: (postId, data) => api.put(`/posts/${postId}`, data),
   getUserPosts: (userId, page = 1, limit = 20) => api.get(`/posts/user/${userId}?page=${page}&limit=${limit}`)
 }
 
