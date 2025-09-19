@@ -818,17 +818,64 @@ const Profile = () => {
   const handleCreateHighlight = async (highlightData) => {
     setHighlightsLoading(true)
     try {
-      // Do NOT auto-create stories. Highlights should be independent.
-      const payload = {
+      // 1) Criar o destaque básico
+      const basePayload = {
         title: highlightData.title,
         description: highlightData.description || null,
         coverStoryId: highlightData.coverStoryId || null
       }
+      const createRes = await highlightsAPI.create(basePayload)
+      const createdHighlight = createRes.data?.highlight || createRes.data
+      const highlightId = createdHighlight.id
 
-      const createHighlightRes = await highlightsAPI.create(payload)
-      const createdHighlight = createHighlightRes.data?.highlight || createHighlightRes.data || createHighlightRes
+      // 2) Se houver fotos/coleção ou capa por upload, criar stories e adicionar ao destaque
+      const createdStoryIds = []
 
-      // Refresh list
+      const createStoryFromFile = async (file) => {
+        // Upload -> retorna data URL
+        const up = await uploadsAPI.uploadStoryMedia(file)
+        const url = up.data?.url
+        const type = up.data?.type || 'image'
+        // Criar story
+        const st = await storiesAPI.createStory({ type, mediaUrl: url })
+        return st.data?.id || st.id
+      }
+
+      // Coleção de fotos
+      if (Array.isArray(highlightData.photos) && highlightData.photos.length > 0) {
+        for (const file of highlightData.photos) {
+          try {
+            const storyId = await createStoryFromFile(file)
+            createdStoryIds.push(storyId)
+            await highlightsAPI.addStory(highlightId, storyId)
+          } catch (e) {
+            console.error('Erro ao adicionar foto ao destaque:', e)
+          }
+        }
+      }
+
+      // Capa via upload (quando usuário escolhe apenas uma imagem de capa)
+      if (highlightData.coverImage && !highlightData.coverStoryId) {
+        try {
+          const storyId = await createStoryFromFile(highlightData.coverImage)
+          createdStoryIds.push(storyId)
+          await highlightsAPI.addStory(highlightId, storyId)
+          await highlightsAPI.update(highlightId, { coverStoryId: storyId })
+        } catch (e) {
+          console.error('Erro ao criar story de capa:', e)
+        }
+      }
+
+      // Se usuário escolheu uma story existente como capa
+      if (highlightData.coverStoryId) {
+        try {
+          await highlightsAPI.update(highlightId, { coverStoryId: Number(highlightData.coverStoryId) })
+        } catch (e) {
+          console.error('Erro ao definir story de capa:', e)
+        }
+      }
+
+      // 3) Recarregar lista a partir do servidor (traz storiesCount e addedLast24h corretos)
       try {
         const highlightsRes = await highlightsAPI.get()
         const remoteHighlights = highlightsRes.data.highlights || []
@@ -839,14 +886,6 @@ const Profile = () => {
         setHighlights(normalized)
       } catch (reloadErr) {
         console.error('Erro ao recarregar destaques:', reloadErr)
-      }
-
-      // Marcar +1 hoje se criou com uma story de capa
-      if (highlightData.coverStoryId) {
-        setHighlightAddedTodayCounts(prev => ({
-          ...prev,
-          [createdHighlight.id]: (prev[createdHighlight.id] || 0) + 1
-        }))
       }
 
       setUploadSuccess('Destaque criado com sucesso!')
