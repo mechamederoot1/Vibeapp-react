@@ -798,11 +798,15 @@ const Profile = () => {
   const handlePersonalInfoSave = async (data) => {
     setPersonalInfoLoading(true)
     try {
-      const response = await personalInfoAPI.update(data)
-      setPersonalInfo(response.data.personalInfo)
+      await personalInfoAPI.update(data)
+      try {
+        const res = await personalInfoAPI.get()
+        setPersonalInfo(res.data.personalInfo)
+      } catch (e) {
+        console.warn('Não foi possível recarregar informações pessoais após salvar:', e?.response?.data || e.message)
+      }
       setUploadSuccess('Informações pessoais atualizadas com sucesso!')
 
-      // Limpar mensagem após um tempo
       setTimeout(() => {
         setUploadSuccess(null)
       }, 3000)
