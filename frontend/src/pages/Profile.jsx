@@ -1225,9 +1225,9 @@ const Profile = () => {
       </div>
 
       {/* Informações do Perfil */}
-      <div className="px-4">
-        {/* Nome e verificação */}
-        <div className="text-center mb-4">
+      <div className="px-4 space-y-4">
+        {/* Seção: Nome e username */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
             {currentProfileData.isVerified && (
@@ -1239,50 +1239,50 @@ const Profile = () => {
           <p className="text-gray-600">@{currentProfileData.username}</p>
         </div>
 
-        {/* Stats */}
-        <div className="flex justify-center items-center space-x-6 mb-6">
-          <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
-            <p className="font-bold text-lg">{profileData.posts}</p>
-            <p className="text-gray-600 text-sm">Posts</p>
+        {/* Seção: Indicadores (posts, seguidores, seguindo) */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="flex justify-center items-center space-x-6">
+            <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
+              <p className="font-bold text-lg">{profileData.posts}</p>
+              <p className="text-gray-600 text-sm">Posts</p>
+            </div>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
+            >
+              <p className="font-bold text-lg">{profileData.followers}</p>
+              <p className="text-gray-600 text-sm">Seguidores</p>
+            </button>
+            <button
+              onClick={() => setShowConnections(true)}
+              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
+            >
+              <p className="font-bold text-lg">{profileData.following}</p>
+              <p className="text-gray-600 text-sm">Seguindo</p>
+            </button>
           </div>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-          >
-            <p className="font-bold text-lg">{profileData.followers}</p>
-            <p className="text-gray-600 text-sm">Seguidores</p>
-          </button>
-          <button
-            onClick={() => setShowConnections(true)}
-            className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-          >
-            <p className="font-bold text-lg">{profileData.following}</p>
-            <p className="text-gray-600 text-sm">Seguindo</p>
-          </button>
         </div>
 
-        {/* Bio */}
-        <div className="text-center mb-6">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
+        {/* Seção: Biografia */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line text-center">
             {profileData.bio}
           </p>
         </div>
 
-        {/* Botões de Ação */}
-        <div className="flex space-x-2 mb-6">
+        {/* Seção: Ações */}
+        <div className="flex space-x-2">
           {viewAsVisitor ? (
-            /* Botões para visitante */
             <>
-              <button className="btn-primary flex-1">
+              <button className="btn-primary flex-1 flex items-center justify-center">
                 <UserPlus size={20} className="mr-2" />
                 Adicionar
               </button>
-              <button className="btn-secondary px-4">
-                <MessageCircle size={20} />
+              <button className="btn-secondary w-11 h-11 p-0 flex items-center justify-center">
+                <MessageCircle size={18} />
               </button>
             </>
           ) : (
-            /* Botões para dono do perfil - sem mensagem */
             <>
               <button
                 onClick={() => setShowEditModal(true)}
@@ -1292,7 +1292,7 @@ const Profile = () => {
               </button>
               <button
                 onClick={() => setShowConnections(true)}
-                className="btn-secondary px-4 flex items-center space-x-2"
+                className="btn-secondary w-auto px-4 flex items-center space-x-2"
               >
                 <Users size={20} />
                 <span className="hidden sm:inline">Conexões</span>
@@ -1776,7 +1776,7 @@ const Profile = () => {
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Atualização</span>
+                    <span className="text-gray-400">Atualiza��ão</span>
                   </div>
                 )
               ) : post.type === 'video' && post.videoUrl ? (
