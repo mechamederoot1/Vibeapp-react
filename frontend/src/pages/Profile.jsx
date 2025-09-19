@@ -132,6 +132,14 @@ const Profile = () => {
   const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [targetUserIdState, setTargetUserIdState] = useState(null)
+  const [userPostsPage, setUserPostsPage] = useState(1)
+  const [userPostsHasMore, setUserPostsHasMore] = useState(true)
+  const [userPostsLoadingMore, setUserPostsLoadingMore] = useState(false)
+  const profileEndRef = useRef(null)
+  const GRID_LIMIT = 12
+  const LIST_LIMIT = 10
+  const getCurrentLimit = () => (viewMode === 'grid' ? GRID_LIMIT : LIST_LIMIT)
 
   const [privacySettings, setPrivacySettings] = useState({
     showVisitors: true,
