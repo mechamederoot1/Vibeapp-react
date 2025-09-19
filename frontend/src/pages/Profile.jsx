@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Settings, Grid, Bookmark, UserPlus, MessageCircle, Eye, MoreHorizontal,
@@ -65,7 +65,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('posts')
   const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
 
-  // Estados para perfil de outros usuários
+  // Estados para perfil de outros usu��rios
   const [profileUser, setProfileUser] = useState(null)
   const [isOwnProfile, setIsOwnProfile] = useState(true)
   const [profileLoading, setProfileLoading] = useState(false)
@@ -132,6 +132,14 @@ const Profile = () => {
   const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [targetUserIdState, setTargetUserIdState] = useState(null)
+  const [userPostsPage, setUserPostsPage] = useState(1)
+  const [userPostsHasMore, setUserPostsHasMore] = useState(true)
+  const [userPostsLoadingMore, setUserPostsLoadingMore] = useState(false)
+  const profileEndRef = useRef(null)
+  const GRID_LIMIT = 12
+  const LIST_LIMIT = 10
+  const getCurrentLimit = () => (viewMode === 'grid' ? GRID_LIMIT : LIST_LIMIT)
 
   const [privacySettings, setPrivacySettings] = useState({
     showVisitors: true,
@@ -478,12 +486,14 @@ const Profile = () => {
       try {
         setLoading(true)
 
+        setTargetUserIdState(targetUserId)
+
         const requests = {
           stats: usersAPI.getUserStats(targetUserId).catch((error) => {
             console.error('Error loading user stats:', error)
             return null
           }),
-          posts: postsAPI.getUserPosts(targetUserId).catch((error) => {
+          posts: postsAPI.getUserPosts(targetUserId, 1, getCurrentLimit()).catch((error) => {
             console.error('Error loading user posts:', error)
             return null
           }),
@@ -525,11 +535,16 @@ const Profile = () => {
           })
         }
 
-        // Posts
+        // Posts (paged)
         if (mapped.posts?.data) {
-          setUserPosts(mapped.posts.data.posts || [])
+          const first = mapped.posts.data.posts || []
+          setUserPosts(first)
+          setUserPostsPage(1)
+          setUserPostsHasMore(first.length === getCurrentLimit())
         } else {
           setUserPosts([])
+          setUserPostsPage(1)
+          setUserPostsHasMore(false)
         }
 
         // Stories
@@ -579,7 +594,7 @@ const Profile = () => {
     }
 
     loadUserData()
-  }, [user?.id, userId, publicId, privacySettings.showVisitors])
+  }, [user?.id, userId, publicId, privacySettings.showVisitors, viewMode])
 
   // Use real user data from auth context, fallback to defaults
   const [profileData, setProfileData] = useState({
@@ -1037,6 +1052,47 @@ const Profile = () => {
     )
   }
 
+  const loadMoreUserPosts = async () => {
+    if (!targetUserIdState) return
+    if (userPostsLoadingMore || !userPostsHasMore) return
+    setUserPostsLoadingMore(true)
+    const nextPage = userPostsPage + 1
+    try {
+      const res = await postsAPI.getUserPosts(targetUserIdState, nextPage, getCurrentLimit())
+      const newPosts = res.data?.posts || []
+      setUserPosts(prev => {
+        const seen = new Set(prev.map(p => p.id || p.publicId))
+        const toAdd = newPosts.filter(p => {
+          const key = p?.id || p?.publicId
+          if (!key || seen.has(key)) return false
+          seen.add(key)
+          return true
+        })
+        return [...prev, ...toAdd]
+      })
+      setUserPostsPage(nextPage)
+      setUserPostsHasMore(newPosts.length === getCurrentLimit())
+    } catch (e) {
+      console.error('Erro ao carregar mais posts do usuário:', e)
+    } finally {
+      setUserPostsLoadingMore(false)
+    }
+  }
+
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && userPostsHasMore && !userPostsLoadingMore && !loading) {
+          loadMoreUserPosts()
+        }
+      },
+      { root: null, rootMargin: '300px', threshold: 0 }
+    )
+    const el = profileEndRef.current
+    if (el) obs.observe(el)
+    return () => obs.disconnect()
+  }, [userPostsHasMore, userPostsLoadingMore, loading, viewMode, targetUserIdState])
+
   // Loading para perfil de outro usuário
   if (!isOwnProfile && profileLoading) {
     return (
@@ -1055,7 +1111,7 @@ const Profile = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">Perfil não encontrado</h2>
-          <p className="text-gray-600 mb-4">O usuário que você está procurando não existe.</p>
+          <p className="text-gray-600 mb-4">O usuário que voc�� está procurando não existe.</p>
           <button
             onClick={() => navigate('/feed')}
             className="bg-vibe-blue text-white px-6 py-2 rounded-lg hover:bg-vibe-blue-dark"
@@ -1746,6 +1802,7 @@ const Profile = () => {
           </p>
         </div>
       ) : viewMode === 'grid' ? (
+        <>
         /* Grid de Posts */
         <div className="grid grid-cols-3 gap-1">
           {userPosts.map((post) => (
@@ -1840,6 +1897,13 @@ const Profile = () => {
             </div>
           ))}
         </div>
+        <div ref={profileEndRef} />
+        {userPostsLoadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="w-6 h-6 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        </>
       ) : (
         /* Lista de Posts */
         <div className="space-y-6">
@@ -2000,6 +2064,12 @@ const Profile = () => {
               </div>
             </div>
           ))}
+          <div ref={profileEndRef} />
+          {userPostsLoadingMore && (
+            <div className="flex justify-center py-4">
+              <div className="w-6 h-6 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
         </div>
       )}
 

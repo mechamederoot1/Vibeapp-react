@@ -85,6 +85,14 @@ async def lifespan(app: FastAPI):
                 print("⚠️ Migration profile_photos returned False (possibly already migrated)")
         except Exception as me:
             print(f"⚠️ Migration profile_photos failed or skipped: {me}")
+        try:
+            from migrate_add_indexes import migrate as migrate_add_indexes
+            if migrate_add_indexes():
+                print("✅ Migration add_indexes applied")
+            else:
+                print("⚠️ Migration add_indexes returned False (possibly already migrated)")
+        except Exception as me:
+            print(f"⚠️ Migration add_indexes failed or skipped: {me}")
     except Exception as e:
         print(f"❌ Error creating database tables: {e}")
     yield

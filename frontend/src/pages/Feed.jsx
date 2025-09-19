@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -517,6 +517,10 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const endRef = useRef(null)
+  const FEED_PAGE_SIZE = 10
   const [showStoryCreator, setShowStoryCreator] = useState(false)
 
   // Story viewer states
@@ -527,45 +531,60 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [highlights, setHighlights] = useState([])
 
   const loadFeed = async () => {
-    // Modo offline/demo - só pular se VITE_DEMO=true
     if (import.meta.env.VITE_DEMO === 'true') {
       console.log('🔧 Modo demo - usando feed vazio')
       setPosts([])
       setLoading(false)
+      setHasMore(false)
       return
     }
 
     try {
-      setLoading(true)
-      const response = await postsAPI.getFeed(page)
-      let fetched = response.data.posts || []
+      if (page === 1) setLoading(true)
+      else setIsFetchingMore(true)
 
-      // Always include my own recent posts at the top
-      if (user?.id) {
-        try {
-          const mineRes = await postsAPI.getUserPosts(user.id, 1, 20)
-          const mine = mineRes.data?.posts || []
-          const seen = new Set()
-          const merged = [...mine, ...fetched].filter(p => {
-            const key = p?.id || p?.publicId || `${p?.authorId}:${p?.createdAt}`
+      const response = await postsAPI.getFeed(page, FEED_PAGE_SIZE)
+      const fetched = response.data.posts || []
+      setHasMore(fetched.length === FEED_PAGE_SIZE)
+
+      if (page === 1) {
+        if (user?.id) {
+          try {
+            const mineRes = await postsAPI.getUserPosts(user.id, 1, 20)
+            const mine = mineRes.data?.posts || []
+            const seen = new Set()
+            const merged = [...mine, ...fetched].filter(p => {
+              const key = p?.id || p?.publicId || `${p?.authorId}:${p?.createdAt}`
+              if (!key || seen.has(key)) return false
+              seen.add(key)
+              return true
+            })
+            setPosts(merged)
+          } catch (e) {
+            setPosts(fetched)
+          }
+        } else {
+          setPosts(fetched)
+        }
+      } else {
+        setPosts(prev => {
+          const seen = new Set(prev.map(p => p.id || p.publicId))
+          const toAdd = fetched.filter(p => {
+            const key = p?.id || p?.publicId
             if (!key || seen.has(key)) return false
             seen.add(key)
             return true
           })
-          setPosts(merged)
-        } catch (e) {
-          // Fallback to fetched when my posts request fails
-          setPosts(fetched)
-        }
-      } else {
-        setPosts(fetched)
+          return [...prev, ...toAdd]
+        })
       }
     } catch (error) {
       console.error('Error loading feed:', error)
       setError('Erro ao carregar feed')
-      setPosts([]) // Set empty array as fallback
+      if (page === 1) setPosts([])
     } finally {
-      setLoading(false)
+      if (page === 1) setLoading(false)
+      setIsFetchingMore(false)
     }
   }
 
@@ -735,6 +754,22 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     loadStories()
   }, [page])
 
+  useEffect(() => {
+    if (loading) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0]
+        if (first.isIntersecting && hasMore && !isFetchingMore) {
+          setPage((p) => p + 1)
+        }
+      },
+      { root: null, rootMargin: '300px', threshold: 0 }
+    )
+    const el = endRef.current
+    if (el) observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, isFetchingMore, loading])
+
   if (loading) {
     return (
       <div className="bg-gray-50 min-h-full w-full max-w-full overflow-x-hidden relative">
@@ -822,36 +857,44 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
 
             </div>
           ) : (
-            posts.map((post) => (
-              <Post
-                key={post.id}
-                post={post}
-                onLike={handleLikePost}
-                onShare={handleSharePost}
-                onStoryShare={handleStoryShare}
-                onReaction={handleReaction}
-                onUpdatePost={handleUpdatePost}
-                onDeletePost={handleDeletePost}
-                onAvatarClick={async (author) => {
-                  try {
-                    const group = stories.find(g => g.author?.id === author?.id)
-                    if (group && (group.stories || []).length > 0) {
-                      handleOpenStories(group, 0)
-                    } else if (author?.id) {
-                      const res = await storiesAPI.getUserStories(author.id)
-                      const userGroup = { author: res.data?.author, stories: res.data?.stories || [] }
-                      if ((userGroup.stories || []).length > 0) {
-                        setCurrentUserStories(userGroup.stories)
-                        setInitialStoryIndex(0)
-                        setShowStoryViewer(true)
+            <>
+              {posts.map((post) => (
+                <Post
+                  key={post.id}
+                  post={post}
+                  onLike={handleLikePost}
+                  onShare={handleSharePost}
+                  onStoryShare={handleStoryShare}
+                  onReaction={handleReaction}
+                  onUpdatePost={handleUpdatePost}
+                  onDeletePost={handleDeletePost}
+                  onAvatarClick={async (author) => {
+                    try {
+                      const group = stories.find(g => g.author?.id === author?.id)
+                      if (group && (group.stories || []).length > 0) {
+                        handleOpenStories(group, 0)
+                      } else if (author?.id) {
+                        const res = await storiesAPI.getUserStories(author.id)
+                        const userGroup = { author: res.data?.author, stories: res.data?.stories || [] }
+                        if ((userGroup.stories || []).length > 0) {
+                          setCurrentUserStories(userGroup.stories)
+                          setInitialStoryIndex(0)
+                          setShowStoryViewer(true)
+                        }
                       }
+                    } catch (e) {
+                      console.error('Erro ao abrir stories do usuário:', e)
                     }
-                  } catch (e) {
-                    console.error('Erro ao abrir stories do usuário:', e)
-                  }
-                }}
-              />
-            ))
+                  }}
+                />
+              ))}
+              <div ref={endRef} />
+              {isFetchingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="w-6 h-6 border-4 border-vibe-blue border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
