@@ -20,6 +20,10 @@ class PostCreate(BaseModel):
     profileUpdateType: Optional[str] = None  # avatar, cover (for profile update posts)
     privacy: str = "public"  # public, friends, private
 
+class PostUpdate(BaseModel):
+    content: Optional[str] = None
+    privacy: Optional[str] = None
+
 class CommentCreate(BaseModel):
     content: str
 
@@ -356,6 +360,32 @@ async def create_comment(
     
     return new_comment.to_dict(current_user.id)
 
+@router.put("/{post_id}")
+async def update_post(
+    post_id: int,
+    post_data: PostUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update a post (only by author). Allows editing content and privacy."""
+    post = db.query(Post).filter(
+        Post.id == post_id,
+        Post.author_id == current_user.id
+    ).first()
+    if not post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found or access denied")
+
+    if post_data.content is not None:
+        post.content = post_data.content
+    if post_data.privacy is not None:
+        if post_data.privacy not in ["public", "friends", "private"]:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid privacy setting")
+        post.privacy = post_data.privacy
+
+    db.commit()
+    db.refresh(post)
+    return post.to_dict(current_user.id)
+
 @router.delete("/{post_id}")
 async def delete_post(
     post_id: int,
@@ -363,22 +393,22 @@ async def delete_post(
     db: Session = Depends(get_db)
 ):
     """Delete a post (only by author)"""
-    
+
     post = db.query(Post).filter(
         Post.id == post_id,
         Post.author_id == current_user.id
     ).first()
-    
+
     if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Post not found or access denied"
         )
-    
+
     # Soft delete
     post.is_active = False
     db.commit()
-    
+
     return {"message": "Post deleted successfully"}
 
 @router.put("/comments/{comment_id}")

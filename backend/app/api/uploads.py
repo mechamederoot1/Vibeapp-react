@@ -8,6 +8,7 @@ import uuid
 from typing import Literal
 from ..database.database import get_db
 from ..models.user import User
+from ..models.profile_photo import ProfilePhoto
 from .auth import get_current_user
 
 router = APIRouter()
@@ -74,11 +75,33 @@ async def upload_avatar(
         # Convert and resize image to bytes
         content_bytes, mime = await save_and_resize_image_to_bytes(file, (400, 400))
 
-        # Store in DB
+        # Store in DB (current avatar pointer)
         current_user.avatar_blob = content_bytes
         current_user.avatar_mime = mime
         current_user.avatar = f"/api/media/users/{current_user.id}/avatar"
         current_user.avatar_url = current_user.avatar
+
+        # Also persist as immutable historical profile photo
+        import hashlib, secrets
+        digits = '0123456789'
+        def gen_vibe_id(n=18):
+            return 'vibe_' + ''.join(secrets.choice(digits) for _ in range(n))
+        # ensure unique id
+        photo_id = gen_vibe_id()
+        for _ in range(10):
+            existing = db.query(ProfilePhoto).filter(ProfilePhoto.id == photo_id).first()
+            if not existing:
+                break
+            photo_id = gen_vibe_id()
+        blob_hash = hashlib.sha256(content_bytes).hexdigest()
+        profile_photo = ProfilePhoto(
+            id=photo_id,
+            user_id=current_user.id,
+            blob=content_bytes,
+            mime=mime,
+            blob_hash=blob_hash
+        )
+        db.add(profile_photo)
         db.commit()
         db.refresh(current_user)
 
@@ -89,6 +112,8 @@ async def upload_avatar(
             "message": "Avatar atualizado com sucesso!",
             "avatar_url": current_user.avatar,
             "data_url": data_url,
+            "profile_photo_id": photo_id,
+            "profile_photo_url": f"/api/media/profile/photo/id/{photo_id}",
             "user": current_user.to_dict()
         }
     except Exception as e:
