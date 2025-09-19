@@ -142,17 +142,17 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
             </div>
           )}
           <div className="px-3 pb-3">
-            {/* Renderizar foto de perfil sem moldura, 40x40, clicável */}
+            {/* Renderizar foto de perfil sem moldura, 828x828 (responsivo até esse limite), clicável */}
             {post.profileUpdateType === 'avatar' ? (
               post.imageUrl ? (
                 <img
                   src={post.imageUrl}
                   alt="Foto de perfil atualizada"
-                  className="w-10 h-10 object-contain"
+                  className="w-full max-w-[828px] aspect-square object-contain"
                   onClick={() => navigate(`/photo/id/${post.publicId}`)}
                 />
               ) : (
-                <div className="w-10 h-10 bg-gray-200" />
+                <div className="w-full max-w-[828px] aspect-square bg-gray-200" />
               )
             ) : (
               // Foto de capa - manter retangular sem moldura extra
