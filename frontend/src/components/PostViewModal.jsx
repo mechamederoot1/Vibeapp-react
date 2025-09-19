@@ -14,6 +14,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
   const [newComment, setNewComment] = useState('')
   const [loading, setLoading] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
 
   useEffect(() => {
     if (isOpen && post) {
