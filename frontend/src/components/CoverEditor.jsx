@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Upload } from 'lucide-react'
+import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Camera } from 'lucide-react'
 
 const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -8,6 +8,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [loading, setLoading] = useState(false)
+  const [caption, setCaption] = useState('')
   
   const canvasRef = useRef(null)
   const imageRef = useRef(null)
@@ -140,6 +141,55 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     setIsDragging(false)
   }
 
+  // Touch handlers for drag and pinch-to-zoom
+  const pinchRef = useRef({ active: false, startDistance: 0, startScale: 1 })
+
+  const getTouchPoint = (touch, rect) => ({ x: touch.clientX - rect.left, y: touch.clientY - rect.top })
+
+  const distanceBetween = (t1, t2) => {
+    const dx = t2.clientX - t1.clientX
+    const dy = t2.clientY - t1.clientY
+    return Math.hypot(dx, dy)
+  }
+
+  const handleTouchStart = (e) => {
+    if (!canvasRef.current) return
+    const rect = canvasRef.current.getBoundingClientRect()
+    if (e.touches.length === 1) {
+      setIsDragging(true)
+      const p = getTouchPoint(e.touches[0], rect)
+      setDragStart({ x: p.x - position.x, y: p.y - position.y })
+    } else if (e.touches.length === 2) {
+      pinchRef.current = {
+        active: true,
+        startDistance: distanceBetween(e.touches[0], e.touches[1]),
+        startScale: scale,
+      }
+      setIsDragging(false)
+    }
+  }
+
+  const handleTouchMove = (e) => {
+    if (!canvasRef.current) return
+    const rect = canvasRef.current.getBoundingClientRect()
+    if (e.touches.length === 1 && isDragging) {
+      const p = getTouchPoint(e.touches[0], rect)
+      setPosition({ x: p.x - dragStart.x, y: p.y - dragStart.y })
+    } else if (e.touches.length === 2 && pinchRef.current.active) {
+      const newDist = distanceBetween(e.touches[0], e.touches[1])
+      const factor = newDist / (pinchRef.current.startDistance || 1)
+      const next = Math.min(3, Math.max(0.5, pinchRef.current.startScale * factor))
+      setScale(next)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    if (pinchRef.current.active) {
+      pinchRef.current.active = false
+    }
+    setIsDragging(false)
+  }
+
   const handleZoomIn = () => {
     setScale(prev => Math.min(prev * 1.1, 3))
   }
@@ -162,7 +212,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
       const canvas = canvasRef.current
       canvas.toBlob(async (blob) => {
         const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' })
-        await onSave(file)
+        await onSave(file, caption)
         onClose()
       }, 'image/jpeg', 0.9)
     } catch (error) {
@@ -192,7 +242,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center space-x-2 px-3 py-1.5 bg-vibe-blue text-white text-sm rounded-lg hover:bg-vibe-blue-dark"
             >
-              <Upload size={16} />
+              <Camera size={16} />
               <span>{image ? 'Trocar foto' : 'Selecionar foto'}</span>
             </button>
           </div>
@@ -209,7 +259,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             /* Área de seleção de foto */
             <div className="flex flex-col items-center justify-center space-y-6 py-12">
               <div className="text-center">
-                <Upload size={64} className="mx-auto mb-4 text-gray-400" />
+                <Camera size={64} className="mx-auto mb-4 text-gray-400" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Selecione uma foto de capa</h3>
                 <p className="text-gray-500 text-sm mb-6">Escolha uma imagem que represente você</p>
 
@@ -246,6 +296,9 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                   style={{ touchAction: 'none' }}
                 />
 
@@ -255,7 +308,7 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                     className="bg-black bg-opacity-50 text-white p-1.5 rounded-full hover:bg-opacity-70 transition-all text-xs"
                     title="Trocar foto"
                   >
-                    <Upload size={14} />
+                    <Camera size={14} />
                   </button>
                 </div>
               </div>
@@ -315,6 +368,20 @@ const CoverEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             </div>
           )}
 
+        </div>
+
+        {/* Caption input */}
+        <div className="space-y-2 px-6">
+          <label className="block text-sm font-medium text-gray-700">Descrição (opcional)</label>
+          <textarea
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            placeholder="Adicione uma descrição para sua nova foto de capa"
+            maxLength={500}
+            className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+            rows={3}
+          />
+          <div className="text-xs text-gray-500">{caption.length}/500</div>
         </div>
 
         {/* Footer */}

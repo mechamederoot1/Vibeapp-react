@@ -660,7 +660,7 @@ const Profile = () => {
   }
 
   // Fun��ões de upload
-  const handleAvatarUpload = async (file) => {
+  const handleAvatarUpload = async (file, captionText = '') => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
     setUploadSuccess(null)
@@ -695,10 +695,10 @@ const Profile = () => {
       // Criar post automático no feed
       try {
         await postsAPI.createPost({
-          content: 'atualizou a foto do perfil',
+          content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto do perfil',
           type: 'profile_update',
           profileUpdateType: 'avatar',
-          imageUrl: updatedUser.avatar
+          imageUrl: response.data?.data_url || updatedUser.avatar
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -711,7 +711,7 @@ const Profile = () => {
     }
   }
 
-  const handleCoverUpload = async (file) => {
+  const handleCoverUpload = async (file, captionText = '') => {
     setUploading(prev => ({ ...prev, cover: true }))
     setUploadError(null)
     setUploadSuccess(null)
@@ -746,10 +746,10 @@ const Profile = () => {
       // Criar post autom��tico no feed
       try {
         await postsAPI.createPost({
-          content: 'atualizou a foto de capa',
+          content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto de capa',
           type: 'profile_update',
           profileUpdateType: 'cover',
-          imageUrl: updatedUser.coverPhoto
+          imageUrl: response.data?.data_url || updatedUser.coverPhoto
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -1768,21 +1768,35 @@ const Profile = () => {
                   </p>
                 </div>
               ) : post.type === 'image' && post.imageUrl ? (
-                <img
-                  src={post.imageUrl}
-                  alt={`Post ${post.id}`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (post.type === 'profile_update') ? (
-                (post.imageUrl || (post.profileUpdateType === 'avatar' ? (profileData?.avatar) : (profileData?.coverPhoto))) ? (
+                <>
                   <img
-                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData?.avatar : profileData?.coverPhoto)}
-                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                    src={post.imageUrl}
+                    alt={`Post ${post.id}`}
                     className="w-full h-full object-cover"
                   />
+                  {post.content && (
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                      <p className="text-white text-[10px] leading-tight line-clamp-2">{post.content}</p>
+                    </div>
+                  )}
+                </>
+              ) : (post.type === 'profile_update') ? (
+                post.imageUrl ? (
+                  <>
+                    <img
+                      src={post.imageUrl}
+                      alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {post.content && (
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                        <p className="text-white text-[10px] leading-tight line-clamp-2">{post.content}</p>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Atualiza��ão</span>
+                    <span className="text-gray-400">Sem mídia</span>
                   </div>
                 )
               ) : post.type === 'video' && post.videoUrl ? (
@@ -1793,6 +1807,11 @@ const Profile = () => {
                     </div>
                     <span className="text-xs">Vídeo</span>
                   </div>
+                  {post.content && (
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                      <p className="text-white text-[10px] leading-tight line-clamp-2">{post.content}</p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -1873,6 +1892,11 @@ const Profile = () => {
                     alt={`Post ${post.id}`}
                     className="w-full h-64 object-cover hover:opacity-95 transition-opacity"
                   />
+                  {post.content && (
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="text-white text-sm leading-tight line-clamp-3">{post.content}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1884,6 +1908,11 @@ const Profile = () => {
                     className="w-full h-64 object-cover"
                     onClick={(e) => e.stopPropagation()}
                   />
+                  {post.content && (
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2 pointer-events-none">
+                      <p className="text-white text-sm leading-tight line-clamp-3">{post.content}</p>
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity pointer-events-none" />
                 </div>
               )}
@@ -1891,13 +1920,24 @@ const Profile = () => {
               {/* Posts com fotos de perfil/capa */}
               {post.type === 'profile_update' && (
                 <div className="relative cursor-pointer" onClick={() => handlePostClick(post)}>
-                  <img
-                    src={post.imageUrl || (post.profileUpdateType === 'avatar' ? profileData.avatar : profileData.coverPhoto)}
-                    alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
-                    className={`w-full object-cover hover:opacity-95 transition-opacity ${
-                      post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
-                    }`}
-                  />
+                  {post.imageUrl ? (
+                    <img
+                      src={post.imageUrl}
+                      alt={`Atualização de ${post.profileUpdateType === 'avatar' ? 'perfil' : 'capa'}`}
+                      className={`w-full object-cover hover:opacity-95 transition-opacity ${
+                        post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'
+                      }`}
+                    />
+                  ) : (
+                    <div className={`w-full bg-gray-200 flex items-center justify-center ${post.profileUpdateType === 'avatar' ? 'h-[400px] md:h-[600px]' : 'h-64 md:h-80'}`}>
+                      <span className="text-gray-500">Sem mídia</span>
+                    </div>
+                  )}
+                  {post.content && (
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                      <p className="text-white text-sm leading-tight line-clamp-3">{post.content}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
