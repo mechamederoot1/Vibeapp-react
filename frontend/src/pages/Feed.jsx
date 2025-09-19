@@ -13,6 +13,7 @@ import ShareModal from '../components/ShareModal'
 
 const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }) => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
@@ -109,15 +110,21 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
             </button>
           )}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap">
               <p className="font-semibold text-sm truncate">{post.author?.fullName || 'Usuário'}</p>
               {post.author?.isVerified && (
                 <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
                   <span className="text-white text-xs">✓</span>
                 </div>
               )}
+              <span className="text-gray-500 text-xs">
+                {' - '}
+                {formatDateTime(post.createdAt)}
+                {post.type === 'profile_update' && (
+                  <> ({post.profileUpdateType === 'avatar' ? 'atualizou a foto de perfil' : 'atualizou a foto de capa'})</>
+                )}
+              </span>
             </div>
-            <p className="text-gray-500 text-xs">@{post.author?.username} • {formatDateTime(post.createdAt)}</p>
           </div>
         </div>
         <button className="p-1 flex-shrink-0 hover:bg-gray-100 rounded-full">
@@ -127,40 +134,45 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
       
       {/* Conteúdo do Post */}
       {post.type === 'profile_update' ? (
-        <div className="w-full bg-white py-8 flex justify-center">
-          {/* Renderizar foto de perfil como círculo ou foto de capa retangular */}
-          {post.profileUpdateType === 'avatar' ? (
-            // Foto de perfil - mostrar como círculo maior
-            <div className="w-48 h-48 rounded-full border-4 border-white shadow-lg overflow-hidden">
-              {post.imageUrl ? (
+        <>
+          {/* Legenda antes da mídia (sem repetir o nome) */}
+          {post.content && (
+            <div className="px-3 pb-2">
+              <p className="text-gray-800 break-words">{post.content}</p>
+            </div>
+          )}
+          <div className="px-3 pb-3">
+            {/* Renderizar foto de perfil sem moldura, 828x828 (responsivo até esse limite), clicável */}
+            {post.profileUpdateType === 'avatar' ? (
+              post.imageUrl ? (
                 <img
                   src={post.imageUrl}
                   alt="Foto de perfil atualizada"
-                  className="w-full h-full object-cover"
+                  className="w-full max-w-[828px] aspect-square object-contain"
+                  onClick={() => {
+                    const m = (post.imageUrl || '').match(/\/profile\/photo\/id\/([^?&#]+)/)
+                    if (m && m[1]) navigate(`/profile/photo/id/${m[1]}`)
+                    else navigate(`/photo/id/${post.publicId}`)
+                  }}
                 />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500 text-sm">Sem foto</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            // Foto de capa - mostrar retangular maior
-            <div className="w-full max-w-lg rounded-lg overflow-hidden shadow-lg">
-              {post.imageUrl ? (
+                <div className="w-full max-w-[828px] aspect-square bg-gray-200" />
+              )
+            ) : (
+              // Foto de capa - manter retangular sem moldura extra
+              post.imageUrl ? (
                 <img
                   src={post.imageUrl}
                   alt="Foto de capa atualizada"
-                  className="w-full h-64 object-cover"
+                  className="w-full object-contain"
+                  onClick={() => navigate(`/photo/id/${post.publicId}`)}
                 />
               ) : (
-                <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-500">Foto de capa não disponível</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                <div className="w-full h-64 bg-gray-200" />
+              )
+            )}
+          </div>
+        </>
       ) : post.type === 'text' ? (
         <div className="mx-3 mb-3">
           {post.backgroundColor ? (
@@ -196,12 +208,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
         <VideoClickable post={post} />
       ) : null}
       
-      {/* Caption para posts com mídia */}
-      {post.content && post.type !== 'text' && (
+      {/* Caption para posts com mídia (após a mídia para posts comuns) */}
+      {post.content && post.type !== 'text' && post.type !== 'profile_update' && (
         <div className="px-3 pb-3">
-          <p className="text-gray-800 break-words">
-            <span className="font-semibold">{post.author?.fullName}</span> {post.content}
-          </p>
+          <p className="text-gray-800 break-words">{post.content}</p>
         </div>
       )}
       

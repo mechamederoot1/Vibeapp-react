@@ -660,7 +660,7 @@ const Profile = () => {
   }
 
   // Fun��ões de upload
-  const handleAvatarUpload = async (file, captionText = '') => {
+  const handleAvatarUpload = async (file, captionText = '', originalImageUrl = null) => {
     setUploading(prev => ({ ...prev, avatar: true }))
     setUploadError(null)
     setUploadSuccess(null)
@@ -694,11 +694,18 @@ const Profile = () => {
 
       // Criar post automático no feed
       try {
+        // Garantir URL única para cada foto de perfil usando um ID vibe_XXXXXXXX...
+        const { withVibeIdParam, generateVibeId } = await import('../utils/uniqueId')
+        const baseUrl = originalImageUrl || response.data?.data_url || updatedUser.avatar
+        const uniqueId = generateVibeId(18)
+        const imageUrlUnique = withVibeIdParam(baseUrl, uniqueId)
         await postsAPI.createPost({
           content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto do perfil',
           type: 'profile_update',
           profileUpdateType: 'avatar',
-          imageUrl: response.data?.data_url || updatedUser.avatar
+          imageUrl: imageUrlUnique,
+          profilePhotoId: uniqueId,
+          originalImage: Boolean(!!originalImageUrl)
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
@@ -805,7 +812,7 @@ const Profile = () => {
       } catch (e) {
         console.warn('Não foi possível recarregar informações pessoais após salvar:', e?.response?.data || e.message)
       }
-      setUploadSuccess('Informações pessoais atualizadas com sucesso!')
+      setUploadSuccess('Informa��ões pessoais atualizadas com sucesso!')
 
       setTimeout(() => {
         setUploadSuccess(null)
