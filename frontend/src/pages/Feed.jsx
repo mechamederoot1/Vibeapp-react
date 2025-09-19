@@ -17,6 +17,7 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showShareAsStory, setShowShareAsStory] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
 
   const handleLike = async () => {
     try {
