@@ -633,6 +633,28 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
     }
   }
 
+  const handleUpdatePost = async (postId, data) => {
+    try {
+      const res = await postsAPI.updatePost(postId, data)
+      const updated = res.data
+      setPosts(prev => prev.map(p => (p.id === postId ? updated : p)))
+      return updated
+    } catch (e) {
+      console.error('Erro ao atualizar post:', e)
+      throw e
+    }
+  }
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await postsAPI.deletePost(postId)
+      setPosts(prev => prev.filter(p => p.id !== postId))
+    } catch (e) {
+      console.error('Erro ao excluir post:', e)
+      throw e
+    }
+  }
+
   const handleStoryShare = async (storyData) => {
     try {
       // Story was created, reload stories
