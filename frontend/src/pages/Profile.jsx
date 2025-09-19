@@ -694,11 +694,17 @@ const Profile = () => {
 
       // Criar post automático no feed
       try {
+        // Garantir URL única para cada foto de perfil usando um ID vibe_XXXXXXXX...
+        const { withVibeIdParam, generateVibeId } = await import('../utils/uniqueId')
+        const baseUrl = response.data?.data_url || updatedUser.avatar
+        const uniqueId = generateVibeId(18)
+        const imageUrlUnique = withVibeIdParam(baseUrl, uniqueId)
         await postsAPI.createPost({
           content: (captionText && captionText.trim()) ? captionText.trim() : 'atualizou a foto do perfil',
           type: 'profile_update',
           profileUpdateType: 'avatar',
-          imageUrl: response.data?.data_url || updatedUser.avatar
+          imageUrl: imageUrlUnique,
+          profilePhotoId: uniqueId
         })
       } catch (postError) {
         console.log('Erro ao criar post de atualização:', postError)
