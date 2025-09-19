@@ -452,7 +452,7 @@ const MultipleWorkEducationModal = ({
                   <div className="flex items-center space-x-3">
                     <Briefcase size={20} className="text-gray-500" />
                     <div>
-                      <p className="font-medium text-gray-900">Informações de Trabalho</p>
+                      <p className="font-medium text-gray-900">Informações de trabalho</p>
                       <p className="text-sm text-gray-600">Experiências profissionais e cargo atual</p>
                     </div>
                   </div>
@@ -472,7 +472,7 @@ const MultipleWorkEducationModal = ({
                   <div className="flex items-center space-x-3">
                     <GraduationCap size={20} className="text-gray-500" />
                     <div>
-                      <p className="font-medium text-gray-900">Informações de Educação</p>
+                      <p className="font-medium text-gray-900">Informações de educação</p>
                       <p className="text-sm text-gray-600">Formação acadêmica e cursos</p>
                     </div>
                   </div>
@@ -492,7 +492,7 @@ const MultipleWorkEducationModal = ({
                   <div className="flex items-center space-x-3">
                     <MapPin size={20} className="text-gray-500" />
                     <div>
-                      <p className="font-medium text-gray-900">Informações de Localização</p>
+                      <p className="font-medium text-gray-900">Informações de localização</p>
                       <p className="text-sm text-gray-600">Cidade atual e cidade natal</p>
                     </div>
                   </div>
