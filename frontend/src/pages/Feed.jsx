@@ -804,6 +804,8 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
                 onShare={handleSharePost}
                 onStoryShare={handleStoryShare}
                 onReaction={handleReaction}
+                onUpdatePost={handleUpdatePost}
+                onDeletePost={handleDeletePost}
                 onAvatarClick={async (author) => {
                   try {
                     const group = stories.find(g => g.author?.id === author?.id)
