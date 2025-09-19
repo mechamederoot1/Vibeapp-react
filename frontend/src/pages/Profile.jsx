@@ -1229,9 +1229,9 @@ const Profile = () => {
       </div>
 
       {/* Informações do Perfil */}
-      <div className="px-4 space-y-4">
-        {/* Seção: Nome e username */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+      <div className="px-4">
+        {/* Nome e username (sem cartões) */}
+        <div className="text-center mb-3">
           <div className="flex items-center justify-center space-x-2 mb-1">
             <h1 className="text-xl font-bold">{currentProfileData.name}</h1>
             {currentProfileData.isVerified && (
@@ -1243,39 +1243,37 @@ const Profile = () => {
           <p className="text-gray-600">@{currentProfileData.username}</p>
         </div>
 
-        {/* Seção: Indicadores (posts, seguidores, seguindo) */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="flex justify-center items-center space-x-6">
-            <div className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center">
-              <p className="font-bold text-lg">{profileData.posts}</p>
-              <p className="text-gray-600 text-sm">Posts</p>
-            </div>
-            <button
-              onClick={() => setShowConnections(true)}
-              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-            >
-              <p className="font-bold text-lg">{profileData.followers}</p>
-              <p className="text-gray-600 text-sm">Seguidores</p>
-            </button>
-            <button
-              onClick={() => setShowConnections(true)}
-              className="text-center hover:bg-gray-50 rounded-lg p-2 transition-colors min-w-[80px] flex flex-col items-center"
-            >
-              <p className="font-bold text-lg">{profileData.following}</p>
-              <p className="text-gray-600 text-sm">Seguindo</p>
-            </button>
+        {/* Indicadores */}
+        <div className="flex justify-center items-center space-x-6 mb-4">
+          <div className="text-center p-2 min-w-[80px] flex flex-col items-center">
+            <p className="font-bold text-lg">{profileData.posts}</p>
+            <p className="text-gray-600 text-sm">Posts</p>
           </div>
+          <button
+            onClick={() => setShowConnections(true)}
+            className="text-center p-2 min-w-[80px] flex flex-col items-center hover:text-vibe-blue"
+          >
+            <p className="font-bold text-lg">{profileData.followers}</p>
+            <p className="text-gray-600 text-sm">Seguidores</p>
+          </button>
+          <button
+            onClick={() => setShowConnections(true)}
+            className="text-center p-2 min-w-[80px] flex flex-col items-center hover:text-vibe-blue"
+          >
+            <p className="font-bold text-lg">{profileData.following}</p>
+            <p className="text-gray-600 text-sm">Seguindo</p>
+          </button>
         </div>
 
-        {/* Seção: Biografia */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line text-center">
+        {/* Biografia */}
+        <div className="text-center mb-6">
+          <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
             {profileData.bio}
           </p>
         </div>
 
-        {/* Seção: Ações */}
-        <div className="flex space-x-2">
+        {/* Ações */}
+        <div className="flex space-x-2 mb-6">
           {viewAsVisitor ? (
             <>
               <button className="btn-primary flex-1 flex items-center justify-center">
