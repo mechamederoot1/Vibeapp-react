@@ -535,11 +535,16 @@ const Profile = () => {
           })
         }
 
-        // Posts
+        // Posts (paged)
         if (mapped.posts?.data) {
-          setUserPosts(mapped.posts.data.posts || [])
+          const first = mapped.posts.data.posts || []
+          setUserPosts(first)
+          setUserPostsPage(1)
+          setUserPostsHasMore(first.length === getCurrentLimit())
         } else {
           setUserPosts([])
+          setUserPostsPage(1)
+          setUserPostsHasMore(false)
         }
 
         // Stories
