@@ -100,6 +100,10 @@ const Profile = () => {
   const [personalInfo, setPersonalInfo] = useState(null)
   const [personalInfoLoading, setPersonalInfoLoading] = useState(false)
 
+  // Versões para bust de cache de imagens
+  const [avatarVersion, setAvatarVersion] = useState(0)
+  const [coverVersion, setCoverVersion] = useState(0)
+
   // Estados para destaques
   const [highlights, setHighlights] = useState([])
   const [showCreateHighlightModal, setShowCreateHighlightModal] = useState(false)
@@ -668,6 +672,7 @@ const Profile = () => {
         ...prev,
         avatar: updatedUser.avatar
       }))
+      setAvatarVersion(v => v + 1)
 
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de perfil atualizada com sucesso!')
@@ -718,6 +723,7 @@ const Profile = () => {
         ...prev,
         coverPhoto: updatedUser.coverPhoto
       }))
+      setCoverVersion(v => v + 1)
 
       // Mostrar mensagem de sucesso
       setUploadSuccess('Foto de capa atualizada com sucesso!')
@@ -1038,7 +1044,7 @@ const Profile = () => {
           {currentProfileData.coverPhoto ? (
             <>
               <img
-                src={currentProfileData.coverPhoto}
+                src={`${currentProfileData.coverPhoto}${currentProfileData.coverPhoto.includes('?') ? '&' : '?'}v=${coverVersion}`}
                 alt="Capa do perfil"
                 className="w-full h-full object-cover"
               />
@@ -1114,7 +1120,7 @@ const Profile = () => {
           >
             {currentProfileData.avatar ? (
               <img
-                src={currentProfileData.avatar}
+                src={`${currentProfileData.avatar}${currentProfileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                 alt="Avatar"
                 className="w-full h-full rounded-full object-cover"
               />
@@ -1728,7 +1734,7 @@ const Profile = () => {
                 {profileData.avatar ? (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
                     <img
-                      src={profileData.avatar}
+                      src={`${profileData.avatar}${profileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                       alt="Avatar"
                       className="w-full h-full rounded-full object-cover"
                     />
