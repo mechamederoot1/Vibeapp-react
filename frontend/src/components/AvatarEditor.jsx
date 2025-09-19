@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Upload } from 'lucide-react'
+import { X, RotateCcw, ZoomIn, ZoomOut, Move, Check, Camera } from 'lucide-react'
 
 const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -273,7 +273,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <div className="text-center text-gray-500">
-                    <Upload size={48} className="mx-auto mb-2" />
+                    <Camera size={48} className="mx-auto mb-2" />
                     <p className="text-sm">Selecione uma foto</p>
                   </div>
                 </div>
@@ -286,7 +286,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                     className="bg-black bg-opacity-50 text-white p-1.5 rounded-full hover:bg-opacity-70 transition-all text-xs"
                     title="Trocar foto"
                   >
-                    <Upload size={14} />
+                    <Camera size={14} />
                   </button>
                 </div>
               )}
