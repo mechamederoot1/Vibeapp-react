@@ -11,7 +11,7 @@ import ReactionPicker from '../components/ReactionPicker'
 import ReactionSummary from '../components/ReactionSummary'
 import ShareModal from '../components/ShareModal'
 
-const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }) => {
+const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, onUpdatePost, onDeletePost }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [showShareMenu, setShowShareMenu] = useState(false)
