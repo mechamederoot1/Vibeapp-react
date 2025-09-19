@@ -224,6 +224,16 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     setIsDragging(false)
   }
 
+  const handleWheel = (e) => {
+    if (!image) return
+    e.preventDefault()
+    const minScale = getMinCoverScale(image)
+    const delta = e.deltaY
+    const factor = delta < 0 ? 1.05 : 1 / 1.05
+    const next = Math.min(3, Math.max(minScale, scale * factor))
+    setScale(next)
+  }
+
   const handleReset = () => {
     if (image) {
       centerImage(image)
@@ -235,12 +245,37 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
 
     setLoading(true)
     try {
-      const canvas = canvasRef.current
-      canvas.toBlob(async (blob) => {
+      const displayCanvas = canvasRef.current
+      const canvasSize = 300
+      const exportSize = 1080
+      const scaleFactor = exportSize / canvasSize
+
+      const exportCanvas = document.createElement('canvas')
+      exportCanvas.width = exportSize
+      exportCanvas.height = exportSize
+      const ctx = exportCanvas.getContext('2d')
+
+      // Clip circle
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(exportSize / 2, exportSize / 2, exportSize / 2, 0, Math.PI * 2)
+      ctx.clip()
+
+      // Compute transformed draw based on current scale/position
+      const scaledWidth = image.width * scale * scaleFactor
+      const scaledHeight = image.height * scale * scaleFactor
+      const x = (exportSize - scaledWidth) / 2 + position.x * scaleFactor
+      const y = (exportSize - scaledHeight) / 2 + position.y * scaleFactor
+
+      ctx.drawImage(image, x, y, scaledWidth, scaledHeight)
+      ctx.restore()
+
+      exportCanvas.toBlob(async (blob) => {
+        if (!blob) throw new Error('Falha ao gerar imagem do avatar')
         const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' })
         await onSave(file, caption, originalDataUrl)
         onClose()
-      }, 'image/jpeg', 0.9)
+      }, 'image/jpeg', 0.95)
     } catch (error) {
       console.error('Erro ao salvar avatar:', error)
     } finally {
@@ -290,6 +325,7 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
+                onWheel={handleWheel}
                 style={{ touchAction: 'none' }}
               />
               {!image && (
@@ -318,25 +354,6 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
             </div>
           </div>
 
-          {/* Controles de zoom e posição */}
-          {image && (
-            <div className="space-y-4">
-              {/* Instruções */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <Move size={16} className="text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-800">
-                    <p className="font-medium">Como usar:</p>
-                    <ul className="mt-1 space-y-1 text-xs">
-                      <li>��� Arraste a imagem para posicioná-la</li>
-                      <li>• Use o gesto de pinça (dois dedos) para dar zoom</li>
-                      <li>• Clique em "Resetar" para centralizar</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
 
