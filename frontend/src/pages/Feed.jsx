@@ -153,12 +153,6 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick }
                   alt="Foto de capa atualizada"
                   className="w-full h-64 object-cover"
                 />
-              ) : post.author?.coverPhoto ? (
-                <img
-                  src={post.author.coverPhoto}
-                  alt="Foto de capa atualizada"
-                  className="w-full h-64 object-cover"
-                />
               ) : (
                 <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
                   <span className="text-gray-500">Foto de capa não disponível</span>
