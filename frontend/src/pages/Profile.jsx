@@ -594,7 +594,7 @@ const Profile = () => {
     }
 
     loadUserData()
-  }, [user?.id, userId, publicId, privacySettings.showVisitors])
+  }, [user?.id, userId, publicId, privacySettings.showVisitors, viewMode])
 
   // Use real user data from auth context, fallback to defaults
   const [profileData, setProfileData] = useState({
