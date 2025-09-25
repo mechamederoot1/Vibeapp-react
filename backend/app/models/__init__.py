@@ -11,6 +11,7 @@ from .personal_info import PersonalInfo
 from .highlight import Highlight, HighlightStory
 from .work_experience import WorkExperience
 from .education import Education
+from .follow import Follow
 
 __all__ = [
     "User",
@@ -33,5 +34,6 @@ __all__ = [
     "Highlight",
     "HighlightStory",
     "WorkExperience",
-    "Education"
+    "Education",
+    "Follow"
 ]
