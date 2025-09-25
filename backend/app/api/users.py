@@ -337,8 +337,8 @@ async def search_users(
                     func.lower(User.email).like(f"%{t.lower()}%")
                 ) for t in tokens
             ]
-            combined_tokens = and_(*token_filters)
-            query = query.filter(or_(full_phrase_filter, combined_tokens))
+            any_token = or_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, any_token))
         else:
             query = query.filter(full_phrase_filter)
     else:
@@ -360,8 +360,8 @@ async def search_users(
                     User.email.ilike(f"%{t}%")
                 ) for t in tokens
             ]
-            combined_tokens = and_(*token_filters)
-            query = query.filter(or_(full_phrase_filter, combined_tokens))
+            any_token = or_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, any_token))
         else:
             query = query.filter(full_phrase_filter)
 
