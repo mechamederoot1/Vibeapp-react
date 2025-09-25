@@ -10,6 +10,8 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   const [loading, setLoading] = useState(false)
   const { lastMessage } = useWebSocket()
   const actionIdRef = useRef(0)
+  // Guard window to avoid immediate server/WS overwriting optimistic state
+  const optimisticGuardRef = useRef({ until: 0, preferred: null })
 
   useEffect(() => {
     if (userId && currentUser?.id) {
@@ -17,26 +19,44 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     }
   }, [userId, currentUser?.id])
 
+  const withinGuard = () => Date.now() < optimisticGuardRef.current.until
+  const setGuard = (preferredStatus, ms = 1200) => {
+    optimisticGuardRef.current = { until: Date.now() + ms, preferred: preferredStatus }
+  }
+
   const loadFriendshipStatus = async () => {
     try {
       const response = await friendshipsAPI.getFriendshipStatus(userId)
-      setStatus(response.data.status)
+      const serverStatus = response.data.status
+      if (withinGuard() && optimisticGuardRef.current.preferred && serverStatus !== optimisticGuardRef.current.preferred) {
+        // ignore transient mismatch during guard window
+        return
+      }
+      setStatus(serverStatus)
     } catch (error) {
       console.error('Erro ao carregar status de amizade:', error)
       setStatus('none')
     }
   }
 
-  const refreshStatusSafe = async () => {
+  const refreshStatusSafe = async (delayMs = 0) => {
     const id = ++actionIdRef.current
-    try {
-      const response = await friendshipsAPI.getFriendshipStatus(userId)
-      if (id === actionIdRef.current) {
-        setStatus(response.data.status)
+    const doFetch = async () => {
+      try {
+        const response = await friendshipsAPI.getFriendshipStatus(userId)
+        if (id === actionIdRef.current) {
+          const serverStatus = response.data.status
+          if (withinGuard() && optimisticGuardRef.current.preferred && serverStatus !== optimisticGuardRef.current.preferred) {
+            return // keep optimistic state during guard
+          }
+          setStatus(serverStatus)
+        }
+      } catch (error) {
+        // Keep optimistic status if refresh fails
       }
-    } catch (error) {
-      // Keep optimistic status if refresh fails
     }
+    if (delayMs > 0) setTimeout(doFetch, delayMs)
+    else doFetch()
   }
 
   const handleSendFriendRequest = async () => {
