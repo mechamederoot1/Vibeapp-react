@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import useWebSocket from '../hooks/useWebSocket'
 import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
@@ -541,6 +542,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { lastMessage } = useWebSocket()
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [isFetchingMore, setIsFetchingMore] = useState(false)
@@ -769,6 +771,20 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       console.error('Error creating story:', error)
     }
   }
+
+  // Live reaction updates from WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+    if (lastMessage.type === 'new_reaction' && lastMessage.data?.type === 'post_reaction') {
+      const { postId, reactionType, user } = lastMessage.data
+      setPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p
+        const nextCounts = { ...(p.reactionCounts || {}) }
+        nextCounts[reactionType] = (nextCounts[reactionType] || 0) + 1
+        return { ...p, reactionCounts: nextCounts }
+      }))
+    }
+  }, [lastMessage])
 
   const handleAddToHighlight = async (highlightId, storyId) => {
     try {
