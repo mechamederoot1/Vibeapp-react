@@ -126,6 +126,19 @@ async def get_user_by_public_id(
             )
             db.add(profile_view)
             db.commit()
+            # WebSocket push to profile owner about new visitor
+            try:
+                from ..websocket import manager
+                await manager.send_personal_message({
+                    "type": "profile_view",
+                    "data": {
+                        "profileOwnerId": user.id,
+                        "viewerId": current_user.id,
+                        "createdAt": profile_view.created_at.isoformat() if getattr(profile_view, 'created_at', None) else None
+                    }
+                }, user.id)
+            except Exception:
+                pass
 
     user_data = user.to_public_dict()
     return filter_user_data(db, current_user.id, user_data)
@@ -158,6 +171,18 @@ async def get_user_by_username(
             )
             db.add(profile_view)
             db.commit()
+            try:
+                from ..websocket import manager
+                await manager.send_personal_message({
+                    "type": "profile_view",
+                    "data": {
+                        "profileOwnerId": user.id,
+                        "viewerId": current_user.id,
+                        "createdAt": profile_view.created_at.isoformat() if getattr(profile_view, 'created_at', None) else None
+                    }
+                }, user.id)
+            except Exception:
+                pass
 
     user_data = user.to_public_dict()
     return filter_user_data(db, current_user.id, user_data)
@@ -201,6 +226,18 @@ async def get_user_by_id(
             )
             db.add(profile_view)
             db.commit()
+            try:
+                from ..websocket import manager
+                await manager.send_personal_message({
+                    "type": "profile_view",
+                    "data": {
+                        "profileOwnerId": user_id,
+                        "viewerId": current_user.id,
+                        "createdAt": profile_view.created_at.isoformat() if getattr(profile_view, 'created_at', None) else None
+                    }
+                }, user_id)
+            except Exception:
+                pass
 
     # Filtrar dados baseado na privacidade
     user_data = user.to_public_dict()
@@ -302,7 +339,7 @@ async def search_users(
     limit: int = 20
 ):
     """Search users by name, full name or username. Supports multi-word queries."""
-
+    
     q = (q or '').strip()
     if len(q) < 2:
         raise HTTPException(
