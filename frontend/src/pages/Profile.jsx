@@ -7,7 +7,7 @@ import {
   GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI, friendshipsAPI } from '../services/api'
 import { getPublicProfileId } from '../utils/profileId'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
@@ -147,6 +147,10 @@ const Profile = () => {
     profileVisibility: 'public'
   })
   const [viewAsVisitor, setViewAsVisitor] = useState(false)
+  const [sendingRequest, setSendingRequest] = useState(false)
+  const [requestSent, setRequestSent] = useState(false)
+  const [visitorNote, setVisitorNote] = useState('')
+  const [visitorNoteInfo, setVisitorNoteInfo] = useState('')
 
   // Load user data
   useEffect(() => {
@@ -1343,11 +1347,33 @@ const Profile = () => {
         <div className="flex space-x-2 mb-6">
           {viewAsVisitor ? (
             <>
-              <button className="btn-primary flex-1 flex items-center justify-center">
+              <button
+                onClick={async () => {
+                  if (!targetUserIdState || sendingRequest || requestSent) return
+                  setSendingRequest(true)
+                  try {
+                    await friendshipsAPI.sendFriendRequest(targetUserIdState)
+                    setRequestSent(true)
+                  } catch (e) {
+                    console.error('Erro ao enviar solicitação:', e?.response?.data || e.message)
+                  } finally {
+                    setSendingRequest(false)
+                  }
+                }}
+                disabled={sendingRequest || requestSent}
+                className={`flex-1 flex items-center justify-center ${requestSent ? 'btn-secondary' : 'btn-primary'}`}
+              >
                 <UserPlus size={20} className="mr-2" />
-                Adicionar
+                {requestSent ? 'Solicitação enviada' : (sendingRequest ? 'Enviando...' : 'Adicionar')}
               </button>
-              <button className="btn-secondary w-11 h-11 p-0 flex items-center justify-center">
+              <button
+                onClick={() => {
+                  if (!targetUserIdState) return
+                  navigate(`/messages?userId=${targetUserIdState}`)
+                }}
+                className="btn-secondary w-11 h-11 p-0 flex items-center justify-center"
+                title="Enviar mensagem"
+              >
                 <MessageCircle size={18} />
               </button>
             </>
@@ -1369,6 +1395,35 @@ const Profile = () => {
             </>
           )}
         </div>
+
+        {/* Deixe um recado - disponível apenas ao visitar outro perfil */}
+        {viewAsVisitor && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-2">Deixe um recado</h3>
+            <textarea
+              value={visitorNote}
+              onChange={(e) => setVisitorNote(e.target.value)}
+              placeholder="Escreva uma mensagem para este perfil..."
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+              rows={3}
+              maxLength={300}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-xs text-gray-500">{visitorNote.length}/300</span>
+              <button
+                onClick={() => {
+                  setVisitorNoteInfo('Para publicar diretamente no perfil de outra pessoa é necessário suporte no backend. Entre em contato com o suporte para habilitar esta funcionalidade.')
+                }}
+                className="btn-secondary"
+              >
+                Publicar
+              </button>
+            </div>
+            {visitorNoteInfo && (
+              <p className="text-xs text-gray-500 mt-2">{visitorNoteInfo}</p>
+            )}
+          </div>
+        )}
 
         {/* Informações Pessoais */}
         <div className="bg-gray-50 rounded-lg p-4 mb-6">
