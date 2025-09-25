@@ -87,7 +87,7 @@ def count_mutual_friends(db: Session, user1_id: int, user2_id: int) -> int:
     return mutual_count
 
 @router.post("/requests", response_model=FriendshipResponse)
-def send_friend_request(
+async def send_friend_request(
     request: FriendshipRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -152,7 +152,24 @@ def send_friend_request(
     
     db.add(notification)
     db.commit()
-    
+
+    # WebSocket push
+    try:
+        from ..websocket import manager
+        await manager.send_notification({
+            "id": notification.id,
+            "type": "friend_request",
+            "title": notification.title,
+            "message": notification.content,
+            "related_user_id": current_user.id,
+            "created_at": notification.created_at.isoformat()
+        }, request.friend_id)
+        payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": request.friend_id, "status": "request_sent"}}
+        await manager.send_personal_message(payload, current_user.id)
+        await manager.send_personal_message(payload, request.friend_id)
+    except Exception:
+        pass
+
     return new_friendship
 
 @router.get("/requests/received", response_model=List[FriendWithUser])
@@ -216,7 +233,7 @@ def get_sent_friend_requests(
     return result
 
 @router.put("/requests/{friendship_id}/accept", response_model=FriendshipResponse)
-def accept_friend_request(
+async def accept_friend_request(
     friendship_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -254,11 +271,28 @@ def accept_friend_request(
     
     db.add(notification)
     db.commit()
-    
+
+    # WebSocket push
+    try:
+        from ..websocket import manager
+        await manager.send_notification({
+            "id": notification.id,
+            "type": "friend_accepted",
+            "title": notification.title,
+            "message": notification.content,
+            "related_user_id": current_user.id,
+            "created_at": notification.created_at.isoformat()
+        }, friendship.user_id)
+        payload = {"type": "friendship_update", "data": {"userA": friendship.user_id, "userB": current_user.id, "status": "friends"}}
+        await manager.send_personal_message(payload, friendship.user_id)
+        await manager.send_personal_message(payload, current_user.id)
+    except Exception:
+        pass
+
     return friendship
 
 @router.put("/requests/{friendship_id}/reject")
-def reject_friend_request(
+async def reject_friend_request(
     friendship_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -280,11 +314,19 @@ def reject_friend_request(
     # Remover o pedido
     db.delete(friendship)
     db.commit()
-    
+
+    try:
+        from ..websocket import manager
+        payload = {"type": "friendship_update", "data": {"userA": friendship.user_id, "userB": current_user.id, "status": "none"}}
+        await manager.send_personal_message(payload, friendship.user_id)
+        await manager.send_personal_message(payload, current_user.id)
+    except Exception:
+        pass
+
     return {"message": "Pedido de amizade rejeitado"}
 
 @router.delete("/users/{user_id}")
-def remove_friend(
+async def remove_friend(
     user_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -302,7 +344,15 @@ def remove_friend(
     # Remover a amizade
     db.delete(friendship)
     db.commit()
-    
+
+    try:
+        from ..websocket import manager
+        payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": user_id, "status": "none"}}
+        await manager.send_personal_message(payload, current_user.id)
+        await manager.send_personal_message(payload, user_id)
+    except Exception:
+        pass
+
     return {"message": "Amigo removido com sucesso"}
 
 @router.get("/users/{user_id}/friends", response_model=List[FriendWithUser])
@@ -348,7 +398,7 @@ def get_user_friends(
     return result
 
 @router.delete("/requests/users/{user_id}")
-def cancel_sent_friend_request(
+async def cancel_sent_friend_request(
     user_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -368,6 +418,14 @@ def cancel_sent_friend_request(
 
     db.delete(friendship)
     db.commit()
+
+    try:
+        from ..websocket import manager
+        payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": user_id, "status": "none"}}
+        await manager.send_personal_message(payload, current_user.id)
+        await manager.send_personal_message(payload, user_id)
+    except Exception:
+        pass
 
     return {"message": "Pedido de amizade cancelado"}
 
