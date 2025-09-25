@@ -1361,18 +1361,27 @@ const Profile = () => {
               </button>
             </>
           ) : (
-            <>
-              <div className="flex-1">
-                <FriendshipButton userId={targetUserIdState || profileUser?.id} username={currentProfileData.username} />
-              </div>
+            <div className="flex items-center gap-2 w-full">
+              <FriendshipButton
+                userId={targetUserIdState || profileUser?.id}
+                username={currentProfileData.username}
+                className="px-5 py-3 text-base rounded-xl h-12"
+              />
               <button
                 onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
-                className="btn-secondary w-11 h-11 p-0 flex items-center justify-center"
+                className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
                 title="Enviar mensagem"
               >
-                <MessageCircle size={18} />
+                <MessageCircle size={20} />
               </button>
-            </>
+              <button
+                onClick={() => setShowConnections(true)}
+                className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
+                title="Conexões"
+              >
+                <Users size={20} />
+              </button>
+            </div>
           )}
         </div>
 

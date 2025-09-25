@@ -3,7 +3,7 @@ import { UserPlus, UserCheck, Clock, UserX } from 'lucide-react'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 
-const FriendshipButton = ({ userId, username, onStatusChange }) => {
+const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) => {
   const { user: currentUser } = useAuth()
   const [status, setStatus] = useState('none') // none, request_sent, request_received, friends, self
   const [loading, setLoading] = useState(false)
@@ -105,7 +105,7 @@ const FriendshipButton = ({ userId, username, onStatusChange }) => {
       disabled={loading || !config.onClick}
       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1 ${config.className} ${
         loading ? 'opacity-50 cursor-not-allowed' : ''
-      } ${!config.onClick ? 'cursor-default' : ''}`}
+      } ${!config.onClick ? 'cursor-default' : ''} ${className}`}
       title={config.hoverText}
     >
       {loading ? (
