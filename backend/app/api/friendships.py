@@ -455,10 +455,8 @@ async def cancel_sent_friend_request(
     ).first()
 
     if not friendship:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Pedido de amizade não encontrado para cancelamento"
-        )
+        # Torna idempotente: se não houver pedido pendente enviado, considera OK
+        return {"message": "Nenhum pedido pendente para cancelar"}
 
     db.delete(friendship)
     db.commit()
