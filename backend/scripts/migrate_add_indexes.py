@@ -34,4 +34,3 @@ def migrate():
 if __name__ == "__main__":
     ok = migrate()
     print("✅ Index migration done" if ok else "❌ Index migration failed")
-}
