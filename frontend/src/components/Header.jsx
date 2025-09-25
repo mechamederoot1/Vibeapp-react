@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
-import { api } from '../services/api'
+import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 
 const Header = ({ onOpenPostModal }) => {
@@ -16,6 +16,12 @@ const Header = ({ onOpenPostModal }) => {
     notifications: 0
   })
   const { lastMessage } = useWebSocket()
+
+  // Inline search state
+  const [showSearch, setShowSearch] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searchLoading, setSearchLoading] = useState(false)
 
   const handleEditPhoto = () => {
     try {
@@ -91,6 +97,36 @@ const Header = ({ onOpenPostModal }) => {
     }
   }, [lastMessage])
 
+  // Debounced inline search
+  useEffect(() => {
+    if (!showSearch) return
+    const q = searchQuery.trim()
+    if (!q) {
+      setSearchResults([])
+      return
+    }
+    const t = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const res = await usersAPI.searchUsers(q, 10)
+        setSearchResults(res.data || [])
+      } catch (e) {
+        setSearchResults([])
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 300)
+    return () => clearTimeout(t)
+  }, [searchQuery, showSearch])
+
+  const handleSelectUser = (u) => {
+    if (!u?.id) return
+    navigate(`/profile/${u.id}`)
+    setShowSearch(false)
+    setSearchQuery('')
+    setSearchResults([])
+  }
+
   // Carregar contadores ao montar
   useEffect(() => {
     loadUnreadCounts()
@@ -134,13 +170,75 @@ const Header = ({ onOpenPostModal }) => {
           </button>
 
           {/* Pesquisar */}
-          <button
-            onClick={() => navigate('/search')}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            title="Pesquisar amigos"
-          >
-            <Search size={24} className="text-gray-600" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowSearch((v) => !v)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              title="Pesquisar amigos"
+            >
+              <Search size={24} className="text-gray-600" />
+            </button>
+            {showSearch && (
+              <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-lg p-3 z-20">
+                <div className="relative">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Pesquisar pessoas..."
+                    className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-vibe-blue"
+                  />
+                </div>
+                <div className="mt-2 max-h-64 overflow-auto">
+                  {searchLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <ul className="divide-y divide-gray-100">
+                      {searchResults.map((u) => (
+                        <li key={u.id}>
+                          <button
+                            onClick={() => handleSelectUser(u)}
+                            className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg text-left"
+                          >
+                            {u.avatar ? (
+                              <img src={u.avatar} alt={u.fullName || u.name || u.username} className="w-9 h-9 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
+                                <span className="text-white text-sm font-bold">{(u.fullName || u.firstName || u.name || 'U').charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="font-medium text-gray-900 truncate">{u.fullName || u.name || 'Usuário'}</p>
+                              <p className="text-xs text-gray-500 truncate">@{u.username || 'usuario'}</p>
+                            </div>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="py-4 text-center text-gray-500 text-sm">
+                      {searchQuery.trim() ? 'Nenhum resultado' : 'Digite para procurar usuários'}
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2 text-right">
+                  <button
+                    onClick={() => {
+                      setShowSearch(false)
+                      navigate('/search')
+                    }}
+                    className="text-vibe-blue hover:text-vibe-blue-dark text-sm"
+                  >
+                    Abrir busca avançada
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* User Avatar with Dropdown */}
           <div className="relative">
