@@ -13,20 +13,12 @@ const Notifications = () => {
 
   // Carregar notificações
   const loadNotifications = async () => {
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
-      console.log('🔧 Modo demo - usando notificações vazias')
-      setNotifications([])
-      setLoading(false)
-      return
-    }
-
     try {
-      const response = await api.get('/api/notifications/');
+      const response = await api.get('/notifications');
       setNotifications(response.data);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
-      setNotifications([]) // Set empty array as fallback
+      setNotifications([])
     } finally {
       setLoading(false);
     }
@@ -35,7 +27,7 @@ const Notifications = () => {
   // Marcar notificação como lida
   const markAsRead = async (notificationId) => {
     try {
-      await api.put(`/api/notifications/${notificationId}/read`);
+      await api.put(`/notifications/${notificationId}/read`);
       
       setNotifications(prev => 
         prev.map(n => 
@@ -52,7 +44,7 @@ const Notifications = () => {
   // Marcar todas como lidas
   const markAllAsRead = async () => {
     try {
-      await api.put('/api/notifications/read-all');
+      await api.put('/notifications/read-all');
       
       setNotifications(prev => 
         prev.map(n => ({ 

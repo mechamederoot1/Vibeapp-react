@@ -180,9 +180,24 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
           text: 'Responder',
           icon: UserPlus,
           className: 'bg-vibe-blue text-white hover:bg-vibe-blue-dark',
-          onClick: () => {
-            // Abrir modal de pedidos ou navegar para página de pedidos
-            // Por agora, só indicamos que tem pedido
+          onClick: async () => {
+            if (loading) return
+            setLoading(true)
+            const prev = status
+            setStatus('friends')
+            setGuard('friends')
+            onStatusChange?.(userId, 'friends')
+            try {
+              // Enviar pedido inverso para acionar auto-aceite no backend
+              await friendshipsAPI.sendFriendRequest(userId)
+              await refreshStatusSafe(400)
+            } catch (e) {
+              console.error('Erro ao aceitar pedido:', e)
+              setStatus(prev)
+              onStatusChange?.(userId, prev)
+            } finally {
+              setLoading(false)
+            }
           }
         }
       case 'friends':
