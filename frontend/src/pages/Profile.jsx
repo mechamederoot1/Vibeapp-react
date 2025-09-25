@@ -1363,7 +1363,7 @@ const Profile = () => {
           const { followerId, followingId, isFollowing } = lastMessage.data || {}
           const viewedId = targetUserIdState || profileUser?.id
           if (viewedId && followingId === viewedId) {
-            setCurrentProfileData(prev => ({
+            setProfileData(prev => ({
               ...prev,
               followers: String(Math.max(0, (parseInt(prev.followers, 10) || 0) + (isFollowing ? 1 : -1)))
             }))
@@ -1399,7 +1399,7 @@ const Profile = () => {
                 userId={targetUserIdState || profileUser?.id}
                 className="px-5 py-3 text-base rounded-xl h-12"
                 onChange={(f) => {
-                  setCurrentProfileData(prev => ({
+                  setProfileData(prev => ({
                     ...prev,
                     followers: String(Math.max(0, (parseInt(prev.followers, 10) || 0) + (f ? 1 : -1)))
                   }))
