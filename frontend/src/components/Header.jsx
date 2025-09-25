@@ -86,9 +86,9 @@ const Header = ({ onOpenPostModal }) => {
     loadUnreadCounts()
   }, [])
 
-  // Handle outside click to close search
+  // Handle outside click/touch to close search
   useEffect(() => {
-    const onClickOutside = (e) => {
+    const onOutside = (e) => {
       if (!showSearch) return
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSearch(false)
@@ -96,8 +96,12 @@ const Header = ({ onOpenPostModal }) => {
         setSearchResults([])
       }
     }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
+    document.addEventListener('click', onOutside, true)
+    document.addEventListener('touchstart', onOutside, true)
+    return () => {
+      document.removeEventListener('click', onOutside, true)
+      document.removeEventListener('touchstart', onOutside, true)
+    }
   }, [showSearch])
 
   // Debounced search
