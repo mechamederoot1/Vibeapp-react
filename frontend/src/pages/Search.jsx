@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Search as SearchIcon, UserPlus, Users, X } from 'lucide-react'
+import { Search as SearchIcon, Users, X } from 'lucide-react'
+import FollowButton from '../components/FollowButton'
 import { useNavigate } from 'react-router-dom'
 import { usersAPI } from '../services/api'
 
@@ -93,16 +94,7 @@ const Search = () => {
             )}
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation() // Evitar ativar o clique do card
-            console.log('Seguir usuário:', user)
-          }}
-          className="btn-primary"
-        >
-          <UserPlus size={16} className="mr-1" />
-          Seguir
-        </button>
+        <FollowButton userId={user.id} />
       </div>
     )
   }
