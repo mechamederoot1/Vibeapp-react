@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { UserPlus, UserCheck, Clock, UserX } from 'lucide-react'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import useWebSocket from '../hooks/useWebSocket'
 
 const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) => {
   const { user: currentUser } = useAuth()
   const [status, setStatus] = useState('none') // none, request_sent, request_received, friends, self
   const [loading, setLoading] = useState(false)
+  const { lastMessage } = useWebSocket()
 
   useEffect(() => {
     if (userId && currentUser?.id) {
@@ -85,6 +87,34 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!lastMessage || !userId || !currentUser?.id) return
+    // Notifications for friendship
+    if (lastMessage.type === 'notification') {
+      const n = lastMessage.data || {}
+      if (n.type === 'friend_request' && n.related_user_id === userId) {
+        setStatus('request_received')
+        onStatusChange?.(userId, 'request_received')
+      }
+      if (n.type === 'friend_accepted' && n.related_user_id === userId) {
+        setStatus('friends')
+        onStatusChange?.(userId, 'friends')
+      }
+    }
+    if (lastMessage.type === 'friendship_update') {
+      const d = lastMessage.data || {}
+      const a = d.userA, b = d.userB
+      if ((a === currentUser.id && b === userId) || (b === currentUser.id && a === userId)) {
+        const map = { 'request_sent': 'request_received', 'friends': 'friends', 'none': 'none' }
+        let next = d.status
+        if (d.status === 'request_sent' && d.userA === currentUser.id) next = 'request_sent'
+        else if (d.status === 'request_sent') next = 'request_received'
+        setStatus(next)
+        onStatusChange?.(userId, next)
+      }
+    }
+  }, [lastMessage, userId, currentUser?.id])
 
   const getButtonConfig = () => {
     switch (status) {
