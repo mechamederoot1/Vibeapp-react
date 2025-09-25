@@ -30,7 +30,7 @@ const BottomNavigation = () => {
       }))
     }
 
-    if (lastMessage.type === 'profile_visit') {
+    if (lastMessage.type === 'profile_view') {
       setUnreadCounts(prev => ({
         ...prev,
         visits: prev.visits + 1
