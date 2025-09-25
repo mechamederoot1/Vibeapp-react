@@ -6,6 +6,7 @@ from datetime import datetime
 from ..database.database import get_db
 from ..models.user import User
 from ..models.post import Post, PostLike, Comment, Share
+from ..models.notification import Notification
 from .auth import get_current_user
 from ..utils.privacy import can_view_post
 
@@ -357,7 +358,47 @@ async def create_comment(
     post.comments_count += 1
     db.commit()
     db.refresh(new_comment)
-    
+
+    # Criar notificação para o autor do post (se não for o próprio autor comentando)
+    try:
+        if post.author_id != current_user.id:
+            notification = Notification(
+                user_id=post.author_id,
+                type="comment",
+                title="Novo comentário",
+                message=f"{current_user.display_name or current_user.username} comentou no seu post",
+                related_user_id=current_user.id,
+                related_post_id=post.id,
+                action_url=f"/posts/{post.public_id}" if getattr(post, 'public_id', None) else None
+            )
+            db.add(notification)
+            db.commit()
+
+            # Enviar via WebSocket
+            try:
+                from ..websocket import manager
+                await manager.send_notification({
+                    "id": getattr(notification, 'id', None),
+                    "type": "comment",
+                    "title": notification.title,
+                    "message": notification.message,
+                    "related_user_id": current_user.id,
+                    "related_post_id": post.id,
+                    "created_at": notification.created_at.isoformat() if getattr(notification, 'created_at', None) else None
+                }, post.author_id)
+                await manager.send_personal_message({
+                    "type": "new_comment",
+                    "data": {
+                        "postId": post.id,
+                        "authorId": post.author_id,
+                        "comment": new_comment.to_dict(current_user.id)
+                    }
+                }, post.author_id)
+            except Exception:
+                pass
+    except Exception as _:
+        pass
+
     return new_comment.to_dict(current_user.id)
 
 @router.put("/{post_id}")
