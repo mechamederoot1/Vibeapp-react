@@ -81,6 +81,10 @@ async def lifespan(app: FastAPI):
                     conn.execute(text("ALTER TABLE posts ADD COLUMN video_blob BLOB"))
                 if not has_col('posts', 'video_mime'):
                     conn.execute(text("ALTER TABLE posts ADD COLUMN video_mime TEXT"))
+                if not has_col('posts', 'wall_owner_id'):
+                    conn.execute(text("ALTER TABLE posts ADD COLUMN wall_owner_id INTEGER"))
+                # index for wall posts
+                conn.execute(text("CREATE INDEX IF NOT EXISTS ix_posts_wall_owner_id_created_at ON posts (wall_owner_id, created_at)"))
                 # stories
                 if not has_col('stories', 'media_blob'):
                     conn.execute(text("ALTER TABLE stories ADD COLUMN media_blob BLOB"))

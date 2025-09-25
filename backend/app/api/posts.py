@@ -19,6 +19,7 @@ class PostCreate(BaseModel):
     backgroundColor: Optional[str] = None  # Background color for text posts
     profileUpdateType: Optional[str] = None  # avatar, cover (for profile update posts)
     privacy: str = "public"  # public, friends, private
+    wallOwnerId: Optional[int] = None  # if set, this post appears on another user's profile wall
 
 class PostUpdate(BaseModel):
     content: Optional[str] = None
@@ -94,7 +95,8 @@ async def create_post(
         post_type=post_data.type,
         background_color=post_data.backgroundColor,
         profile_update_type=post_data.profileUpdateType,
-        privacy=post_data.privacy
+        privacy=post_data.privacy,
+        wall_owner_id=post_data.wallOwnerId
     )
 
     # If plain URLs provided, keep them as external media
@@ -542,8 +544,8 @@ async def get_user_posts(
     offset = (page - 1) * limit
     
     posts = db.query(Post).filter(
-        Post.author_id == user_id,
-        Post.is_active == True
+        Post.is_active == True,
+        ((Post.author_id == user_id) | (Post.wall_owner_id == user_id))
     ).order_by(Post.created_at.desc()).offset(offset).limit(limit).all()
 
     posts_data = []

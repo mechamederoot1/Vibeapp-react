@@ -150,7 +150,8 @@ const Profile = () => {
   const [sendingRequest, setSendingRequest] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
   const [visitorNote, setVisitorNote] = useState('')
-  const [visitorNoteInfo, setVisitorNoteInfo] = useState('')
+  const [visitorNoteLoading, setVisitorNoteLoading] = useState(false)
+  const [visitorNoteError, setVisitorNoteError] = useState('')
 
   // Load user data
   useEffect(() => {
@@ -1411,16 +1412,34 @@ const Profile = () => {
             <div className="flex items-center justify-between mt-2">
               <span className="text-xs text-gray-500">{visitorNote.length}/300</span>
               <button
-                onClick={() => {
-                  setVisitorNoteInfo('Para publicar diretamente no perfil de outra pessoa é necessário suporte no backend. Entre em contato com o suporte para habilitar esta funcionalidade.')
+                disabled={!visitorNote.trim() || visitorNoteLoading || !targetUserIdState}
+                onClick={async () => {
+                  if (!visitorNote.trim() || !targetUserIdState) return
+                  setVisitorNoteLoading(true)
+                  setVisitorNoteError('')
+                  try {
+                    const res = await postsAPI.createPost({
+                      content: visitorNote.trim(),
+                      type: 'text',
+                      privacy: 'public',
+                      wallOwnerId: targetUserIdState
+                    })
+                    setVisitorNote('')
+                    // prepend to posts list if currently viewing target's profile
+                    setUserPosts((prev) => [{...res.data, author: res.data?.author || null}, ...prev])
+                  } catch (e) {
+                    setVisitorNoteError(e?.response?.data?.detail || 'Falha ao publicar recado')
+                  } finally {
+                    setVisitorNoteLoading(false)
+                  }
                 }}
-                className="btn-secondary"
+                className={`btn-secondary ${visitorNoteLoading ? 'opacity-60' : ''}`}
               >
-                Publicar
+                {visitorNoteLoading ? 'Publicando...' : 'Publicar'}
               </button>
             </div>
-            {visitorNoteInfo && (
-              <p className="text-xs text-gray-500 mt-2">{visitorNoteInfo}</p>
+            {visitorNoteError && (
+              <p className="text-xs text-red-500 mt-2">{visitorNoteError}</p>
             )}
           </div>
         )}

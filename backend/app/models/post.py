@@ -11,11 +11,13 @@ class Post(Base):
     __table_args__ = (
         Index('ix_posts_created_at', 'created_at'),
         Index('ix_posts_author_id_created_at', 'author_id', 'created_at'),
+        Index('ix_posts_wall_owner_id_created_at', 'wall_owner_id', 'created_at'),
     )
 
     id = Column(Integer, primary_key=True, index=True)
     public_id = Column(String, unique=True, index=True, nullable=True)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    wall_owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Content
     content = Column(Text, nullable=True)  # Text content
@@ -75,6 +77,7 @@ class Post(Base):
             "id": self.id,
             "publicId": self.public_id,
             "authorId": self.author_id,
+            "wallOwnerId": self.wall_owner_id,
             "author": self.author.to_public_dict() if self.author else None,
             "content": self.content,
             "imageUrl": (f"/api/media/posts/{self.id}/image" if getattr(self, 'image_blob', None) else self.image_url),
