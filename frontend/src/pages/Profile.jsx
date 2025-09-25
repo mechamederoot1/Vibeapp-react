@@ -26,6 +26,7 @@ import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 import StoryViewer from '../components/StoryViewer'
+import FriendshipButton from '../components/FriendshipButton'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
