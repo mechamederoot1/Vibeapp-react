@@ -214,6 +214,7 @@ export const friendshipsAPI = {
   getSentRequests: () => api.get('/friendships/requests/sent'),
   acceptFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/accept`),
   rejectFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/reject`),
+  cancelFriendRequest: (userId) => api.delete(`/friendships/requests/users/${userId}`),
   removeFriend: (userId) => api.delete(`/friendships/users/${userId}`),
   getUserFriends: (userId, limit = 50) => api.get(`/friendships/users/${userId}/friends?limit=${limit}`),
   getFriendshipStatus: (userId) => api.get(`/friendships/users/${userId}/friendship-status`)

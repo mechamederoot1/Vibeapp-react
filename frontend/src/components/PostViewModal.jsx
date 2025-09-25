@@ -59,38 +59,44 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
   const handleLike = async () => {
     if (!currentPost) return
 
+    const prev = { isLiked: currentPost.isLiked, likesCount: currentPost.likesCount }
+    const nextLiked = !currentPost.isLiked
+    const optimistic = { ...currentPost, isLiked: nextLiked, likesCount: currentPost.likesCount + (nextLiked ? 1 : -1) }
+    setCurrentPost(optimistic)
+    onPostUpdate?.(optimistic)
     try {
       const response = await postsAPI.likePost(currentPost.id)
-      const updatedPost = {
-        ...currentPost,
-        isLiked: response.data.isLiked,
-        likesCount: response.data.likesCount
-      }
+      const updatedPost = { ...optimistic, isLiked: response.data.isLiked, likesCount: response.data.likesCount }
       setCurrentPost(updatedPost)
       onPostUpdate?.(updatedPost)
     } catch (error) {
       console.error('Error liking post:', error)
+      const rolled = { ...currentPost, ...prev }
+      setCurrentPost(rolled)
+      onPostUpdate?.(rolled)
     }
   }
 
   const handleReaction = async (reactionType) => {
     if (!currentPost?.id) return
+    const prev = { userReaction: currentPost.userReaction, reactionCounts: { ...(currentPost.reactionCounts || {}) } }
+    const nextCounts = { ...(currentPost.reactionCounts || {}) }
+    if (currentPost.userReaction) nextCounts[currentPost.userReaction] = Math.max(0, (nextCounts[currentPost.userReaction] || 0) - 1)
+    if (reactionType) nextCounts[reactionType] = (nextCounts[reactionType] || 0) + 1
+    const optimistic = { ...currentPost, userReaction: reactionType || null, reactionCounts: nextCounts }
+    setCurrentPost(optimistic)
+    onPostUpdate?.(optimistic)
     try {
       if (reactionType) {
         await reactionsAPI.addPostReaction(currentPost.id, reactionType)
       } else {
         await reactionsAPI.removePostReaction(currentPost.id)
       }
-      // Reload post to reflect counts and user reaction
-      try {
-        const res = await postsAPI.getPost(currentPost.id)
-        setCurrentPost(res.data)
-        onPostUpdate?.(res.data)
-      } catch (e) {
-        // ignore
-      }
     } catch (error) {
       console.error('Error handling reaction:', error)
+      const rolled = { ...currentPost, userReaction: prev.userReaction || null, reactionCounts: prev.reactionCounts }
+      setCurrentPost(rolled)
+      onPostUpdate?.(rolled)
     }
   }
 

@@ -25,26 +25,38 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   }
 
   const handleSendFriendRequest = async () => {
+    if (loading) return
     setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('request_sent')
+    onStatusChange?.(userId, 'request_sent')
     try {
       await friendshipsAPI.sendFriendRequest(userId)
-      setStatus('request_sent')
-      onStatusChange?.(userId, 'request_sent')
     } catch (error) {
       console.error('Erro ao enviar pedido:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
     } finally {
       setLoading(false)
     }
   }
 
   const handleRemoveFriend = async () => {
+    if (loading) return
     setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('none')
+    onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.removeFriend(userId)
-      setStatus('none')
-      onStatusChange?.(userId, 'none')
     } catch (error) {
       console.error('Erro ao remover amigo:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
     } finally {
       setLoading(false)
     }
@@ -53,6 +65,25 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   // Não mostrar botão para si mesmo
   if (status === 'self' || userId === currentUser?.id) {
     return null
+  }
+
+  const handleCancelFriendRequest = async () => {
+    if (loading) return
+    setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('none')
+    onStatusChange?.(userId, 'none')
+    try {
+      await friendshipsAPI.cancelFriendRequest(userId)
+    } catch (error) {
+      console.error('Erro ao cancelar pedido:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getButtonConfig = () => {
@@ -66,10 +97,10 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
         }
       case 'request_sent':
         return {
-          text: 'Pendente',
-          icon: Clock,
-          className: 'bg-gray-100 text-gray-600',
-          onClick: null // Não clicável
+          text: 'Cancelar',
+          icon: UserX,
+          className: 'bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600',
+          onClick: handleCancelFriendRequest
         }
       case 'request_received':
         return {

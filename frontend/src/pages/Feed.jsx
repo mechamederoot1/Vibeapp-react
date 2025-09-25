@@ -649,22 +649,27 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   const handleLikePost = async (postId) => {
+    // Optimistic toggle
+    let prev
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== postId) return post
+      prev = { isLiked: post.isLiked, likesCount: post.likesCount }
+      const nextLiked = !post.isLiked
+      return { ...post, isLiked: nextLiked, likesCount: post.likesCount + (nextLiked ? 1 : -1) }
+    }))
     try {
       const response = await postsAPI.likePost(postId)
-      // Update post in local state
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
-            ? { 
-                ...post, 
-                isLiked: response.data.isLiked,
-                likesCount: response.data.likesCount
-              }
-            : post
-        )
-      )
+      setPosts(prevPosts => prevPosts.map(post => (
+        post.id === postId ? { ...post, isLiked: response.data.isLiked, likesCount: response.data.likesCount } : post
+      )))
     } catch (error) {
       console.error('Error liking post:', error)
+      // rollback
+      if (prev) {
+        setPosts(prevPosts => prevPosts.map(post => (
+          post.id === postId ? { ...post, ...prev } : post
+        )))
+      }
     }
   }
 
@@ -717,24 +722,31 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   }
 
   const handleReaction = async (postId, reactionType) => {
+    // Optimistic update counts and current reaction
+    let prev
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id !== postId) return post
+      const current = post.userReaction
+      prev = { userReaction: current, reactionCounts: { ...(post.reactionCounts || {}) } }
+      const nextCounts = { ...(post.reactionCounts || {}) }
+      if (current) nextCounts[current] = Math.max(0, (nextCounts[current] || 0) - 1)
+      if (reactionType) nextCounts[reactionType] = (nextCounts[reactionType] || 0) + 1
+      return { ...post, userReaction: reactionType || null, reactionCounts: nextCounts }
+    }))
     try {
-      // TODO: Implement reaction API call
-      // For now, just update local state
-      setPosts(posts.map(post =>
-        post.id === postId
-          ? {
-              ...post,
-              userReaction: reactionType,
-              reactionCounts: {
-                ...post.reactionCounts,
-                [reactionType]: (post.reactionCounts?.[reactionType] || 0) + 1
-              }
-            }
-          : post
-      ))
-      console.log('Reaction added:', reactionType, 'to post:', postId)
+      if (reactionType) {
+        await reactionsAPI.addPostReaction(postId, reactionType)
+      } else {
+        await reactionsAPI.removePostReaction(postId)
+      }
     } catch (error) {
       console.error('Error reacting to post:', error)
+      // rollback
+      if (prev) {
+        setPosts(prevPosts => prevPosts.map(post => (
+          post.id === postId ? { ...post, userReaction: prev.userReaction || null, reactionCounts: prev.reactionCounts } : post
+        )))
+      }
     }
   }
 

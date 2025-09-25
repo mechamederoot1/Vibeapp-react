@@ -49,26 +49,37 @@ const PostDetail = ({ mediaType }) => {
   const isVideo = post.type === 'video' || mediaType === 'video'
 
   const handleReaction = async (reactionType) => {
+    if (!post?.id) return
+    // Optimistic update
+    const prev = { userReaction: post.userReaction, reactionCounts: { ...(post.reactionCounts || {}) } }
+    const nextCounts = { ...(post.reactionCounts || {}) }
+    if (post.userReaction) nextCounts[post.userReaction] = Math.max(0, (nextCounts[post.userReaction] || 0) - 1)
+    if (reactionType) nextCounts[reactionType] = (nextCounts[reactionType] || 0) + 1
+    setPost({ ...post, userReaction: reactionType || null, reactionCounts: nextCounts })
     try {
-      if (!post?.id) return
       if (reactionType) {
         await reactionsAPI.addPostReaction(post.id, reactionType)
       } else {
         await reactionsAPI.removePostReaction(post.id)
       }
-      await loadPost()
     } catch (e) {
       console.error('Erro ao reagir:', e)
+      // rollback
+      setPost(p => ({ ...p, userReaction: prev.userReaction || null, reactionCounts: prev.reactionCounts }))
     }
   }
 
   const handleLike = async () => {
+    if (!post?.id) return
+    const prev = { isLiked: post.isLiked, likesCount: post.likesCount }
+    const nextLiked = !post.isLiked
+    setPost({ ...post, isLiked: nextLiked, likesCount: post.likesCount + (nextLiked ? 1 : -1) })
     try {
-      if (!post?.id) return
-      await postsAPI.likePost(post.id)
-      await loadPost()
+      const res = await postsAPI.likePost(post.id)
+      setPost(p => ({ ...p, isLiked: res.data.isLiked, likesCount: res.data.likesCount }))
     } catch (e) {
       console.error('Erro ao curtir:', e)
+      setPost(p => ({ ...p, ...prev }))
     }
   }
 

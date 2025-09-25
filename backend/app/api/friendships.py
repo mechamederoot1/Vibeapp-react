@@ -347,6 +347,30 @@ def get_user_friends(
     
     return result
 
+@router.delete("/requests/users/{user_id}")
+def cancel_sent_friend_request(
+    user_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Cancelar um pedido de amizade enviado pelo usuário atual para o user_id informado"""
+    friendship = db.query(Friendship).filter(
+        Friendship.user_id == current_user.id,
+        Friendship.friend_id == user_id,
+        Friendship.status == "pending"
+    ).first()
+
+    if not friendship:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pedido de amizade não encontrado para cancelamento"
+        )
+
+    db.delete(friendship)
+    db.commit()
+
+    return {"message": "Pedido de amizade cancelado"}
+
 @router.get("/users/{user_id}/friendship-status")
 def get_friendship_status(
     user_id: int,
@@ -354,15 +378,15 @@ def get_friendship_status(
     db: Session = Depends(get_db)
 ):
     """Verificar status de amizade com um usuário"""
-    
+
     if current_user.id == user_id:
         return {"status": "self"}
-    
+
     friendship = get_friendship_between_users(db, current_user.id, user_id)
-    
+
     if not friendship:
         return {"status": "none"}
-    
+
     # Determinar o status específico
     if friendship.status == "accepted":
         return {"status": "friends"}
@@ -373,7 +397,7 @@ def get_friendship_status(
             return {"status": "request_received"}
     elif friendship.status == "blocked":
         return {"status": "blocked"}
-    
+
     return {"status": "unknown"}
 
 # Função helper exportada para outros módulos
