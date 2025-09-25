@@ -295,6 +295,7 @@ async def get_profile_visitors(
 
 @router.get("/search")
 @router.get("/search-users")
+@router.get("/search/users")
 async def search_users(
     q: str,
     current_user: User = Depends(get_current_user),
