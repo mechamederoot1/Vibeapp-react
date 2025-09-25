@@ -113,6 +113,50 @@ async def send_friend_request(
     existing_friendship = get_friendship_between_users(db, current_user.id, request.friend_id)
     if existing_friendship:
         if existing_friendship.status == "pending":
+            # Se já existe um pedido enviado por mim, tornar idempotente
+            if existing_friendship.user_id == current_user.id and existing_friendship.friend_id == request.friend_id:
+                return existing_friendship
+            # Se existe um pedido inverso (o outro usuário me enviou), aceitar automaticamente
+            if existing_friendship.user_id == request.friend_id and existing_friendship.friend_id == current_user.id:
+                existing_friendship.status = "accepted"
+                existing_friendship.updated_at = datetime.utcnow()
+                db.commit()
+                db.refresh(existing_friendship)
+
+                # Notificar o remetente original que foi aceito
+                try:
+                    notification = Notification(
+                        user_id=existing_friendship.user_id,
+                        type="friend_accepted",
+                        title="Pedido de amizade aceito",
+                        content=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
+                        related_user_id=current_user.id,
+                        related_id=existing_friendship.id
+                    )
+                    db.add(notification)
+                    db.commit()
+                except Exception:
+                    pass
+
+                # WebSocket push
+                try:
+                    from ..websocket import manager
+                    await manager.send_notification({
+                        "id": notification.id,
+                        "type": "friend_accepted",
+                        "title": notification.title,
+                        "message": notification.content,
+                        "related_user_id": current_user.id,
+                        "created_at": notification.created_at.isoformat()
+                    }, existing_friendship.user_id)
+                    payload = {"type": "friendship_update", "data": {"userA": existing_friendship.user_id, "userB": existing_friendship.friend_id, "status": "friends"}}
+                    await manager.send_personal_message(payload, existing_friendship.user_id)
+                    await manager.send_personal_message(payload, existing_friendship.friend_id)
+                except Exception:
+                    pass
+
+                return existing_friendship
+
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Já existe um pedido de amizade pendente"
