@@ -6,6 +6,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, reactionsAPI } from '../services/api'
 import ReactionPicker from './ReactionPicker'
+import { useNavigate } from 'react-router-dom'
 
 const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth()
@@ -15,6 +16,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
   const [loading, setLoading] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (isOpen && post) {
@@ -288,25 +290,46 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
           {/* Post Header */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              {currentPost.author?.avatar ? (
-                <img
-                  src={currentPost.author.avatar}
-                  alt={currentPost.author.fullName}
-                  className="w-10 h-10 rounded-full"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-vibe-blue flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    {currentPost.author?.firstName?.charAt(0)?.toUpperCase() ||
-                     currentPost.author?.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-              )}
+              <button
+                onClick={() => {
+                  const u = currentPost.author || {}
+                  const publicId = u.publicProfileId || u.public_profile_id
+                  if (publicId) navigate(`/profile/id/${publicId}`)
+                  else if (u.id) navigate(`/profile/${u.id}`)
+                  else if (u.username) navigate(`/profile/${u.username}`)
+                }}
+                className="flex-shrink-0"
+                aria-label="Ver perfil"
+              >
+                {currentPost.author?.avatar ? (
+                  <img
+                    src={currentPost.author.avatar}
+                    alt={currentPost.author.fullName}
+                    className="w-10 h-10 rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-vibe-blue flex items-center justify-center">
+                    <span className="text-white font-bold">
+                      {currentPost.author?.firstName?.charAt(0)?.toUpperCase() ||
+                       currentPost.author?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
+              </button>
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <h4 className="font-semibold text-gray-900">
+                  <button
+                    onClick={() => {
+                      const u = currentPost.author || {}
+                      const publicId = u.publicProfileId || u.public_profile_id
+                      if (publicId) navigate(`/profile/id/${publicId}`)
+                      else if (u.id) navigate(`/profile/${u.id}`)
+                      else if (u.username) navigate(`/profile/${u.username}`)
+                    }}
+                    className="font-semibold text-gray-900 hover:text-vibe-blue"
+                  >
                     {currentPost.author?.fullName || currentPost.author?.firstName || 'Usuário'}
-                  </h4>
+                  </button>
                   {currentPost.author?.isVerified && (
                     <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
                       <span className="text-white text-xs">✓</span>
@@ -344,25 +367,46 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                 <div className="space-y-4">
                   {comments.map((comment) => (
                     <div key={comment.id} className="flex space-x-3">
-                      {comment.author?.avatar ? (
-                        <img
-                          src={comment.author.avatar}
-                          alt={comment.author.fullName}
-                          className="w-8 h-8 rounded-full flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-xs font-bold">
-                            {comment.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                          </span>
-                        </div>
-                      )}
+                      <button
+                        onClick={() => {
+                          const u = comment.author || {}
+                          const publicId = u.publicProfileId || u.public_profile_id
+                          if (publicId) navigate(`/profile/id/${publicId}`)
+                          else if (u.id) navigate(`/profile/${u.id}`)
+                          else if (u.username) navigate(`/profile/${u.username}`)
+                        }}
+                        className="flex-shrink-0"
+                        aria-label="Ver perfil"
+                      >
+                        {comment.author?.avatar ? (
+                          <img
+                            src={comment.author.avatar}
+                            alt={comment.author.fullName}
+                            className="w-8 h-8 rounded-full flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-xs font-bold">
+                              {comment.author?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
+                      </button>
                       <div className="flex-1">
                         <div className="bg-gray-50 rounded-lg p-3">
                           <div className="flex items-center space-x-2 mb-1">
-                            <span className="font-medium text-sm">
+                            <button
+                              onClick={() => {
+                                const u = comment.author || {}
+                                const publicId = u.publicProfileId || u.public_profile_id
+                                if (publicId) navigate(`/profile/id/${publicId}`)
+                                else if (u.id) navigate(`/profile/${u.id}`)
+                                else if (u.username) navigate(`/profile/${u.username}`)
+                              }}
+                              className="font-medium text-sm hover:text-vibe-blue"
+                            >
                               {comment.author?.fullName || 'Usuário'}
-                            </span>
+                            </button>
                             <span className="text-xs text-gray-500">
                               {formatDateTime(comment.createdAt)}
                             </span>
