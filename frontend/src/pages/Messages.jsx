@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../services/api';
+import { api, usersAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 
 const Messages = () => {
@@ -235,6 +235,31 @@ const Messages = () => {
   // Carregar conversas ao montar
   useEffect(() => {
     loadConversations().finally(() => setLoading(false));
+  }, []);
+
+  // Se vier com ?userId=, abrir conversa com esse usuário
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const targetId = params.get('userId');
+    if (!targetId) return;
+    (async () => {
+      try {
+        const res = await usersAPI.getUserById(targetId);
+        const u = res.data;
+        const conv = {
+          id: `u-${u.id}`,
+          otherUser: {
+            id: u.id,
+            firstName: u.firstName || u.name || u.username || 'Usuário',
+            lastName: u.lastName || ''
+          }
+        };
+        setSelectedConversation(conv);
+        await loadMessages(u.id);
+      } catch (e) {
+        console.error('Não foi possível abrir a conversa:', e?.response?.data || e.message);
+      }
+    })();
   }, []);
 
   // Scroll quando mensagens mudarem
