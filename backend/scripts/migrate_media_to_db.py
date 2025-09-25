@@ -3,7 +3,7 @@
 Migration script to add BLOB columns to SQLite tables and migrate existing files from uploads/ into DB blob columns.
 Usage:
   - Backup your DB before running: cp backend/vibe_social.db backend/vibe_social.db.bak
-  - Run: python3 backend/migrate_media_to_db.py
+  - Run: python3 backend/scripts/migrate_media_to_db.py
 
 This script will:
   1. Execute ALTER TABLE statements to add new columns (if they don't exist).
@@ -20,7 +20,7 @@ import pathlib
 import sys
 from contextlib import closing
 
-ROOT = os.path.dirname(__file__)
+ROOT = os.path.dirname(os.path.dirname(__file__))
 DB_PATH = os.path.join(ROOT, 'vibe_social.db')
 UPLOADS_DIR = os.path.join(ROOT, 'uploads')
 

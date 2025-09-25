@@ -5,7 +5,7 @@ import hashlib
 import secrets
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'vibe_social.db')
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'vibe_social.db')
 
 DIGITS = '0123456789'
 
@@ -14,7 +14,7 @@ def generate_vibe_id(length: int = 18) -> str:
 
 
 def table_exists(cur, name: str) -> bool:
-    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (name,))
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name= ?", (name,))
     return cur.fetchone() is not None
 
 
@@ -84,14 +84,14 @@ def migrate() -> bool:
                 continue
             # Compute hash for deduplication
             h = hashlib.sha256(blob).hexdigest()
-            cur.execute("SELECT id FROM profile_photos WHERE user_id=? AND blob_hash=? LIMIT 1", (user_id, h))
+            cur.execute("SELECT id FROM profile_photos WHERE user_id= ? AND blob_hash= ? LIMIT 1", (user_id, h))
             if cur.fetchone():
                 skipped += 1
                 continue
             # Generate unique id (ensure not colliding in DB)
             while True:
                 photo_id = generate_vibe_id(18)
-                cur.execute("SELECT 1 FROM profile_photos WHERE id=?", (photo_id,))
+                cur.execute("SELECT 1 FROM profile_photos WHERE id= ?", (photo_id,))
                 if cur.fetchone() is None:
                     break
             # Insert historical record

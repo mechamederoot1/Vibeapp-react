@@ -597,7 +597,10 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       try {
         if (user) {
           const hlRes = await highlightsAPI.get()
-          const userHighlights = hlRes.data?.highlights || []
+          const userHighlights = (hlRes.data?.highlights || []).map(h => ({
+            ...h,
+            coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover
+          }))
           setHighlights(userHighlights)
           if (userHighlights.length > 0) {
             const idsArrays = await Promise.all(

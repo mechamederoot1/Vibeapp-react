@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Migração para adicionar um ID público único de 10 dígitos para posts (public_id)
 - Adiciona coluna public_id em posts (se não existir)
@@ -8,7 +9,11 @@ Compatível com SQLite
 import sys, os, random, string
 from sqlalchemy import text
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
+# Garantir que o diretório raiz do backend esteja no PYTHONPATH
+PARENT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PARENT not in sys.path:
+    sys.path.insert(0, PARENT)
+
 from app.database.database import SessionLocal
 
 

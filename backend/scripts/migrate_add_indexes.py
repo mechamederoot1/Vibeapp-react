@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+import sys
+import os
+
+# Ensure backend root is on sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sqlalchemy import text
 from app.database.database import engine
 
@@ -23,3 +30,7 @@ def migrate():
         for sql in statements:
             conn.execute(text(sql))
     return True
+
+if __name__ == "__main__":
+    ok = migrate()
+    print("✅ Index migration done" if ok else "❌ Index migration failed")

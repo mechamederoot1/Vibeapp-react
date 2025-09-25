@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Migração para adicionar um ID público único de perfil aos usuários
 - Adiciona coluna public_profile_id na tabela users (se não existir)
@@ -12,8 +13,10 @@ import random
 import string
 from sqlalchemy import text
 
-# Garantir que o app esteja no PYTHONPATH
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
+# Garantir que o diretório raiz do backend esteja no PYTHONPATH
+PARENT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PARENT not in sys.path:
+    sys.path.insert(0, PARENT)
 
 from app.database.database import SessionLocal
 

@@ -43,7 +43,12 @@ class Highlight(Base):
             "userId": self.user_id,
             "title": self.title,
             "coverStoryId": self.cover_story_id,
-            "coverImageUrl": self.cover_image_url or (self.cover_story.media_url if self.cover_story else None),
+            "coverImageUrl": (self.cover_image_url or
+                               (self.cover_story.media_url if self.cover_story and getattr(self.cover_story, 'media_url', None) else (
+                                   f"/api/media/stories/{self.cover_story.id}" if self.cover_story and getattr(self.cover_story, 'media_blob', None) else None
+                               )) or (
+                                   (next((hs.story.to_dict().get('mediaUrl') for hs in (self.stories or []) if hs.story), None))
+                               )),
             "description": self.description,
             "orderIndex": self.order_index,
             "isActive": self.is_active,

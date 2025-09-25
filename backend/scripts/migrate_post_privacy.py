@@ -7,8 +7,10 @@ import sys
 import os
 from sqlalchemy import text
 
-# Adicionar o diretório do app ao Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'app'))
+# Garantir que o diretório raiz do backend esteja no PYTHONPATH
+PARENT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PARENT not in sys.path:
+    sys.path.insert(0, PARENT)
 
 from app.database.database import engine, SessionLocal
 
