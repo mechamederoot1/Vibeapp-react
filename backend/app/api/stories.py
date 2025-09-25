@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from ..database.database import get_db
 from ..models.user import User
 from ..models.story import Story, StoryView
+from ..models.highlight import HighlightStory
 from .auth import get_current_user
 
 router = APIRouter()
@@ -28,10 +29,12 @@ async def get_stories(
 
     try:
         # Get only public active stories
+        subq = db.query(HighlightStory.story_id).subquery()
         stories = db.query(Story).filter(
             Story.is_active == True,
             Story.privacy == "public",
-            Story.expires_at > datetime.utcnow()
+            Story.expires_at > datetime.utcnow(),
+            ~Story.id.in_(subq)
         ).order_by(Story.created_at.desc()).limit(limit).all()
 
         # Group stories by author

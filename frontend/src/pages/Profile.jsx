@@ -867,7 +867,7 @@ const Profile = () => {
         const url = up.data?.url
         const type = up.data?.type || 'image'
         // Criar story
-        const st = await storiesAPI.createStory({ type, mediaUrl: url })
+        const st = await storiesAPI.createStory({ type, mediaUrl: url, privacy: 'close_friends' })
         return st.data?.id || st.id
       }
 
