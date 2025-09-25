@@ -65,10 +65,11 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     const prev = status
     // Optimistic update
     setStatus('request_sent')
+    setGuard('request_sent')
     onStatusChange?.(userId, 'request_sent')
     try {
       await friendshipsAPI.sendFriendRequest(userId)
-      await refreshStatusSafe()
+      await refreshStatusSafe(400)
     } catch (error) {
       console.error('Erro ao enviar pedido:', error)
       // rollback
