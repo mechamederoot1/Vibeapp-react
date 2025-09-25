@@ -1131,17 +1131,19 @@ const Profile = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h2 className="text-xl font-bold">{currentProfileData.username}</h2>
         <div className="flex items-center justify-center flex-1">
-          <button
-            onClick={() => setViewAsVisitor(!viewAsVisitor)}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
-              viewAsVisitor
-                ? 'bg-vibe-blue text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Eye size={16} className="inline mr-1" />
-            Ver como
-          </button>
+          {isOwnProfile && (
+            <button
+              onClick={() => setViewAsVisitor(!viewAsVisitor)}
+              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                viewAsVisitor
+                  ? 'bg-vibe-blue text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Eye size={16} className="inline mr-1" />
+              Ver como
+            </button>
+          )}
         </div>
         <div className="flex items-center space-x-3">
           <button className="p-2 hover:bg-gray-100 rounded-full">
@@ -1161,9 +1163,9 @@ const Profile = () => {
 
       {/* Capa do Perfil */}
       <div className="relative">
-        <div 
+        <div
           className="w-full h-48 relative cursor-pointer group"
-          onClick={() => !uploading.cover && !viewAsVisitor && handleCoverClick()}
+          onClick={() => !uploading.cover && isOwnProfile && handleCoverClick()}
         >
           {currentProfileData.coverPhoto ? (
             <>
@@ -1173,7 +1175,7 @@ const Profile = () => {
                 className="w-full h-full object-cover"
               />
               {/* Overlay para hover quando há imagem */}
-              {!viewAsVisitor && (
+              {isOwnProfile && (
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="text-white text-center">
                     <Camera size={24} className="mx-auto mb-1" />
@@ -1184,7 +1186,7 @@ const Profile = () => {
             </>
           ) : (
             <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-              {!viewAsVisitor ? (
+              {isOwnProfile ? (
                 <div className="text-center text-gray-600 group-hover:text-gray-800 transition-colors">
                   <Camera size={32} className="mx-auto mb-2" />
                   <p className="text-lg font-medium">Adicionar capa</p>
@@ -1199,8 +1201,8 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Botão de opções da capa - s�� aparece se houver foto */}
-          {profileData.coverPhoto && !viewAsVisitor && (
+          {/* Botão de opções da capa - só aparece se houver foto */}
+          {profileData.coverPhoto && isOwnProfile && (
             <div className="absolute top-4 right-4">
               <button
                 className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
@@ -1258,7 +1260,7 @@ const Profile = () => {
           </div>
 
           {/* Botão de câmera com melhor posicionamento */}
-          {!viewAsVisitor && (
+          {isOwnProfile && (
             <div className="absolute bottom-1 right-1 z-20">
               <button
                 className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
@@ -1342,17 +1344,7 @@ const Profile = () => {
 
         {/* Ações */}
         <div className="flex space-x-2 mb-6">
-          {viewAsVisitor ? (
-            <>
-              <button className="btn-primary flex-1 flex items-center justify-center">
-                <UserPlus size={20} className="mr-2" />
-                Adicionar
-              </button>
-              <button className="btn-secondary w-11 h-11 p-0 flex items-center justify-center">
-                <MessageCircle size={18} />
-              </button>
-            </>
-          ) : (
+          {isOwnProfile ? (
             <>
               <button
                 onClick={() => setShowEditModal(true)}
@@ -1368,6 +1360,19 @@ const Profile = () => {
                 <span className="hidden sm:inline">Conexões</span>
               </button>
             </>
+          ) : (
+            <>
+              <div className="flex-1">
+                <FriendshipButton userId={targetUserIdState || profileUser?.id} username={currentProfileData.username} />
+              </div>
+              <button
+                onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
+                className="btn-secondary w-11 h-11 p-0 flex items-center justify-center"
+                title="Enviar mensagem"
+              >
+                <MessageCircle size={18} />
+              </button>
+            </>
           )}
         </div>
 
@@ -1378,7 +1383,7 @@ const Profile = () => {
               <Users size={18} className="mr-2" />
               Informações pessoais
             </h3>
-            {!viewAsVisitor && (
+            {isOwnProfile && (
               <button
                 onClick={openPersonalInfoEditor}
                 className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
@@ -1462,9 +1467,9 @@ const Profile = () => {
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhec��-lo melhor.' : 'Nenhuma informação dispon��vel.'}
+                  {isOwnProfile ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
                 </p>
-                {!viewAsVisitor && (
+                {isOwnProfile && (
                   <button
                     onClick={() => setShowEditModal(true)}
                     className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
@@ -1625,7 +1630,7 @@ const Profile = () => {
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
             {/* Adicionar novo destaque */}
-            {!viewAsVisitor && (
+            {isOwnProfile && (
               <div className="flex flex-col items-center space-y-2 flex-shrink-0">
                 <button
                   onClick={openCreateHighlight}
@@ -1687,7 +1692,7 @@ const Profile = () => {
                   )}
                 </div>
               ))
-            ) : !viewAsVisitor ? (
+            ) : isOwnProfile ? (
               <div className="flex-1 flex items-center justify-center py-4">
                 <div className="text-center">
                   <p className="text-gray-500 text-sm mb-2">Nenhum destaque ainda.</p>
