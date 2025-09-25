@@ -86,10 +86,11 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     const prev = status
     // Optimistic update
     setStatus('none')
+    setGuard('none')
     onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.removeFriend(userId)
-      await refreshStatusSafe()
+      await refreshStatusSafe(400)
     } catch (error) {
       console.error('Erro ao remover amigo:', error)
       // rollback
@@ -111,10 +112,11 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     const prev = status
     // Optimistic update
     setStatus('none')
+    setGuard('none')
     onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.cancelFriendRequest(userId)
-      await refreshStatusSafe()
+      await refreshStatusSafe(400)
     } catch (error) {
       console.error('Erro ao cancelar pedido:', error)
       // rollback
@@ -127,28 +129,32 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
 
   useEffect(() => {
     if (!lastMessage || !userId || !currentUser?.id) return
+    const apply = (next) => {
+      if (withinGuard() && optimisticGuardRef.current.preferred && next !== optimisticGuardRef.current.preferred) {
+        return
+      }
+      setStatus(next)
+      onStatusChange?.(userId, next)
+    }
+
     // Notifications for friendship
     if (lastMessage.type === 'notification') {
       const n = lastMessage.data || {}
       if (n.type === 'friend_request' && n.related_user_id === userId) {
-        setStatus('request_received')
-        onStatusChange?.(userId, 'request_received')
+        apply('request_received')
       }
       if (n.type === 'friend_accepted' && n.related_user_id === userId) {
-        setStatus('friends')
-        onStatusChange?.(userId, 'friends')
+        apply('friends')
       }
     }
     if (lastMessage.type === 'friendship_update') {
       const d = lastMessage.data || {}
       const a = d.userA, b = d.userB
       if ((a === currentUser.id && b === userId) || (b === currentUser.id && a === userId)) {
-        const map = { 'request_sent': 'request_received', 'friends': 'friends', 'none': 'none' }
         let next = d.status
         if (d.status === 'request_sent' && d.userA === currentUser.id) next = 'request_sent'
         else if (d.status === 'request_sent') next = 'request_received'
-        setStatus(next)
-        onStatusChange?.(userId, next)
+        apply(next)
       }
     }
   }, [lastMessage, userId, currentUser?.id])
