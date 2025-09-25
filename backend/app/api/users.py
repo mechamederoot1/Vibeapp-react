@@ -314,36 +314,56 @@ async def search_users(
     # Base visibility: only active users
     query = db.query(User).filter(User.is_active == True)
 
-    # Dialect-aware full name concatenation with COALESCE to avoid NULLs
+    # Dialect-aware full name concatenation and case-insensitive matching
     dialect_name = getattr(getattr(db, 'bind', None), 'dialect', None).name if getattr(db, 'bind', None) else ''
+    q_lower = q.lower()
+
     if dialect_name == 'sqlite':
+        # SQLite: use COALESCE and compare with LOWER(..) LIKE .. to simulate ILIKE
         full_name = func.trim(
             func.coalesce(User.first_name, '') + ' ' + func.coalesce(User.last_name, '')
         )
+        full_phrase_filter = or_(
+            func.lower(full_name).like(f"%{q_lower}%"),
+            func.lower(User.username).like(f"%{q_lower}%"),
+            func.lower(User.email).like(f"%{q_lower}%")
+        )
+        if tokens:
+            token_filters = [
+                or_(
+                    func.lower(User.first_name).like(f"%{t.lower()}%"),
+                    func.lower(User.last_name).like(f"%{t.lower()}%"),
+                    func.lower(User.username).like(f"%{t.lower()}%"),
+                    func.lower(User.email).like(f"%{t.lower()}%")
+                ) for t in tokens
+            ]
+            combined_tokens = and_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, combined_tokens))
+        else:
+            query = query.filter(full_phrase_filter)
     else:
+        # Other dialects: use CONCAT and ILIKE
         full_name = func.trim(
             func.concat(func.coalesce(User.first_name, ''), ' ', func.coalesce(User.last_name, ''))
         )
-
-    # Full phrase match against concatenated full name or username
-    full_phrase_filter = or_(
-        full_name.ilike(f"%{q}%"),
-        User.username.ilike(f"%{q}%")
-    )
-
-    # For each token, require it to appear in first, last or username (AND across tokens)
-    if tokens:
-        token_filters = [
-            or_(
-                User.first_name.ilike(f"%{t}%"),
-                User.last_name.ilike(f"%{t}%"),
-                User.username.ilike(f"%{t}%")
-            ) for t in tokens
-        ]
-        combined_tokens = and_(*token_filters)
-        query = query.filter(or_(full_phrase_filter, combined_tokens))
-    else:
-        query = query.filter(full_phrase_filter)
+        full_phrase_filter = or_(
+            full_name.ilike(f"%{q}%"),
+            User.username.ilike(f"%{q}%"),
+            User.email.ilike(f"%{q}%")
+        )
+        if tokens:
+            token_filters = [
+                or_(
+                    User.first_name.ilike(f"%{t}%"),
+                    User.last_name.ilike(f"%{t}%"),
+                    User.username.ilike(f"%{t}%"),
+                    User.email.ilike(f"%{t}%")
+                ) for t in tokens
+            ]
+            combined_tokens = and_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, combined_tokens))
+        else:
+            query = query.filter(full_phrase_filter)
 
     users = query.limit(limit).all()
 
