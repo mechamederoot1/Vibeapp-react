@@ -213,10 +213,94 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     }
   }
 
+  // Helpers to accept/reject when we only know userId
+  const findReceivedRequestId = async () => {
+    try {
+      const res = await friendshipsAPI.getReceivedRequests()
+      const list = res.data || []
+      const f = list.find((it) => it?.user_info?.id === userId)
+      return f?.friendship?.id || null
+    } catch (_) {
+      return null
+    }
+  }
+
+  const handleAccept = async () => {
+    if (loading) return
+    setLoading(true)
+    const prev = status
+    setStatus('friends')
+    setGuard('friends')
+    onStatusChange?.(userId, 'friends')
+    try {
+      let fid = await findReceivedRequestId()
+      if (fid) {
+        await friendshipsAPI.acceptFriendRequest(fid)
+      } else {
+        // Fallback ao auto-aceite via envio inverso
+        await friendshipsAPI.sendFriendRequest(userId)
+      }
+      await refreshStatusSafe(300)
+    } catch (e) {
+      console.error('Erro ao aceitar pedido:', e)
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleReject = async () => {
+    if (loading) return
+    setLoading(true)
+    const prev = status
+    setStatus('none')
+    setGuard('none')
+    onStatusChange?.(userId, 'none')
+    try {
+      const fid = await findReceivedRequestId()
+      if (fid) {
+        await friendshipsAPI.rejectFriendRequest(fid)
+      } else {
+        // Se não localizar, apenas força refresh
+      }
+      await refreshStatusSafe(300)
+    } catch (e) {
+      console.error('Erro ao rejeitar pedido:', e)
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const config = getButtonConfig()
   if (!config) return null
 
   const Icon = config.icon
+
+  if (status === 'request_received') {
+    return (
+      <div className={`flex items-center gap-2 ${className}`}>
+        <button
+          onClick={handleAccept}
+          disabled={loading}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1 bg-green-600 text-white hover:bg-green-700 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div> : <UserCheck size={16} />}
+          <span>Aceitar</span>
+        </button>
+        <button
+          onClick={handleReject}
+          disabled={loading}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-1 bg-gray-100 text-gray-700 hover:bg-gray-200 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div> : <UserX size={16} />}
+          <span>Recusar</span>
+        </button>
+      </div>
+    )
+  }
 
   return (
     <button
