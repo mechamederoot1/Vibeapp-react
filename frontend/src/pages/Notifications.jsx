@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, UserPlus, Users, Share2, Bell } from 'lucide-react';
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
+import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const { lastMessage } = useWebSocket();
+  const navigate = useNavigate();
 
   // Carregar notificações
   const loadNotifications = async () => {
@@ -205,11 +207,22 @@ const Notifications = () => {
 
             {/* Avatar */}
             {notification.relatedUser ? (
-              <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const u = notification.relatedUser || {};
+                  const publicId = u.publicProfileId || u.public_profile_id;
+                  if (publicId) navigate(`/profile/id/${publicId}`);
+                  else if (u.id) navigate(`/profile/${u.id}`);
+                  else if (u.username) navigate(`/profile/${u.username}`);
+                }}
+                className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0 hover:opacity-90"
+                aria-label="Ver perfil"
+              >
                 <span className="text-white font-semibold">
                   {notification.relatedUser.firstName?.charAt(0)}
                 </span>
-              </div>
+              </button>
             ) : (
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
                 {getIcon(notification.type)}
