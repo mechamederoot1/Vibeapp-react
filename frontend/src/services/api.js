@@ -145,7 +145,7 @@ export const usersAPI = {
   },
   getUserStats: (userId) => api.get(`/users/${userId}/stats`),
   getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
-  searchUsers: (query, limit = 20) => api.get(`/users/search?q=${query}&limit=${limit}`)
+  searchUsers: (query, limit = 20) => api.get(`/users/search-users?q=${encodeURIComponent(query)}&limit=${limit}`)
 }
 
 // Posts endpoints
