@@ -152,6 +152,19 @@ const Profile = () => {
   })
   const [viewAsVisitor, setViewAsVisitor] = useState(false)
 
+  // Real-time: update visitors when receiving WS event
+  useEffect(() => {
+    if (!lastMessage || !user?.id) return
+    if (lastMessage.type === 'profile_view') {
+      const d = lastMessage.data || {}
+      if (d.profileOwnerId === user.id && isOwnProfile) {
+        usersAPI.getProfileVisitors(user.id).then(res => {
+          setProfileVisitors(res.data || [])
+        }).catch(() => {})
+      }
+    }
+  }, [lastMessage, isOwnProfile, user?.id])
+
   // Load user data
   useEffect(() => {
     const loadUserData = async () => {
