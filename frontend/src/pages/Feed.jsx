@@ -112,7 +112,18 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-2 flex-wrap">
-              <p className="font-semibold text-sm truncate">{post.author?.fullName || 'Usuário'}</p>
+              <button
+                onClick={() => {
+                  const u = post.author || {}
+                  const publicId = u.publicProfileId || u.public_profile_id
+                  if (publicId) navigate(`/profile/id/${publicId}`)
+                  else if (u.id) navigate(`/profile/${u.id}`)
+                  else if (u.username) navigate(`/profile/${u.username}`)
+                }}
+                className="font-semibold text-sm truncate hover:text-vibe-blue"
+              >
+                {post.author?.fullName || 'Usuário'}
+              </button>
               {post.author?.isVerified && (
                 <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
                   <span className="text-white text-xs">✓</span>
@@ -395,48 +406,62 @@ const Story = ({ storyGroup, hasUnviewed = false, onClick }) => {
   const videoStory = stories.find(s => s.type === 'video' && s.mediaUrl)
   const hasStory = stories.length > 0
   const thumbnailUrl = imageStory?.mediaUrl || null
+  const navigate = useNavigate()
+  const goToProfile = () => {
+    const publicId = user?.publicProfileId || user?.public_profile_id
+    if (publicId) navigate(`/profile/id/${publicId}`)
+    else if (user?.id) navigate(`/profile/${user.id}`)
+    else if (user?.username) navigate(`/profile/${user.username}`)
+  }
 
   return (
-    <div
-      className="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
-      onClick={onClick}
-    >
-      <div className={`w-16 h-16 rounded-full p-0.5 ${
-        hasUnviewed
-          ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
-          : hasStory
-          ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
-          : 'bg-gray-300'
-      }`}>
-        <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5 overflow-hidden">
-          {thumbnailUrl ? (
-            <img
-              src={thumbnailUrl}
-              alt={user?.fullName || 'Story'}
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : videoStory ? (
-            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-              <span className="text-white text-sm">▶</span>
-            </div>
-          ) : hasStory ? (
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center px-1 text-center">
-              <span className="text-white text-[10px] font-semibold line-clamp-2">
-                {(stories[0]?.content || 'Story')}
-              </span>
-            </div>
-          ) : (
-            <div className="w-full h-full rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
-              <span className="text-white text-sm font-bold">
-                {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
-            </div>
-          )}
+    <div className="flex flex-col items-center space-y-1 flex-shrink-0">
+      <button
+        className="w-16 h-16 rounded-full p-0.5 cursor-pointer hover:scale-105 transition-transform"
+        onClick={onClick}
+        aria-label="Abrir stories"
+      >
+        <div className={`w-full h-full rounded-full ${
+          hasUnviewed
+            ? 'bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500'
+            : hasStory
+            ? 'bg-gradient-to-tr from-gray-300 to-gray-400'
+            : 'bg-gray-300'
+        }`}>
+          <div className="w-full h-full rounded-full border-2 border-white bg-white p-0.5 overflow-hidden">
+            {thumbnailUrl ? (
+              <img
+                src={thumbnailUrl}
+                alt={user?.fullName || 'Story'}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : videoStory ? (
+              <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
+                <span className="text-white text-sm">▶</span>
+              </div>
+            ) : hasStory ? (
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-vibe-blue to-vibe-blue-dark flex items-center justify-center px-1 text-center">
+                <span className="text-white text-[10px] font-semibold line-clamp-2">
+                  {(stories[0]?.content || 'Story')}
+                </span>
+              </div>
+            ) : (
+              <div className="w-full h-full rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center">
+                <span className="text-white text-sm font-bold">
+                  {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <span className="text-xs text-gray-600 max-w-[60px] truncate text-center">
+      </button>
+      <button
+        onClick={goToProfile}
+        className="text-xs text-gray-600 max-w-[60px] truncate text-center hover:text-vibe-blue"
+        aria-label="Ver perfil"
+      >
         {user?.firstName || 'Usuário'}
-      </span>
+      </button>
       {stories.length > 1 && (
         <span className="text-xs text-gray-400">
           {stories.length} stories

@@ -26,6 +26,7 @@ import PersonalInfoEditModal from '../components/PersonalInfoEditModal'
 import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 import StoryViewer from '../components/StoryViewer'
+import FriendshipButton from '../components/FriendshipButton'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
@@ -1130,17 +1131,19 @@ const Profile = () => {
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h2 className="text-xl font-bold">{currentProfileData.username}</h2>
         <div className="flex items-center justify-center flex-1">
-          <button
-            onClick={() => setViewAsVisitor(!viewAsVisitor)}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
-              viewAsVisitor
-                ? 'bg-vibe-blue text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Eye size={16} className="inline mr-1" />
-            Ver como
-          </button>
+          {isOwnProfile && (
+            <button
+              onClick={() => setViewAsVisitor(!viewAsVisitor)}
+              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                viewAsVisitor
+                  ? 'bg-vibe-blue text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <Eye size={16} className="inline mr-1" />
+              Ver como
+            </button>
+          )}
         </div>
         <div className="flex items-center space-x-3">
           <button className="p-2 hover:bg-gray-100 rounded-full">
@@ -1160,9 +1163,9 @@ const Profile = () => {
 
       {/* Capa do Perfil */}
       <div className="relative">
-        <div 
+        <div
           className="w-full h-48 relative cursor-pointer group"
-          onClick={() => !uploading.cover && !viewAsVisitor && handleCoverClick()}
+          onClick={() => !uploading.cover && isOwnProfile && handleCoverClick()}
         >
           {currentProfileData.coverPhoto ? (
             <>
@@ -1172,7 +1175,7 @@ const Profile = () => {
                 className="w-full h-full object-cover"
               />
               {/* Overlay para hover quando há imagem */}
-              {!viewAsVisitor && (
+              {isOwnProfile && (
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <div className="text-white text-center">
                     <Camera size={24} className="mx-auto mb-1" />
@@ -1183,7 +1186,7 @@ const Profile = () => {
             </>
           ) : (
             <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-              {!viewAsVisitor ? (
+              {isOwnProfile ? (
                 <div className="text-center text-gray-600 group-hover:text-gray-800 transition-colors">
                   <Camera size={32} className="mx-auto mb-2" />
                   <p className="text-lg font-medium">Adicionar capa</p>
@@ -1198,8 +1201,8 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Botão de opções da capa - s�� aparece se houver foto */}
-          {profileData.coverPhoto && !viewAsVisitor && (
+          {/* Botão de opções da capa - só aparece se houver foto */}
+          {currentProfileData.coverPhoto && isOwnProfile && (
             <div className="absolute top-4 right-4">
               <button
                 className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
@@ -1208,7 +1211,7 @@ const Profile = () => {
                   handleCoverClick()
                 }}
                 disabled={uploading.cover}
-                title={uploading.cover ? "Fazendo upload..." : "Opcoes da capa"}
+                title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
               >
                 <Camera size={20} />
               </button>
@@ -1216,7 +1219,7 @@ const Profile = () => {
               <CoverDropdown
                 isOpen={showCoverDropdown}
                 onClose={() => setShowCoverDropdown(false)}
-                user={profileData}
+                user={currentProfileData}
                 onEditCover={handleEditCoverFromDropdown}
                 onViewCover={handleViewCover}
               />
@@ -1250,20 +1253,20 @@ const Profile = () => {
             ) : (
               <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-500 text-2xl font-bold">
-                  {profileData.name.charAt(0).toUpperCase()}
+                  {currentProfileData.name.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
 
           {/* Botão de câmera com melhor posicionamento */}
-          {!viewAsVisitor && (
+          {isOwnProfile && (
             <div className="absolute bottom-1 right-1 z-20">
               <button
                 className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
                 onClick={handleCameraButtonClick}
                 disabled={uploading.avatar}
-                title={uploading.avatar ? "Fazendo upload..." : profileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
+                title={uploading.avatar ? "Fazendo upload..." : currentProfileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
               >
                 <Camera size={16} className="text-white" />
               </button>
@@ -1275,7 +1278,7 @@ const Profile = () => {
             <AvatarDropdown
               isOpen={showAvatarDropdown}
               onClose={() => setShowAvatarDropdown(false)}
-              user={profileData}
+              user={currentProfileData}
               hasRecentStory={false}
               onEditPhoto={handleEditAvatarFromDropdown}
               onViewStory={handleViewStory}
@@ -1310,48 +1313,38 @@ const Profile = () => {
         <div className="mx-auto mb-4 max-w-xs">
           <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
             <div className="px-2">
-              <p className="text-sm font-semibold text-gray-900">{profileData.posts}</p>
+              <p className="text-sm font-semibold text-gray-900">{currentProfileData.posts}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
             </div>
             <button
               onClick={() => setShowConnections(true)}
               className="px-2 hover:text-vibe-blue transition-colors"
             >
-              <p className="text-sm font-semibold">{profileData.followers}</p>
+              <p className="text-sm font-semibold">{currentProfileData.followers}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguidores</p>
             </button>
             <button
               onClick={() => setShowConnections(true)}
               className="px-2 hover:text-vibe-blue transition-colors"
             >
-              <p className="text-sm font-semibold">{profileData.following}</p>
+              <p className="text-sm font-semibold">{currentProfileData.following}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
             </button>
           </div>
         </div>
 
         {/* Biografia */}
-        {profileData.bio?.trim() ? (
+        {currentProfileData.bio?.trim() ? (
           <div className="mx-auto max-w-md mb-6 bg-gray-50/90 border border-gray-200 rounded-xl px-4 py-3">
             <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-              {profileData.bio}
+              {currentProfileData.bio}
             </p>
           </div>
         ) : null}
 
         {/* Ações */}
         <div className="flex space-x-2 mb-6">
-          {viewAsVisitor ? (
-            <>
-              <button className="btn-primary flex-1 flex items-center justify-center">
-                <UserPlus size={20} className="mr-2" />
-                Adicionar
-              </button>
-              <button className="btn-secondary w-11 h-11 p-0 flex items-center justify-center">
-                <MessageCircle size={18} />
-              </button>
-            </>
-          ) : (
+          {isOwnProfile ? (
             <>
               <button
                 onClick={() => setShowEditModal(true)}
@@ -1367,6 +1360,28 @@ const Profile = () => {
                 <span className="hidden sm:inline">Conexões</span>
               </button>
             </>
+          ) : (
+            <div className="flex items-center gap-2 w-full">
+              <FriendshipButton
+                userId={targetUserIdState || profileUser?.id}
+                username={currentProfileData.username}
+                className="px-5 py-3 text-base rounded-xl h-12"
+              />
+              <button
+                onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
+                className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
+                title="Enviar mensagem"
+              >
+                <MessageCircle size={20} />
+              </button>
+              <button
+                onClick={() => setShowConnections(true)}
+                className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
+                title="Conexões"
+              >
+                <Users size={20} />
+              </button>
+            </div>
           )}
         </div>
 
@@ -1377,7 +1392,7 @@ const Profile = () => {
               <Users size={18} className="mr-2" />
               Informações pessoais
             </h3>
-            {!viewAsVisitor && (
+            {isOwnProfile && (
               <button
                 onClick={openPersonalInfoEditor}
                 className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium transition-colors"
@@ -1461,9 +1476,9 @@ const Profile = () => {
             ) && (
               <div className="text-center py-3">
                 <p className="text-gray-500 text-sm">
-                  {!viewAsVisitor ? 'Adicione suas informações pessoais para que outros usuários possam conhec��-lo melhor.' : 'Nenhuma informação dispon��vel.'}
+                  {isOwnProfile ? 'Adicione suas informações pessoais para que outros usuários possam conhecê-lo melhor.' : 'Nenhuma informação disponível.'}
                 </p>
-                {!viewAsVisitor && (
+                {isOwnProfile && (
                   <button
                     onClick={() => setShowEditModal(true)}
                     className="text-vibe-blue hover:text-vibe-blue-dark text-sm font-medium mt-2 transition-colors"
@@ -1624,7 +1639,7 @@ const Profile = () => {
         <div className="mb-6">
           <div className="flex space-x-4 overflow-x-auto pb-2 scrollbar-hide">
             {/* Adicionar novo destaque */}
-            {!viewAsVisitor && (
+            {isOwnProfile && (
               <div className="flex flex-col items-center space-y-2 flex-shrink-0">
                 <button
                   onClick={openCreateHighlight}
@@ -1686,7 +1701,7 @@ const Profile = () => {
                   )}
                 </div>
               ))
-            ) : !viewAsVisitor ? (
+            ) : isOwnProfile ? (
               <div className="flex-1 flex items-center justify-center py-4">
                 <div className="text-center">
                   <p className="text-gray-500 text-sm mb-2">Nenhum destaque ainda.</p>
@@ -1911,10 +1926,10 @@ const Profile = () => {
             <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {/* Header do Post */}
               <div className="flex items-center p-4 pb-3">
-                {profileData.avatar ? (
+                {currentProfileData.avatar ? (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
                     <img
-                      src={`${profileData.avatar}${profileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
+                      src={`${currentProfileData.avatar}${currentProfileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                       alt="Avatar"
                       className="w-full h-full rounded-full object-cover"
                     />
@@ -1922,20 +1937,20 @@ const Profile = () => {
                 ) : (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue bg-vibe-blue flex items-center justify-center">
                     <span className="text-white font-bold">
-                      {profileData.name.charAt(0).toUpperCase()}
+                      {currentProfileData.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div className="ml-3 flex-1">
                   <div className="flex items-center space-x-2">
-                    <h4 className="font-semibold text-gray-900">{profileData.name}</h4>
-                    {profileData.isVerified && (
+                    <h4 className="font-semibold text-gray-900">{currentProfileData.name}</h4>
+                    {currentProfileData.isVerified && (
                       <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} ��� {new Date(post.createdAt).toLocaleString('pt-BR', {
+                  <p className="text-gray-500 text-sm">@{currentProfileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
@@ -2130,14 +2145,14 @@ const Profile = () => {
         isOpen={showAvatarEditor}
         onClose={() => setShowAvatarEditor(false)}
         onSave={handleAvatarUpload}
-        currentImage={profileData.avatar}
+        currentImage={currentProfileData.avatar}
       />
 
       <CoverEditor
         isOpen={showCoverEditor}
         onClose={() => setShowCoverEditor(false)}
         onSave={handleCoverUpload}
-        currentImage={profileData.coverPhoto}
+        currentImage={currentProfileData.coverPhoto}
       />
 
       <PhotoModal
