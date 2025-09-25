@@ -254,6 +254,13 @@ export const reactionsAPI = {
   getPostReactions: (postId) => api.get(`/reactions/posts/${postId}/reactions`),
 }
 
+// Follows endpoints
+export const followsAPI = {
+  getStatus: (userId) => api.get(`/follows/users/${userId}/status`),
+  follow: (userId) => api.post(`/follows/users/${userId}`),
+  unfollow: (userId) => api.delete(`/follows/users/${userId}`),
+}
+
 // Highlights endpoints
 export const highlightsAPI = {
   get: (userId = null) => {
