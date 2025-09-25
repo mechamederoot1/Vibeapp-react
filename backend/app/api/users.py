@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 from ..database.database import get_db
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, String
 from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.profile_view import ProfileView
@@ -294,6 +294,8 @@ async def get_profile_visitors(
     return visitor_data
 
 @router.get("/search")
+@router.get("/search-users")
+@router.get("/search/users")
 async def search_users(
     q: str,
     current_user: User = Depends(get_current_user),
@@ -314,24 +316,56 @@ async def search_users(
     # Base visibility: only active users
     query = db.query(User).filter(User.is_active == True)
 
-    # Full phrase match against concatenated full name or username
-    full_phrase_filter = or_(
-        func.concat(User.first_name, ' ', User.last_name).ilike(f"%{q}%"),
-        User.username.ilike(f"%{q}%")
-    )
+    # Dialect-aware full name concatenation and case-insensitive matching
+    dialect_name = getattr(getattr(db, 'bind', None), 'dialect', None).name if getattr(db, 'bind', None) else ''
+    q_lower = q.lower()
 
-    # For each token, require it to appear in first, last or username (AND across tokens)
-    if tokens:
-        token_filters = [
-            or_(
-                User.first_name.ilike(f"%{t}%"),
-                User.last_name.ilike(f"%{t}%"),
-                User.username.ilike(f"%{t}%")
-            ) for t in tokens
-        ]
-        query = query.filter(or_(full_phrase_filter, and_(*token_filters)))
+    if dialect_name == 'sqlite':
+        # SQLite: use COALESCE and compare with LOWER(..) LIKE .. to simulate ILIKE
+        full_name = func.trim(
+            func.coalesce(User.first_name, '') + ' ' + func.coalesce(User.last_name, '')
+        )
+        full_phrase_filter = or_(
+            func.lower(full_name).like(f"%{q_lower}%"),
+            func.lower(User.username).like(f"%{q_lower}%"),
+            func.lower(User.email).like(f"%{q_lower}%")
+        )
+        if tokens:
+            token_filters = [
+                or_(
+                    func.lower(User.first_name).like(f"%{t.lower()}%"),
+                    func.lower(User.last_name).like(f"%{t.lower()}%"),
+                    func.lower(User.username).like(f"%{t.lower()}%"),
+                    func.lower(User.email).like(f"%{t.lower()}%")
+                ) for t in tokens
+            ]
+            any_token = or_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, any_token))
+        else:
+            query = query.filter(full_phrase_filter)
     else:
-        query = query.filter(full_phrase_filter)
+        # Other dialects: use CONCAT and ILIKE
+        full_name = func.trim(
+            func.concat(func.coalesce(User.first_name, ''), ' ', func.coalesce(User.last_name, ''))
+        )
+        full_phrase_filter = or_(
+            full_name.ilike(f"%{q}%"),
+            User.username.ilike(f"%{q}%"),
+            User.email.ilike(f"%{q}%")
+        )
+        if tokens:
+            token_filters = [
+                or_(
+                    User.first_name.ilike(f"%{t}%"),
+                    User.last_name.ilike(f"%{t}%"),
+                    User.username.ilike(f"%{t}%"),
+                    User.email.ilike(f"%{t}%")
+                ) for t in tokens
+            ]
+            any_token = or_(*token_filters)
+            query = query.filter(or_(full_phrase_filter, any_token))
+        else:
+            query = query.filter(full_phrase_filter)
 
     users = query.limit(limit).all()
 
