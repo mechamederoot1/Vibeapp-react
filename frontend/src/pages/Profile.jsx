@@ -1202,7 +1202,7 @@ const Profile = () => {
           )}
 
           {/* Botão de opções da capa - só aparece se houver foto */}
-          {profileData.coverPhoto && isOwnProfile && (
+          {currentProfileData.coverPhoto && isOwnProfile && (
             <div className="absolute top-4 right-4">
               <button
                 className="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all disabled:opacity-50"
@@ -1211,7 +1211,7 @@ const Profile = () => {
                   handleCoverClick()
                 }}
                 disabled={uploading.cover}
-                title={uploading.cover ? "Fazendo upload..." : "Opcoes da capa"}
+                title={uploading.cover ? "Fazendo upload..." : "Opções da capa"}
               >
                 <Camera size={20} />
               </button>
@@ -1219,7 +1219,7 @@ const Profile = () => {
               <CoverDropdown
                 isOpen={showCoverDropdown}
                 onClose={() => setShowCoverDropdown(false)}
-                user={profileData}
+                user={currentProfileData}
                 onEditCover={handleEditCoverFromDropdown}
                 onViewCover={handleViewCover}
               />
@@ -1253,7 +1253,7 @@ const Profile = () => {
             ) : (
               <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
                 <span className="text-gray-500 text-2xl font-bold">
-                  {profileData.name.charAt(0).toUpperCase()}
+                  {currentProfileData.name.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
@@ -1266,7 +1266,7 @@ const Profile = () => {
                 className="w-8 h-8 bg-vibe-blue rounded-full flex items-center justify-center border-3 border-white hover:bg-vibe-blue-dark transition-colors shadow-lg"
                 onClick={handleCameraButtonClick}
                 disabled={uploading.avatar}
-                title={uploading.avatar ? "Fazendo upload..." : profileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
+                title={uploading.avatar ? "Fazendo upload..." : currentProfileData.avatar ? "Alterar foto do perfil" : "Adicionar foto do perfil"}
               >
                 <Camera size={16} className="text-white" />
               </button>
@@ -1278,7 +1278,7 @@ const Profile = () => {
             <AvatarDropdown
               isOpen={showAvatarDropdown}
               onClose={() => setShowAvatarDropdown(false)}
-              user={profileData}
+              user={currentProfileData}
               hasRecentStory={false}
               onEditPhoto={handleEditAvatarFromDropdown}
               onViewStory={handleViewStory}
@@ -1313,31 +1313,31 @@ const Profile = () => {
         <div className="mx-auto mb-4 max-w-xs">
           <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
             <div className="px-2">
-              <p className="text-sm font-semibold text-gray-900">{profileData.posts}</p>
+              <p className="text-sm font-semibold text-gray-900">{currentProfileData.posts}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
             </div>
             <button
               onClick={() => setShowConnections(true)}
               className="px-2 hover:text-vibe-blue transition-colors"
             >
-              <p className="text-sm font-semibold">{profileData.followers}</p>
+              <p className="text-sm font-semibold">{currentProfileData.followers}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguidores</p>
             </button>
             <button
               onClick={() => setShowConnections(true)}
               className="px-2 hover:text-vibe-blue transition-colors"
             >
-              <p className="text-sm font-semibold">{profileData.following}</p>
+              <p className="text-sm font-semibold">{currentProfileData.following}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
             </button>
           </div>
         </div>
 
         {/* Biografia */}
-        {profileData.bio?.trim() ? (
+        {currentProfileData.bio?.trim() ? (
           <div className="mx-auto max-w-md mb-6 bg-gray-50/90 border border-gray-200 rounded-xl px-4 py-3">
             <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-              {profileData.bio}
+              {currentProfileData.bio}
             </p>
           </div>
         ) : null}
@@ -1926,10 +1926,10 @@ const Profile = () => {
             <div key={post.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden">
               {/* Header do Post */}
               <div className="flex items-center p-4 pb-3">
-                {profileData.avatar ? (
+                {currentProfileData.avatar ? (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue p-0.5">
                     <img
-                      src={`${profileData.avatar}${profileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
+                      src={`${currentProfileData.avatar}${currentProfileData.avatar.includes('?') ? '&' : '?'}v=${avatarVersion}`}
                       alt="Avatar"
                       className="w-full h-full rounded-full object-cover"
                     />
@@ -1937,20 +1937,20 @@ const Profile = () => {
                 ) : (
                   <div className="w-10 h-10 rounded-full border-2 border-vibe-blue bg-vibe-blue flex items-center justify-center">
                     <span className="text-white font-bold">
-                      {profileData.name.charAt(0).toUpperCase()}
+                      {currentProfileData.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div className="ml-3 flex-1">
                   <div className="flex items-center space-x-2">
-                    <h4 className="font-semibold text-gray-900">{profileData.name}</h4>
-                    {profileData.isVerified && (
+                    <h4 className="font-semibold text-gray-900">{currentProfileData.name}</h4>
+                    {currentProfileData.isVerified && (
                       <div className="w-4 h-4 bg-vibe-blue rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-gray-500 text-sm">@{profileData.username} ��� {new Date(post.createdAt).toLocaleString('pt-BR', {
+                  <p className="text-gray-500 text-sm">@{currentProfileData.username} • {new Date(post.createdAt).toLocaleString('pt-BR', {
                     day: '2-digit',
                     month: '2-digit',
                     year: 'numeric',
@@ -2145,14 +2145,14 @@ const Profile = () => {
         isOpen={showAvatarEditor}
         onClose={() => setShowAvatarEditor(false)}
         onSave={handleAvatarUpload}
-        currentImage={profileData.avatar}
+        currentImage={currentProfileData.avatar}
       />
 
       <CoverEditor
         isOpen={showCoverEditor}
         onClose={() => setShowCoverEditor(false)}
         onSave={handleCoverUpload}
-        currentImage={profileData.coverPhoto}
+        currentImage={currentProfileData.coverPhoto}
       />
 
       <PhotoModal
