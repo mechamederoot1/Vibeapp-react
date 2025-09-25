@@ -137,7 +137,7 @@ def migrate_posts_media(conn):
                 with open(path, 'rb') as f:
                     data = f.read()
                 mime = mimetypes.guess_type(path)[0] or 'application/octet-stream'
-                cur.execute("UPDATE posts SET image_blob=?, image_mime=?, image_url=? WHERE id=", (data, mime, f"/api/media/posts/{post_id}/image", post_id))
+                cur.execute("UPDATE posts SET image_blob=?, image_mime=?, image_url=? WHERE id=?", (data, mime, f"/api/media/posts/{post_id}/image", post_id))
                 updated += 1
         if video_url and video_url.startswith('/uploads/'):
             path = os.path.join(ROOT, video_url.lstrip('/'))
