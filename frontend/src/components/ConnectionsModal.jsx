@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Users, UserPlus, Search, MoreHorizontal } from 'lucide-react'
-import { usersAPI } from '../services/api'
+import { usersAPI, followsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 
 const ConnectionsModal = ({ isOpen, onClose }) => {
@@ -105,10 +105,30 @@ const ConnectionsModal = ({ isOpen, onClose }) => {
 
   const handleFollow = async (userId) => {
     try {
-      // Implementar lógica de seguir/deixar de seguir
-      console.log('Toggle follow for user:', userId)
+      // Optimistic UI
+      setConnections(prev => {
+        const copy = { ...prev }
+        if (activeTab === 'followers') {
+          copy.followers = copy.followers.map(p => p.id === userId ? { ...p, isFollowing: !p.isFollowing } : p)
+        } else if (activeTab === 'following') {
+          copy.following = copy.following.filter(p => p.id !== userId)
+        }
+        return copy
+      })
+      // Commit
+      if (activeTab === 'followers') {
+        const person = connections.followers.find(p => p.id === userId)
+        if (person?.isFollowing) {
+          await followsAPI.unfollow(userId)
+        } else {
+          await followsAPI.follow(userId)
+        }
+      } else if (activeTab === 'following') {
+        await followsAPI.unfollow(userId)
+      }
     } catch (error) {
       console.error('Erro ao seguir/deixar de seguir:', error)
+      // Note: could reload connections on failure
     }
   }
 
