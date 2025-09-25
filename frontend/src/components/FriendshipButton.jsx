@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { UserPlus, UserCheck, Clock, UserX } from 'lucide-react'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
+import useWebSocket from '../hooks/useWebSocket'
 
 const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) => {
   const { user: currentUser } = useAuth()
   const [status, setStatus] = useState('none') // none, request_sent, request_received, friends, self
   const [loading, setLoading] = useState(false)
+  const { lastMessage } = useWebSocket()
 
   useEffect(() => {
     if (userId && currentUser?.id) {
@@ -25,26 +27,38 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   }
 
   const handleSendFriendRequest = async () => {
+    if (loading) return
     setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('request_sent')
+    onStatusChange?.(userId, 'request_sent')
     try {
       await friendshipsAPI.sendFriendRequest(userId)
-      setStatus('request_sent')
-      onStatusChange?.(userId, 'request_sent')
     } catch (error) {
       console.error('Erro ao enviar pedido:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
     } finally {
       setLoading(false)
     }
   }
 
   const handleRemoveFriend = async () => {
+    if (loading) return
     setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('none')
+    onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.removeFriend(userId)
-      setStatus('none')
-      onStatusChange?.(userId, 'none')
     } catch (error) {
       console.error('Erro ao remover amigo:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
     } finally {
       setLoading(false)
     }
@@ -54,6 +68,53 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   if (status === 'self' || userId === currentUser?.id) {
     return null
   }
+
+  const handleCancelFriendRequest = async () => {
+    if (loading) return
+    setLoading(true)
+    const prev = status
+    // Optimistic update
+    setStatus('none')
+    onStatusChange?.(userId, 'none')
+    try {
+      await friendshipsAPI.cancelFriendRequest(userId)
+    } catch (error) {
+      console.error('Erro ao cancelar pedido:', error)
+      // rollback
+      setStatus(prev)
+      onStatusChange?.(userId, prev)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!lastMessage || !userId || !currentUser?.id) return
+    // Notifications for friendship
+    if (lastMessage.type === 'notification') {
+      const n = lastMessage.data || {}
+      if (n.type === 'friend_request' && n.related_user_id === userId) {
+        setStatus('request_received')
+        onStatusChange?.(userId, 'request_received')
+      }
+      if (n.type === 'friend_accepted' && n.related_user_id === userId) {
+        setStatus('friends')
+        onStatusChange?.(userId, 'friends')
+      }
+    }
+    if (lastMessage.type === 'friendship_update') {
+      const d = lastMessage.data || {}
+      const a = d.userA, b = d.userB
+      if ((a === currentUser.id && b === userId) || (b === currentUser.id && a === userId)) {
+        const map = { 'request_sent': 'request_received', 'friends': 'friends', 'none': 'none' }
+        let next = d.status
+        if (d.status === 'request_sent' && d.userA === currentUser.id) next = 'request_sent'
+        else if (d.status === 'request_sent') next = 'request_received'
+        setStatus(next)
+        onStatusChange?.(userId, next)
+      }
+    }
+  }, [lastMessage, userId, currentUser?.id])
 
   const getButtonConfig = () => {
     switch (status) {
@@ -66,10 +127,10 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
         }
       case 'request_sent':
         return {
-          text: 'Pendente',
-          icon: Clock,
-          className: 'bg-gray-100 text-gray-600',
-          onClick: null // Não clicável
+          text: 'Cancelar',
+          icon: UserX,
+          className: 'bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600',
+          onClick: handleCancelFriendRequest
         }
       case 'request_received':
         return {

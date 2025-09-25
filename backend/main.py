@@ -31,6 +31,7 @@ from app.api.highlights import router as highlights_router
 from app.api.work_experience import router as work_experience_router
 from app.api.education import router as education_router
 from app.api.media import router as media_router
+from app.api.follows import router as follows_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
@@ -42,6 +43,7 @@ from app.models.reaction import PostReaction, CommentReaction
 from app.models.story import Story, StoryView
 from app.models.friendship import Friendship
 from app.models.profile_view import ProfileView
+from app.models.follow import Follow
 from app.models.notification import Notification
 from app.models.account_settings import AccountSettings
 from app.models.message import Message, Conversation, PostShare
@@ -221,6 +223,7 @@ app.include_router(messages_router, prefix="/api/messages", tags=["messages"])
 app.include_router(shares_router, prefix="/api/shares", tags=["shares"])
 app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
 app.include_router(friendships_router, prefix="/api/friendships", tags=["friendships"])
+app.include_router(follows_router, prefix="/api/follows", tags=["follows"])
 app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
 app.include_router(highlights_router, prefix="/api", tags=["highlights"])
 app.include_router(work_experience_router, prefix="/api", tags=["work_experience"])

@@ -214,6 +214,7 @@ export const friendshipsAPI = {
   getSentRequests: () => api.get('/friendships/requests/sent'),
   acceptFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/accept`),
   rejectFriendRequest: (friendshipId) => api.put(`/friendships/requests/${friendshipId}/reject`),
+  cancelFriendRequest: (userId) => api.delete(`/friendships/requests/users/${userId}`),
   removeFriend: (userId) => api.delete(`/friendships/users/${userId}`),
   getUserFriends: (userId, limit = 50) => api.get(`/friendships/users/${userId}/friends?limit=${limit}`),
   getFriendshipStatus: (userId) => api.get(`/friendships/users/${userId}/friendship-status`)
@@ -251,6 +252,13 @@ export const reactionsAPI = {
   addPostReaction: (postId, reactionType) => api.post(`/reactions/posts/${postId}/reactions`, { reaction_type: reactionType }),
   removePostReaction: (postId) => api.delete(`/reactions/posts/${postId}/reactions`),
   getPostReactions: (postId) => api.get(`/reactions/posts/${postId}/reactions`),
+}
+
+// Follows endpoints
+export const followsAPI = {
+  getStatus: (userId) => api.get(`/follows/users/${userId}/status`),
+  follow: (userId) => api.post(`/follows/users/${userId}`),
+  unfollow: (userId) => api.delete(`/follows/users/${userId}`),
 }
 
 // Highlights endpoints

@@ -226,16 +226,15 @@ async def get_user_stats(
         (Friendship.status == "accepted")
     ).count()
     
-    # Count followers (people who added this user as friend)
-    followers_count = db.query(Friendship).filter(
-        Friendship.friend_id == user_id,
-        Friendship.status == "accepted"
+    # Count followers using Follow model
+    from ..models.follow import Follow
+    followers_count = db.query(Follow).filter(
+        Follow.following_id == user_id
     ).count()
-    
-    # Count following (people this user added as friend)
-    following_count = db.query(Friendship).filter(
-        Friendship.user_id == user_id,
-        Friendship.status == "accepted"
+
+    # Count following using Follow model
+    following_count = db.query(Follow).filter(
+        Follow.follower_id == user_id
     ).count()
     
     # Count posts
