@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 from ..database.database import get_db
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, String
 from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.profile_view import ProfileView
@@ -314,9 +314,20 @@ async def search_users(
     # Base visibility: only active users
     query = db.query(User).filter(User.is_active == True)
 
+    # Dialect-aware full name concatenation with COALESCE to avoid NULLs
+    dialect_name = getattr(getattr(db, 'bind', None), 'dialect', None).name if getattr(db, 'bind', None) else ''
+    if dialect_name == 'sqlite':
+        full_name = func.trim(
+            func.coalesce(User.first_name, '') + ' ' + func.coalesce(User.last_name, '')
+        )
+    else:
+        full_name = func.trim(
+            func.concat(func.coalesce(User.first_name, ''), ' ', func.coalesce(User.last_name, ''))
+        )
+
     # Full phrase match against concatenated full name or username
     full_phrase_filter = or_(
-        func.concat(User.first_name, ' ', User.last_name).ilike(f"%{q}%"),
+        full_name.ilike(f"%{q}%"),
         User.username.ilike(f"%{q}%")
     )
 
@@ -329,7 +340,8 @@ async def search_users(
                 User.username.ilike(f"%{t}%")
             ) for t in tokens
         ]
-        query = query.filter(or_(full_phrase_filter, and_(*token_filters)))
+        combined_tokens = and_(*token_filters)
+        query = query.filter(or_(full_phrase_filter, combined_tokens))
     else:
         query = query.filter(full_phrase_filter)
 
