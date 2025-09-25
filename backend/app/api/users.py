@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 from ..database.database import get_db
+from sqlalchemy import or_, and_, func
 from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.profile_view import ProfileView
@@ -299,19 +300,39 @@ async def search_users(
     db: Session = Depends(get_db),
     limit: int = 20
 ):
-    """Search users by name or username"""
-    
+    """Search users by name, full name or username. Supports multi-word queries."""
+
+    q = (q or '').strip()
     if len(q) < 2:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Search query must be at least 2 characters"
         )
-    
-    # Search by first name, last name, or username
-    users = db.query(User).filter(
-        (User.first_name.ilike(f"%{q}%")) |
-        (User.last_name.ilike(f"%{q}%")) |
-        (User.username.ilike(f"%{q}%"))
-    ).filter(User.is_active == True).limit(limit).all()
-    
+
+    tokens = [t for t in q.split() if t]
+
+    # Base visibility: only active users
+    query = db.query(User).filter(User.is_active == True)
+
+    # Full phrase match against concatenated full name or username
+    full_phrase_filter = or_(
+        func.concat(User.first_name, ' ', User.last_name).ilike(f"%{q}%"),
+        User.username.ilike(f"%{q}%")
+    )
+
+    # For each token, require it to appear in first, last or username (AND across tokens)
+    if tokens:
+        token_filters = [
+            or_(
+                User.first_name.ilike(f"%{t}%"),
+                User.last_name.ilike(f"%{t}%"),
+                User.username.ilike(f"%{t}%")
+            ) for t in tokens
+        ]
+        query = query.filter(or_(full_phrase_filter, and_(*token_filters)))
+    else:
+        query = query.filter(full_phrase_filter)
+
+    users = query.limit(limit).all()
+
     return [user.to_public_dict() for user in users]
