@@ -94,6 +94,10 @@ const Notifications = () => {
         return <MessageCircle size={20} className="text-blue-500" />;
       case 'follow':
         return <UserPlus size={20} className="text-vibe-blue" />;
+      case 'friend_request':
+        return <UserPlus size={20} className="text-vibe-blue" />;
+      case 'friend_accepted':
+        return <Users size={20} className="text-green-600" />;
       case 'share':
         return <Share2 size={20} className="text-green-500" />;
       case 'message':
