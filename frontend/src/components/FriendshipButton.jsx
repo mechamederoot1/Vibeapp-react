@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { UserPlus, UserCheck, Clock, UserX } from 'lucide-react'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
