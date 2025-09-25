@@ -58,19 +58,26 @@ async def lifespan(app: FastAPI):
         print("✅ Database tables created successfully")
         # Run lightweight migrations
         try:
-            from migrate_public_profile_id import migrate as migrate_public_id
+            import sys, os
+            scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
+            if scripts_dir not in sys.path:
+                sys.path.insert(0, scripts_dir)
+        except Exception as me:
+            print(f"⚠️ Could not prepare scripts path: {me}")
+        try:
+            from scripts.migrate_public_profile_id import migrate as migrate_public_id
             migrate_public_id()
             print("✅ Migration public_profile_id applied")
         except Exception as me:
             print(f"⚠️ Migration public_profile_id failed or skipped: {me}")
         try:
-            from migrate_post_public_id import migrate as migrate_post_public_id
+            from scripts.migrate_post_public_id import migrate as migrate_post_public_id
             migrate_post_public_id()
             print("✅ Migration post_public_id applied")
         except Exception as me:
             print(f"⚠️ Migration post_public_id failed or skipped: {me}")
         try:
-            from migrate_work_education import migrate_work_education
+            from scripts.migrate_work_education import migrate_work_education
             if migrate_work_education():
                 print("✅ Migration work_education applied")
             else:
@@ -78,7 +85,7 @@ async def lifespan(app: FastAPI):
         except Exception as me:
             print(f"⚠️ Migration work_education failed or skipped: {me}")
         try:
-            from migrate_profile_photos import migrate as migrate_profile_photos
+            from scripts.migrate_profile_photos import migrate as migrate_profile_photos
             if migrate_profile_photos():
                 print("✅ Migration profile_photos applied")
             else:
@@ -86,7 +93,7 @@ async def lifespan(app: FastAPI):
         except Exception as me:
             print(f"⚠️ Migration profile_photos failed or skipped: {me}")
         try:
-            from migrate_add_indexes import migrate as migrate_add_indexes
+            from scripts.migrate_add_indexes import migrate as migrate_add_indexes
             if migrate_add_indexes():
                 print("✅ Migration add_indexes applied")
             else:
