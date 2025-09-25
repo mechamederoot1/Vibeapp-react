@@ -1,13 +1,55 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Eye, MessageCircle, ChevronLeft, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import FriendshipButton from '../components/FriendshipButton'
+import { useAuth } from '../contexts/AuthContext'
+import { usersAPI } from '../services/api'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Visits = () => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { lastMessage } = useWebSocket()
   const [filter, setFilter] = useState('all') // all, today, week, month
+  const [visitors, setVisitors] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const mockVisitors = [
+  const loadVisitors = async () => {
+    if (!user?.id) return
+    setLoading(true)
+    try {
+      const res = await usersAPI.getProfileVisitors(user.id, 50)
+      const list = (res.data || []).map((v) => ({
+        id: v.user?.id,
+        username: v.user?.username,
+        name: v.user?.displayName || v.user?.display_name || v.user?.username,
+        avatar: v.user?.avatar || v.user?.avatar_url,
+        viewedAt: v.viewedAt || v.viewed_at || v.createdAt || v.created_at,
+        isMutualFriend: false
+      }))
+      setVisitors(list)
+    } catch (e) {
+      setVisitors([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadVisitors() }, [user?.id])
+  useEffect(() => {
+    if (!lastMessage || !user?.id) return
+    if (lastMessage.type === 'profile_view') {
+      const d = lastMessage.data || {}
+      if (d.profileOwnerId === user.id) {
+        setVisitors((prev) => [
+          { id: d.viewerId, username: undefined, name: 'Visitante', avatar: undefined, viewedAt: d.createdAt || new Date().toISOString(), isMutualFriend: false },
+          ...prev
+        ])
+      }
+    }
+  }, [lastMessage, user?.id])
+
+  const filterOptions = [
     {
       id: 1,
       username: 'ana_costa',
@@ -80,10 +122,28 @@ const Visits = () => {
     { value: 'month', label: 'Este mês' }
   ]
 
+  const formatTimeAgo = (iso) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    const diff = Math.floor((Date.now() - d.getTime())/1000)
+    if (diff < 60) return 'agora'
+    if (diff < 3600) return `${Math.floor(diff/60)} min`
+    if (diff < 86400) return `${Math.floor(diff/3600)} h`
+    if (diff < 604800) return `${Math.floor(diff/86400)} d`
+    return d.toLocaleDateString('pt-BR')
+  }
+
   const getFilteredVisitors = () => {
-    // Aqui você implementaria a lógica real de filtro
-    // Por agora, retorna todos os visitantes
-    return mockVisitors
+    const now = new Date()
+    return visitors.filter((v) => {
+      if (filter === 'all') return true
+      const d = new Date(v.viewedAt)
+      const diffDays = (now - d) / (1000*60*60*24)
+      if (filter === 'today') return diffDays < 1
+      if (filter === 'week') return diffDays < 7
+      if (filter === 'month') return diffDays < 30
+      return true
+    })
   }
 
   const handleProfileClick = (username) => {
@@ -104,7 +164,7 @@ const Visits = () => {
             </button>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Visitantes do Perfil</h1>
-              <p className="text-gray-500 text-sm">{mockVisitors.length} pessoas visualizaram</p>
+              <p className="text-gray-500 text-sm">{visitors.length} pessoas visualizaram</p>
             </div>
           </div>
           <div className="text-vibe-blue">
@@ -168,7 +228,7 @@ const Visits = () => {
                   <p className="text-gray-600 text-sm">@{visitor.username}</p>
                   <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
                     <Clock size={12} />
-                    <span>{visitor.visitTime}</span>
+                    <span>{formatTimeAgo(visitor.viewedAt)}</span>
                   </div>
                 </div>
               </div>
