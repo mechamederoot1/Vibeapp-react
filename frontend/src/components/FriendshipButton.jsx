@@ -9,6 +9,7 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   const [status, setStatus] = useState('none') // none, request_sent, request_received, friends, self
   const [loading, setLoading] = useState(false)
   const { lastMessage } = useWebSocket()
+  const actionIdRef = useRef(0)
 
   useEffect(() => {
     if (userId && currentUser?.id) {
@@ -26,6 +27,18 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     }
   }
 
+  const refreshStatusSafe = async () => {
+    const id = ++actionIdRef.current
+    try {
+      const response = await friendshipsAPI.getFriendshipStatus(userId)
+      if (id === actionIdRef.current) {
+        setStatus(response.data.status)
+      }
+    } catch (error) {
+      // Keep optimistic status if refresh fails
+    }
+  }
+
   const handleSendFriendRequest = async () => {
     if (loading) return
     setLoading(true)
@@ -35,6 +48,7 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     onStatusChange?.(userId, 'request_sent')
     try {
       await friendshipsAPI.sendFriendRequest(userId)
+      await refreshStatusSafe()
     } catch (error) {
       console.error('Erro ao enviar pedido:', error)
       // rollback
@@ -54,6 +68,7 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.removeFriend(userId)
+      await refreshStatusSafe()
     } catch (error) {
       console.error('Erro ao remover amigo:', error)
       // rollback
@@ -78,6 +93,7 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.cancelFriendRequest(userId)
+      await refreshStatusSafe()
     } catch (error) {
       console.error('Erro ao cancelar pedido:', error)
       // rollback

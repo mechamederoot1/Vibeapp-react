@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
-from .base import Base
+from ..database.database import Base
 
 class Follow(Base):
     __tablename__ = "follows"
