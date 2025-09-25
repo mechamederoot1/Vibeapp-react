@@ -22,74 +22,23 @@ const ConnectionsModal = ({ isOpen, onClose }) => {
 
   const loadConnections = async () => {
     if (!user?.id) return
-    
+
     setLoading(true)
     try {
-      // Simulando dados até ter API real
-      const mockData = {
-        friends: [
-          {
-            id: 1,
-            username: 'ana_silva',
-            fullName: 'Ana Silva',
-            avatar: '/api/placeholder/40/40',
-            isOnline: true,
-            mutualFriends: 12
-          },
-          {
-            id: 2,
-            username: 'carlos_santos',
-            fullName: 'Carlos Santos',
-            avatar: '/api/placeholder/40/40',
-            isOnline: false,
-            mutualFriends: 8
-          },
-          {
-            id: 3,
-            username: 'maria_oliveira',
-            fullName: 'Maria Oliveira',
-            avatar: '/api/placeholder/40/40',
-            isOnline: true,
-            mutualFriends: 15
-          }
-        ],
-        followers: [
-          {
-            id: 4,
-            username: 'joao_costa',
-            fullName: 'João Costa',
-            avatar: '/api/placeholder/40/40',
-            isFollowing: false
-          },
-          {
-            id: 5,
-            username: 'lucia_ferreira',
-            fullName: 'Lúcia Ferreira',
-            avatar: '/api/placeholder/40/40',
-            isFollowing: true
-          }
-        ],
-        following: [
-          {
-            id: 6,
-            username: 'pedro_alves',
-            fullName: 'Pedro Alves',
-            avatar: '/api/placeholder/40/40',
-            isFollowingBack: true
-          },
-          {
-            id: 7,
-            username: 'sofia_ribeiro',
-            fullName: 'Sofia Ribeiro',
-            avatar: '/api/placeholder/40/40',
-            isFollowingBack: false
-          }
-        ]
-      }
-      
-      setConnections(mockData)
+      const { friendshipsAPI } = await import('../services/api')
+      const res = await friendshipsAPI.getUserFriends(user.id)
+      const friends = (res.data || []).map((item) => ({
+        id: item.user_info?.id,
+        username: item.user_info?.username,
+        fullName: item.user_info?.display_name || item.user_info?.username,
+        avatar: item.user_info?.avatar_url,
+        isOnline: false,
+        mutualFriends: item.mutual_friends_count || 0
+      }))
+      setConnections({ friends, followers: [], following: [] })
     } catch (error) {
       console.error('Erro ao carregar conexões:', error)
+      setConnections({ friends: [], followers: [], following: [] })
     } finally {
       setLoading(false)
     }
@@ -134,8 +83,8 @@ const ConnectionsModal = ({ isOpen, onClose }) => {
 
   const tabs = [
     { id: 'friends', label: 'Amigos', count: connections.friends.length },
-    { id: 'followers', label: 'Seguidores', count: connections.followers.length },
-    { id: 'following', label: 'Seguindo', count: connections.following.length }
+    ...(connections.followers.length > 0 ? [{ id: 'followers', label: 'Seguidores', count: connections.followers.length }] : []),
+    ...(connections.following.length > 0 ? [{ id: 'following', label: 'Seguindo', count: connections.following.length }] : [])
   ]
 
   if (!isOpen) return null
