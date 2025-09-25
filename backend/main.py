@@ -56,6 +56,44 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully")
+        # Ensure optional blob and mime columns exist (SQLite)
+        try:
+            from sqlalchemy import text
+            with engine.begin() as conn:
+                def has_col(table, col):
+                    res = conn.execute(text(f"PRAGMA table_info({table})"))
+                    return any(row[1] == col for row in res.fetchall())
+                # users
+                if not has_col('users', 'avatar_blob'):
+                    conn.execute(text("ALTER TABLE users ADD COLUMN avatar_blob BLOB"))
+                if not has_col('users', 'avatar_mime'):
+                    conn.execute(text("ALTER TABLE users ADD COLUMN avatar_mime TEXT"))
+                if not has_col('users', 'cover_blob'):
+                    conn.execute(text("ALTER TABLE users ADD COLUMN cover_blob BLOB"))
+                if not has_col('users', 'cover_mime'):
+                    conn.execute(text("ALTER TABLE users ADD COLUMN cover_mime TEXT"))
+                # posts
+                if not has_col('posts', 'image_blob'):
+                    conn.execute(text("ALTER TABLE posts ADD COLUMN image_blob BLOB"))
+                if not has_col('posts', 'image_mime'):
+                    conn.execute(text("ALTER TABLE posts ADD COLUMN image_mime TEXT"))
+                if not has_col('posts', 'video_blob'):
+                    conn.execute(text("ALTER TABLE posts ADD COLUMN video_blob BLOB"))
+                if not has_col('posts', 'video_mime'):
+                    conn.execute(text("ALTER TABLE posts ADD COLUMN video_mime TEXT"))
+                # stories
+                if not has_col('stories', 'media_blob'):
+                    conn.execute(text("ALTER TABLE stories ADD COLUMN media_blob BLOB"))
+                if not has_col('stories', 'media_mime'):
+                    conn.execute(text("ALTER TABLE stories ADD COLUMN media_mime TEXT"))
+                # messages
+                if not has_col('messages', 'media_blob'):
+                    conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
+                if not has_col('messages', 'media_mime'):
+                    conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
+            print("✅ Verified/added optional blob columns")
+        except Exception as me:
+            print(f"⚠️ Could not verify/add blob columns: {me}")
         # Run lightweight migrations
         try:
             import sys, os
