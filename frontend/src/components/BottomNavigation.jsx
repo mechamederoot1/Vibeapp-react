@@ -15,34 +15,8 @@ const BottomNavigation = () => {
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = async () => {
-    // Modo offline/demo - não fazer chamadas de API
-    if (import.meta.env.DEV) {
-      console.log('🔧 Modo demo - usando valores padrão para contadores')
-      setUnreadCounts({
-        messages: 0,
-        visits: 0
-      })
-      return
-    }
-
-    try {
-      const [messagesRes, visitsRes] = await Promise.all([
-        api.get('/api/messages/unread-count'),
-        api.get('/api/profile/recent-visits-count')
-      ])
-
-      setUnreadCounts({
-        messages: messagesRes.data.unreadCount,
-        visits: visitsRes.data.newVisitsCount || 0
-      })
-    } catch (error) {
-      console.error('Erro ao carregar contadores:', error)
-      // Fallback: definir valores padrão para não quebrar a interface
-      setUnreadCounts({
-        messages: 0,
-        visits: 0
-      })
-    }
+    // Mantém contadores zerados inicialmente; mensagens/visitas serão atualizadas por WS
+    setUnreadCounts({ messages: 0, visits: 0 })
   }
 
   // Atualizar contadores quando receber mensagens WebSocket
