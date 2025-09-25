@@ -217,6 +217,16 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/posts/id/:publicId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <PostDetail />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/photo/id/:publicId"
           element={
             <ProtectedRoute>
