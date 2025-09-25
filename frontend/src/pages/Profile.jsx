@@ -27,6 +27,8 @@ import CreateHighlightModal from '../components/CreateHighlightModal'
 import AddToHighlightModal from '../components/AddToHighlightModal'
 import StoryViewer from '../components/StoryViewer'
 import FriendshipButton from '../components/FriendshipButton'
+import FollowButton from '../components/FollowButton'
+import useWebSocket from '../hooks/useWebSocket'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
   const sizeClasses = {
@@ -139,6 +141,7 @@ const Profile = () => {
   const [userPostsLoadingMore, setUserPostsLoadingMore] = useState(false)
   const profileEndRef = useRef(null)
   const GRID_LIMIT = 12
+  const { lastMessage } = useWebSocket()
   const LIST_LIMIT = 10
   const getCurrentLimit = () => (viewMode === 'grid' ? GRID_LIMIT : LIST_LIMIT)
 
@@ -1342,6 +1345,18 @@ const Profile = () => {
           </div>
         ) : null}
 
+        {/* Atualizar contadores via WebSocket */}
+        {lastMessage?.type === 'follow_update' && ( () => { try {
+          const { followerId, followingId, isFollowing } = lastMessage.data || {}
+          const viewedId = targetUserIdState || profileUser?.id
+          if (viewedId && followingId === viewedId) {
+            setCurrentProfileData(prev => ({
+              ...prev,
+              followers: String(Math.max(0, (parseInt(prev.followers, 10) || 0) + (isFollowing ? 1 : -1)))
+            }))
+          }
+        } catch (_) {} return null })() }
+
         {/* Ações */}
         <div className="flex space-x-2 mb-6">
           {isOwnProfile ? (
@@ -1366,6 +1381,16 @@ const Profile = () => {
                 userId={targetUserIdState || profileUser?.id}
                 username={currentProfileData.username}
                 className="px-5 py-3 text-base rounded-xl h-12"
+              />
+              <FollowButton
+                userId={targetUserIdState || profileUser?.id}
+                className="px-5 py-3 text-base rounded-xl h-12"
+                onChange={(f) => {
+                  setCurrentProfileData(prev => ({
+                    ...prev,
+                    followers: String(Math.max(0, (parseInt(prev.followers, 10) || 0) + (f ? 1 : -1)))
+                  }))
+                }}
               />
               <button
                 onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
