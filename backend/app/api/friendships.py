@@ -129,7 +129,7 @@ async def send_friend_request(
                         user_id=existing_friendship.user_id,
                         type="friend_accepted",
                         title="Pedido de amizade aceito",
-                        content=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
+                        message=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
                         related_user_id=current_user.id,
                         related_id=existing_friendship.id
                     )
@@ -145,7 +145,7 @@ async def send_friend_request(
                         "id": notification.id,
                         "type": "friend_accepted",
                         "title": notification.title,
-                        "message": notification.content,
+                        "message": notification.message,
                         "related_user_id": current_user.id,
                         "created_at": notification.created_at.isoformat()
                     }, existing_friendship.user_id)
@@ -189,7 +189,7 @@ async def send_friend_request(
         user_id=request.friend_id,
         type="friend_request",
         title="Novo pedido de amizade",
-        content=f"{current_user.display_name or current_user.username} enviou um pedido de amizade",
+        message=f"{current_user.display_name or current_user.username} enviou um pedido de amizade",
         related_user_id=current_user.id,
         related_id=new_friendship.id
     )
@@ -204,7 +204,7 @@ async def send_friend_request(
             "id": notification.id,
             "type": "friend_request",
             "title": notification.title,
-            "message": notification.content,
+            "message": notification.message,
             "related_user_id": current_user.id,
             "created_at": notification.created_at.isoformat()
         }, request.friend_id)
@@ -308,7 +308,7 @@ async def accept_friend_request(
         user_id=friendship.user_id,
         type="friend_accepted",
         title="Pedido de amizade aceito",
-        content=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
+        message=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
         related_user_id=current_user.id,
         related_id=friendship.id
     )
@@ -323,7 +323,7 @@ async def accept_friend_request(
             "id": notification.id,
             "type": "friend_accepted",
             "title": notification.title,
-            "message": notification.content,
+            "message": notification.message,
             "related_user_id": current_user.id,
             "created_at": notification.created_at.isoformat()
         }, friendship.user_id)
