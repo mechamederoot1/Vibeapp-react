@@ -1,77 +1,64 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { X, Eye, MessageCircle, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import FriendshipButton from './FriendshipButton'
+import { useAuth } from '../contexts/AuthContext'
+import { usersAPI } from '../services/api'
+import useWebSocket from '../hooks/useWebSocket'
 
 const ProfileVisitors = ({ onClose }) => {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { lastMessage } = useWebSocket()
   const [filter, setFilter] = useState('all') // all, today, week, month
+  const [visitors, setVisitors] = useState([])
+  const [loading, setLoading] = useState(false)
 
-  const mockVisitors = [
-    {
-      id: 1,
-      username: 'ana_costa',
-      name: 'Ana Costa',
-      avatar: 'https://picsum.photos/100/100?random=visitor1',
-      visitTime: 'há 2 horas',
-      isFriend: false,
-      isMutualFriend: false
-    },
-    {
-      id: 2,
-      username: 'joao_silva',
-      name: 'João Silva',
-      avatar: 'https://picsum.photos/100/100?random=visitor2',
-      visitTime: 'há 4 horas',
-      isFriend: true,
-      isMutualFriend: true
-    },
-    {
-      id: 3,
-      username: 'maria_santos',
-      name: 'Maria Santos',
-      avatar: 'https://picsum.photos/100/100?random=visitor3',
-      visitTime: 'há 6 horas',
-      isFriend: false,
-      isMutualFriend: false
-    },
-    {
-      id: 4,
-      username: 'pedro_oliveira',
-      name: 'Pedro Oliveira',
-      avatar: 'https://picsum.photos/100/100?random=visitor4',
-      visitTime: 'há 1 dia',
-      isFriend: false,
-      isMutualFriend: false
-    },
-    {
-      id: 5,
-      username: 'sofia_lima',
-      name: 'Sofia Lima',
-      avatar: 'https://picsum.photos/100/100?random=visitor5',
-      visitTime: 'há 2 dias',
-      isFriend: true,
-      isMutualFriend: false
-    },
-    {
-      id: 6,
-      username: 'carlos_pereira',
-      name: 'Carlos Pereira',
-      avatar: 'https://picsum.photos/100/100?random=visitor6',
-      visitTime: 'há 3 dias',
-      isFriend: false,
-      isMutualFriend: false
-    },
-    {
-      id: 7,
-      username: 'lucia_martins',
-      name: 'Lúcia Martins',
-      avatar: 'https://picsum.photos/100/100?random=visitor7',
-      visitTime: 'há 1 semana',
-      isFriend: true,
-      isMutualFriend: true
+  const loadVisitors = async () => {
+    if (!user?.id) return
+    setLoading(true)
+    try {
+      const res = await usersAPI.getProfileVisitors(user.id, 50)
+      const list = (res.data || []).map((v) => ({
+        id: v.user?.id,
+        username: v.user?.username,
+        name: v.user?.displayName || v.user?.display_name || v.user?.username,
+        avatar: v.user?.avatar || v.user?.avatar_url,
+        viewedAt: v.viewedAt || v.viewed_at || v.createdAt || v.created_at,
+        isFriend: false,
+        isMutualFriend: false
+      }))
+      setVisitors(list)
+    } catch (e) {
+      setVisitors([])
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  useEffect(() => { loadVisitors() }, [user?.id])
+
+  useEffect(() => {
+    if (!lastMessage || !user?.id) return
+    if (lastMessage.type === 'profile_view') {
+      const d = lastMessage.data || {}
+      if (d.profileOwnerId === user.id) {
+        // Prepend latest view
+        setVisitors((prev) => [
+          {
+            id: d.viewerId,
+            username: undefined,
+            name: 'Visitante',
+            avatar: undefined,
+            viewedAt: d.createdAt || new Date().toISOString(),
+            isFriend: false,
+            isMutualFriend: false
+          },
+          ...prev
+        ])
+      }
+    }
+  }, [lastMessage, user?.id])
 
   const filterOptions = [
     { value: 'all', label: 'Todos' },
@@ -80,14 +67,33 @@ const ProfileVisitors = ({ onClose }) => {
     { value: 'month', label: 'Este mês' }
   ]
 
-  const getFilteredVisitors = () => {
-    // Aqui você implementaria a lógica real de filtro
-    // Por agora, retorna todos os visitantes
-    return mockVisitors
+  const formatTimeAgo = (iso) => {
+    if (!iso) return ''
+    const date = new Date(iso)
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000)
+    if (diff < 60) return 'agora'
+    if (diff < 3600) return `${Math.floor(diff/60)} min`
+    if (diff < 86400) return `${Math.floor(diff/3600)} h`
+    if (diff < 604800) return `${Math.floor(diff/86400)} d`
+    return date.toLocaleDateString('pt-BR')
   }
 
-  const handleProfileClick = (username) => {
-    navigate(`/profile/${username}`)
+  const filteredVisitors = useMemo(() => {
+    const now = new Date()
+    return visitors.filter((v) => {
+      if (filter === 'all') return true
+      const d = new Date(v.viewedAt)
+      const diffDays = (now - d) / (1000*60*60*24)
+      if (filter === 'today') return diffDays < 1
+      if (filter === 'week') return diffDays < 7
+      if (filter === 'month') return diffDays < 30
+      return true
+    })
+  }, [visitors, filter])
+
+  const handleProfileClick = (username, id) => {
+    if (username) navigate(`/profile/${username}`)
+    else if (id) navigate(`/profile/${id}`)
     onClose()
   }
 
@@ -98,7 +104,7 @@ const ProfileVisitors = ({ onClose }) => {
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
           <div>
             <h2 className="text-xl font-bold">Visitantes do Perfil</h2>
-            <p className="text-gray-500 text-sm">{mockVisitors.length} pessoas visualizaram</p>
+            <p className="text-gray-500 text-sm">{visitors.length} pessoas visualizaram</p>
           </div>
           <button
             onClick={onClose}
@@ -129,7 +135,7 @@ const ProfileVisitors = ({ onClose }) => {
 
         {/* Lista de Visitantes */}
         <div className="overflow-y-auto max-h-[calc(85vh-140px)]">
-          {getFilteredVisitors().map((visitor) => (
+          {filteredVisitors.map((visitor) => (
             <div key={visitor.id} className="p-4 hover:bg-gray-50 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3 flex-1">
@@ -149,7 +155,7 @@ const ProfileVisitors = ({ onClose }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => handleProfileClick(visitor.username)}
+                        onClick={() => handleProfileClick(visitor.username, visitor.id)}
                         className="font-semibold truncate hover:text-vibe-blue transition-colors text-left"
                       >
                         {visitor.name}
@@ -163,7 +169,7 @@ const ProfileVisitors = ({ onClose }) => {
                     <p className="text-gray-600 text-sm">@{visitor.username}</p>
                     <div className="flex items-center space-x-1 text-gray-500 text-xs mt-1">
                       <Clock size={12} />
-                      <span>{visitor.visitTime}</span>
+                      <span>{formatTimeAgo(visitor.viewedAt)}</span>
                     </div>
                   </div>
                 </div>
