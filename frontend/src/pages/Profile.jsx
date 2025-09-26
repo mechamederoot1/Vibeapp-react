@@ -221,7 +221,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n��� Formada em Design Digital pela UFPE\n������� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com Jo��o Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n������� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com Jo��o Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -297,7 +297,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já está sendo planejado!',
+            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já est�� sendo planejado!',
             imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
             createdAt: '2024-01-12T14:20:00Z',
             likes: 234,
@@ -842,7 +842,7 @@ const Profile = () => {
         const res = await personalInfoAPI.get()
         setPersonalInfo(res.data.personalInfo)
       } catch (e) {
-        console.warn('Não foi possível recarregar informações pessoais após salvar:', e?.response?.data || e.message)
+        console.warn('Não foi possível recarregar informaç��es pessoais após salvar:', e?.response?.data || e.message)
       }
       setUploadSuccess('Informa��ões pessoais atualizadas com sucesso!')
 
@@ -1448,19 +1448,24 @@ const Profile = () => {
           </div>
           <div className="space-y-3">
             {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
-            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo ? (
+            {personalInfo?.privacy?.showWorkInfo && (
               <div className="space-y-2">
-                {personalInfo.workExperiences.map((we, idx) => (
-                  <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
+                {personalInfo?.work?.displayText && (
+                  <div className="flex items-center text-sm text-gray-600">
                     <Briefcase size={16} className="mr-3 text-gray-500" />
-                    <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
+                    <span>{personalInfo.work.displayText}</span>
                   </div>
-                ))}
-              </div>
-            ) : personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.work.displayText}</span>
+                )}
+                {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && (
+                  <>
+                    {personalInfo.workExperiences.map((we, idx) => (
+                      <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
+                        <Briefcase size={16} className="mr-3 text-gray-500" />
+                        <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             )}
 
