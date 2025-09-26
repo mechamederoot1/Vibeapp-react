@@ -56,6 +56,87 @@ def _ensure_optional_columns():
         if not _has_col(conn, 'messages', 'media_mime'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
 
+def _ensure_work_education_tables():
+    """Ensure tables and essential columns/indexes for multiple work/education entries (SQLite-safe)."""
+    with engine.begin() as conn:
+        # Work experiences table
+        conn.execute(text(
+            """
+            CREATE TABLE IF NOT EXISTS work_experiences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                company TEXT NOT NULL,
+                position TEXT NOT NULL,
+                description TEXT,
+                start_date DATE,
+                end_date DATE,
+                is_current BOOLEAN DEFAULT 0,
+                order_index INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        ))
+        # Add missing columns if table already existed
+        if not _has_col(conn, 'work_experiences', 'description'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN description TEXT"))
+        if not _has_col(conn, 'work_experiences', 'start_date'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN start_date DATE"))
+        if not _has_col(conn, 'work_experiences', 'end_date'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN end_date DATE"))
+        if not _has_col(conn, 'work_experiences', 'is_current'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN is_current BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'work_experiences', 'order_index'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN order_index INTEGER DEFAULT 0"))
+        if not _has_col(conn, 'work_experiences', 'created_at'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP"))
+        if not _has_col(conn, 'work_experiences', 'updated_at'):
+            conn.execute(text("ALTER TABLE work_experiences ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP"))
+        # Indexes
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_work_experiences_user ON work_experiences(user_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_work_experiences_user_order_created ON work_experiences(user_id, order_index DESC, created_at DESC)"))
+
+        # Education table
+        conn.execute(text(
+            """
+            CREATE TABLE IF NOT EXISTS education (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                institution TEXT NOT NULL,
+                degree TEXT NOT NULL,
+                field TEXT,
+                description TEXT,
+                start_date DATE,
+                end_date DATE,
+                is_current BOOLEAN DEFAULT 0,
+                order_index INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        ))
+        # Add missing columns
+        if not _has_col(conn, 'education', 'field'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN field TEXT"))
+        if not _has_col(conn, 'education', 'description'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN description TEXT"))
+        if not _has_col(conn, 'education', 'start_date'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN start_date DATE"))
+        if not _has_col(conn, 'education', 'end_date'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN end_date DATE"))
+        if not _has_col(conn, 'education', 'is_current'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN is_current BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'education', 'order_index'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN order_index INTEGER DEFAULT 0"))
+        if not _has_col(conn, 'education', 'created_at'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP"))
+        if not _has_col(conn, 'education', 'updated_at'):
+            conn.execute(text("ALTER TABLE education ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP"))
+        # Indexes
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_education_user ON education(user_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_education_user_order_created ON education(user_id, order_index DESC, created_at DESC)"))
+
+
 def _migrate_public_profile_id(db):
     # add column
     if not _has_col(db, 'users', 'public_profile_id'):
