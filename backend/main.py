@@ -66,14 +66,11 @@ async def lifespan(app: FastAPI):
             scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
             if scripts_dir not in sys.path:
                 sys.path.insert(0, scripts_dir)
-        except Exception as me:
-            print(f"⚠️ Could not prepare scripts path: {me}")
-        try:
             from scripts.migrate_all import migrate_all
             migrate_all()
             print("✅ Unified migrations applied")
         except Exception as me:
-            print(f"⚠️ Unified migrations failed or skipped: {me}")
+            print(f"⚠��� Unified migrations failed or skipped: {me}")
     except Exception as e:
         print(f"❌ Error creating database tables: {e}")
     yield
