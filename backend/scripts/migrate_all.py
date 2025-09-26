@@ -343,6 +343,8 @@ def migrate_all() -> bool:
         Base.metadata.create_all(bind=engine)
         # 2) Ensure optional columns
         _ensure_optional_columns()
+        # 2b) Ensure work/education tables and columns for multiple entries
+        _ensure_work_education_tables()
         # 3) Data/ID migrations
         db = SessionLocal()
         try:
