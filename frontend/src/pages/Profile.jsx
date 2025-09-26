@@ -280,7 +280,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! 💭��',
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! ������',
             createdAt: '2024-01-13T09:15:00Z',
             likes: 73,
             comments: 18,
@@ -1036,8 +1036,15 @@ const Profile = () => {
   }
 
   const handlePostClick = (post) => {
-    // Prefer SPA navigation to the dedicated post/media route so URL contains the publicId
     if (!post) return
+    // Profile cover updates: prefer immutable cover URL if available
+    if (post.profileUpdateType === 'cover' && post.imageUrl) {
+      const m = String(post.imageUrl || '').match(/\/profile\/cover\/id\/([^?&#]+)/)
+      if (m && m[1]) {
+        navigate(`/profile/cover/id/${m[1]}`)
+        return
+      }
+    }
     if (post.publicId) {
       if (post.type === 'image') {
         navigate(`/photo/id/${post.publicId}`)
