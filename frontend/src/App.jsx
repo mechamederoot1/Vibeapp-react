@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import Feed from './pages/Feed'
@@ -61,6 +61,11 @@ const PublicRoute = ({ children }) => {
   }
 
   return children
+}
+
+const LegacyPostRedirect = () => {
+  const { publicId } = useParams()
+  return <Navigate to={`/posts/id/${publicId}`} replace />
 }
 
 const AppContent = () => {
@@ -210,9 +215,7 @@ const AppContent = () => {
           path="/post/id/:publicId"
           element={
             <ProtectedRoute>
-              <Layout onOpenPostModal={handleOpenPostModal}>
-                <PostDetail />
-              </Layout>
+              <LegacyPostRedirect />
             </ProtectedRoute>
           }
         />
