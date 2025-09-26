@@ -124,11 +124,27 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
       } : undefined
     }
     try {
-      // 1) Criar novas experiências de trabalho primeiro
-      const itemsToCreate = newWorkItems
+      // 1) Criar experiências de trabalho (inclui o cargo principal e os adicionais), evitando duplicados
+      const existing = await workExperienceAPI.getAll().then(r => r.data || []).catch(() => [])
+      const existingKeys = new Set(existing.map(e => `${(e.position || '').trim().toLowerCase()}::${(e.company || '').trim().toLowerCase()}`))
+
+      const toCreate = []
+      const mainCompany = (formData.work?.company || '').trim()
+      const mainPosition = (formData.work?.position || '').trim()
+      if (mainCompany && mainPosition) {
+        const key = `${mainPosition.toLowerCase()}::${mainCompany.toLowerCase()}`
+        if (!existingKeys.has(key)) toCreate.push({ company: mainCompany, position: mainPosition })
+      }
+      const additional = newWorkItems
         .map(i => ({ company: (i.company || '').trim(), position: (i.position || '').trim() }))
         .filter(i => i.company && i.position)
-      for (const item of itemsToCreate) {
+      for (const item of additional) {
+        const key = `${item.position.toLowerCase()}::${item.company.toLowerCase()}`
+        if (!existingKeys.has(key)) toCreate.push(item)
+      }
+
+      let baseOrder = Array.isArray(existing) ? existing.length : 0
+      for (const item of toCreate) {
         try {
           await workExperienceAPI.create({
             company: item.company,
@@ -137,7 +153,7 @@ const PersonalInfoEditModal = ({ isOpen, onClose, personalInfo, onSave }) => {
             start_date: null,
             end_date: null,
             is_current: false,
-            order_index: 0
+            order_index: baseOrder++
           })
         } catch (e) {
           console.warn('Falha ao criar experiência de trabalho:', e?.response?.data || e.message)

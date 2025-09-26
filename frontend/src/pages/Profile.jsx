@@ -297,7 +297,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já está sendo planejado!',
+            content: 'Workshop de Design Thinking hoje foi incrível! 🚀 Compartilhar conhecimento com outros designers me energiza muito. Próximo evento já est�� sendo planejado!',
             imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop',
             createdAt: '2024-01-12T14:20:00Z',
             likes: 234,
@@ -842,7 +842,7 @@ const Profile = () => {
         const res = await personalInfoAPI.get()
         setPersonalInfo(res.data.personalInfo)
       } catch (e) {
-        console.warn('Não foi possível recarregar informações pessoais após salvar:', e?.response?.data || e.message)
+        console.warn('Não foi possível recarregar informaç��es pessoais após salvar:', e?.response?.data || e.message)
       }
       setUploadSuccess('Informa��ões pessoais atualizadas com sucesso!')
 
@@ -1448,33 +1448,42 @@ const Profile = () => {
           </div>
           <div className="space-y-3">
             {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
-            {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo ? (
-              <div className="flex items-center text-sm text-gray-600">
-                <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.workExperiences[0].displayText}</span>
-                {personalInfo.workExperiences.length > 1 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    +{personalInfo.workExperiences.length - 1} mais
-                  </span>
-                )}
-              </div>
-            ) : personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.work.displayText}</span>
+            {personalInfo?.privacy?.showWorkInfo && (
+              <div className="space-y-2">
+                {(() => {
+                  const base = []
+                  if (personalInfo?.work && (personalInfo.work.position || personalInfo.work.company || personalInfo.work.displayText)) {
+                    base.push(personalInfo.work)
+                  }
+                  if (Array.isArray(personalInfo?.workExperiences)) {
+                    base.push(...personalInfo.workExperiences)
+                  }
+                  const seen = new Set()
+                  const items = base.filter(Boolean).filter((it) => {
+                    const key = `${(it.position || '').toLowerCase()}::${(it.company || '').toLowerCase()}::${it.displayText || ''}`
+                    if (seen.has(key)) return false
+                    seen.add(key)
+                    return true
+                  })
+                  return items.map((we, idx) => (
+                    <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
+                      <Briefcase size={16} className="mr-3 text-gray-500" />
+                      <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
+                    </div>
+                  ))
+                })()}
               </div>
             )}
 
             {/* Formação acadêmica - primeira das múltiplas ou campo simples */}
             {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo ? (
-              <div className="flex items-center text-sm text-gray-600">
-                <GraduationCap size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.educationEntries[0].displayText}</span>
-                {personalInfo.educationEntries.length > 1 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    +{personalInfo.educationEntries.length - 1} mais
-                  </span>
-                )}
+              <div className="space-y-2">
+                {personalInfo.educationEntries.map((ed, idx) => (
+                  <div key={ed.id || idx} className="flex items-center text-sm text-gray-600">
+                    <GraduationCap size={16} className="mr-3 text-gray-500" />
+                    <span>{ed.displayText || [ed.degree, ed.institution].filter(Boolean).join(' • ')}</span>
+                  </div>
+                ))}
               </div>
             ) : personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
