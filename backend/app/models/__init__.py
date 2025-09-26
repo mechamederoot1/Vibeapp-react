@@ -12,6 +12,8 @@ from .highlight import Highlight, HighlightStory
 from .work_experience import WorkExperience
 from .education import Education
 from .follow import Follow
+from .profile_photo import ProfilePhoto
+from .profile_cover import ProfileCover
 
 __all__ = [
     "User",
@@ -35,5 +37,7 @@ __all__ = [
     "HighlightStory",
     "WorkExperience",
     "Education",
-    "Follow"
+    "Follow",
+    "ProfilePhoto",
+    "ProfileCover",
 ]

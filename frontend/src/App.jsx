@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import Feed from './pages/Feed'
@@ -13,6 +13,7 @@ import Settings from './pages/Settings'
 import Visits from './pages/Visits'
 import PostDetail from './pages/PostDetail'
 import ProfilePhotoView from './pages/ProfilePhotoView'
+import ProfileCoverView from './pages/ProfileCoverView'
 import Friends from './pages/Friends'
 import Login from './pages/Login'
 import LoginPage from './pages/LoginPage'
@@ -61,6 +62,11 @@ const PublicRoute = ({ children }) => {
   }
 
   return children
+}
+
+const LegacyPostRedirect = () => {
+  const { publicId } = useParams()
+  return <Navigate to={`/posts/id/${publicId}`} replace />
 }
 
 const AppContent = () => {
@@ -210,9 +216,7 @@ const AppContent = () => {
           path="/post/id/:publicId"
           element={
             <ProtectedRoute>
-              <Layout onOpenPostModal={handleOpenPostModal}>
-                <PostDetail />
-              </Layout>
+              <LegacyPostRedirect />
             </ProtectedRoute>
           }
         />
@@ -242,6 +246,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <ProfilePhotoView />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile/cover/id/:coverId"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <ProfileCoverView />
               </Layout>
             </ProtectedRoute>
           }

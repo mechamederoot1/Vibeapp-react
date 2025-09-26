@@ -221,7 +221,11 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
                   src={post.imageUrl}
                   alt="Foto de capa atualizada"
                   className="w-full object-contain"
-                  onClick={() => navigate(`/photo/id/${post.publicId}`)}
+                  onClick={() => {
+                    const m = (post.imageUrl || '').match(/\/profile\/cover\/id\/([^?&#]+)/)
+                    if (m && m[1]) navigate(`/profile/cover/id/${m[1]}`)
+                    else navigate(`/photo/id/${post.publicId}`)
+                  }}
                 />
               ) : (
                 <div className="w-full h-64 bg-gray-200" />
@@ -230,7 +234,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
           </div>
         </>
       ) : post.type === 'text' ? (
-        <div className="mx-3 mb-3">
+        <div
+          className="mx-3 mb-3 cursor-pointer"
+          onClick={() => post.publicId && navigate(`/posts/id/${post.publicId}`)}
+        >
           {post.backgroundColor ? (
             <div className={`
               rounded-lg p-6 min-h-[200px] flex items-center justify-center

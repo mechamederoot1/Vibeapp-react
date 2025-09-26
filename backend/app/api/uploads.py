@@ -9,6 +9,7 @@ from typing import Literal
 from ..database.database import get_db
 from ..models.user import User
 from ..models.profile_photo import ProfilePhoto
+from ..models.profile_cover import ProfileCover
 from .auth import get_current_user
 
 router = APIRouter()
@@ -126,7 +127,7 @@ async def upload_cover_photo(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Upload da foto de capa - store in DB and return data URL"""
+    """Upload da foto de capa - store in DB and return data URL and immutable id URL"""
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
     if file.size and file.size > MAX_FILE_SIZE:
@@ -135,9 +136,32 @@ async def upload_cover_photo(
     try:
         content_bytes, mime = await save_and_resize_image_to_bytes(file, (800, 300))
 
+        # Set current cover for the user
         current_user.cover_blob = content_bytes
         current_user.cover_mime = mime
         current_user.cover_photo = f"/api/media/users/{current_user.id}/cover"
+
+        # Also persist immutable historical cover record
+        import hashlib, secrets
+        digits = '0123456789'
+        def gen_vibe_id(n=18):
+            return 'vibe_' + ''.join(secrets.choice(digits) for _ in range(n))
+        cover_id = gen_vibe_id()
+        for _ in range(10):
+            existing = db.query(ProfileCover).filter(ProfileCover.id == cover_id).first()
+            if not existing:
+                break
+            cover_id = gen_vibe_id()
+        blob_hash = hashlib.sha256(content_bytes).hexdigest()
+        profile_cover = ProfileCover(
+            id=cover_id,
+            user_id=current_user.id,
+            blob=content_bytes,
+            mime=mime,
+            blob_hash=blob_hash
+        )
+        db.add(profile_cover)
+
         db.commit()
         db.refresh(current_user)
 
@@ -147,6 +171,8 @@ async def upload_cover_photo(
             "message": "Foto de capa atualizada com sucesso!",
             "cover_url": current_user.cover_photo,
             "data_url": data_url,
+            "profile_cover_id": cover_id,
+            "profile_cover_url": f"/api/media/profile/cover/id/{cover_id}",
             "user": current_user.to_dict()
         }
     except Exception as e:

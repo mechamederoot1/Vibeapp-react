@@ -51,6 +51,8 @@ from app.models.personal_info import PersonalInfo
 from app.models.highlight import Highlight, HighlightStory
 from app.models.work_experience import WorkExperience
 from app.models.education import Education
+from app.models.profile_photo import ProfilePhoto
+from app.models.profile_cover import ProfileCover
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -58,88 +60,17 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully")
-        # Ensure optional blob and mime columns exist (SQLite)
-        try:
-            from sqlalchemy import text
-            with engine.begin() as conn:
-                def has_col(table, col):
-                    res = conn.execute(text(f"PRAGMA table_info({table})"))
-                    return any(row[1] == col for row in res.fetchall())
-                # users
-                if not has_col('users', 'avatar_blob'):
-                    conn.execute(text("ALTER TABLE users ADD COLUMN avatar_blob BLOB"))
-                if not has_col('users', 'avatar_mime'):
-                    conn.execute(text("ALTER TABLE users ADD COLUMN avatar_mime TEXT"))
-                if not has_col('users', 'cover_blob'):
-                    conn.execute(text("ALTER TABLE users ADD COLUMN cover_blob BLOB"))
-                if not has_col('users', 'cover_mime'):
-                    conn.execute(text("ALTER TABLE users ADD COLUMN cover_mime TEXT"))
-                # posts
-                if not has_col('posts', 'image_blob'):
-                    conn.execute(text("ALTER TABLE posts ADD COLUMN image_blob BLOB"))
-                if not has_col('posts', 'image_mime'):
-                    conn.execute(text("ALTER TABLE posts ADD COLUMN image_mime TEXT"))
-                if not has_col('posts', 'video_blob'):
-                    conn.execute(text("ALTER TABLE posts ADD COLUMN video_blob BLOB"))
-                if not has_col('posts', 'video_mime'):
-                    conn.execute(text("ALTER TABLE posts ADD COLUMN video_mime TEXT"))
-                # stories
-                if not has_col('stories', 'media_blob'):
-                    conn.execute(text("ALTER TABLE stories ADD COLUMN media_blob BLOB"))
-                if not has_col('stories', 'media_mime'):
-                    conn.execute(text("ALTER TABLE stories ADD COLUMN media_mime TEXT"))
-                # messages
-                if not has_col('messages', 'media_blob'):
-                    conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
-                if not has_col('messages', 'media_mime'):
-                    conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
-            print("✅ Verified/added optional blob columns")
-        except Exception as me:
-            print(f"⚠️ Could not verify/add blob columns: {me}")
-        # Run lightweight migrations
+        # Run unified migrations
         try:
             import sys, os
             scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
             if scripts_dir not in sys.path:
                 sys.path.insert(0, scripts_dir)
+            from scripts.migrate_all import migrate_all
+            migrate_all()
+            print("✅ Unified migrations applied")
         except Exception as me:
-            print(f"⚠️ Could not prepare scripts path: {me}")
-        try:
-            from scripts.migrate_public_profile_id import migrate as migrate_public_id
-            migrate_public_id()
-            print("✅ Migration public_profile_id applied")
-        except Exception as me:
-            print(f"⚠️ Migration public_profile_id failed or skipped: {me}")
-        try:
-            from scripts.migrate_post_public_id import migrate as migrate_post_public_id
-            migrate_post_public_id()
-            print("✅ Migration post_public_id applied")
-        except Exception as me:
-            print(f"⚠️ Migration post_public_id failed or skipped: {me}")
-        try:
-            from scripts.migrate_work_education import migrate_work_education
-            if migrate_work_education():
-                print("✅ Migration work_education applied")
-            else:
-                print("⚠️ Migration work_education returned False (possibly already migrated)")
-        except Exception as me:
-            print(f"⚠️ Migration work_education failed or skipped: {me}")
-        try:
-            from scripts.migrate_profile_photos import migrate as migrate_profile_photos
-            if migrate_profile_photos():
-                print("✅ Migration profile_photos applied")
-            else:
-                print("⚠️ Migration profile_photos returned False (possibly already migrated)")
-        except Exception as me:
-            print(f"⚠️ Migration profile_photos failed or skipped: {me}")
-        try:
-            from scripts.migrate_add_indexes import migrate as migrate_add_indexes
-            if migrate_add_indexes():
-                print("✅ Migration add_indexes applied")
-            else:
-                print("⚠️ Migration add_indexes returned False (possibly already migrated)")
-        except Exception as me:
-            print(f"⚠️ Migration add_indexes failed or skipped: {me}")
+            print(f"⚠��� Unified migrations failed or skipped: {me}")
     except Exception as e:
         print(f"❌ Error creating database tables: {e}")
     yield
