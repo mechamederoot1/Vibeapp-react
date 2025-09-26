@@ -221,7 +221,7 @@ const Profile = () => {
           ...prev,
           name: 'Marina Santos',
           username: 'marina_santos',
-          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n🎨 Formada em Design Digital pela UFPE\n������� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com Jo��o Silva\n🎯 "Design is not just what it looks like - design is how it works"',
+          bio: '✨ UX Designer apaixonada por criar experiências incríveis\n��� Formada em Design Digital pela UFPE\n������� Atualmente trabalhando na @TechCorp\n📍 Recife, PE | 🇧🇷\n💕 Em um relacionamento com Jo��o Silva\n🎯 "Design is not just what it looks like - design is how it works"',
           isVerified: true,
           avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
           coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=1200&h=400&fit=crop',
@@ -1449,14 +1449,13 @@ const Profile = () => {
           <div className="space-y-3">
             {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
             {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && personalInfo.privacy?.showWorkInfo ? (
-              <div className="flex items-center text-sm text-gray-600">
-                <Briefcase size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.workExperiences[0].displayText}</span>
-                {personalInfo.workExperiences.length > 1 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    +{personalInfo.workExperiences.length - 1} mais
-                  </span>
-                )}
+              <div className="space-y-2">
+                {personalInfo.workExperiences.map((we, idx) => (
+                  <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
+                    <Briefcase size={16} className="mr-3 text-gray-500" />
+                    <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
+                  </div>
+                ))}
               </div>
             ) : personalInfo?.work?.displayText && personalInfo.privacy?.showWorkInfo && (
               <div className="flex items-center text-sm text-gray-600">
@@ -1467,14 +1466,13 @@ const Profile = () => {
 
             {/* Formação acadêmica - primeira das múltiplas ou campo simples */}
             {personalInfo?.educationEntries && personalInfo.educationEntries.length > 0 && personalInfo.privacy?.showEducationInfo ? (
-              <div className="flex items-center text-sm text-gray-600">
-                <GraduationCap size={16} className="mr-3 text-gray-500" />
-                <span>{personalInfo.educationEntries[0].displayText}</span>
-                {personalInfo.educationEntries.length > 1 && (
-                  <span className="ml-2 text-xs text-gray-400">
-                    +{personalInfo.educationEntries.length - 1} mais
-                  </span>
-                )}
+              <div className="space-y-2">
+                {personalInfo.educationEntries.map((ed, idx) => (
+                  <div key={ed.id || idx} className="flex items-center text-sm text-gray-600">
+                    <GraduationCap size={16} className="mr-3 text-gray-500" />
+                    <span>{ed.displayText || [ed.degree, ed.institution].filter(Boolean).join(' • ')}</span>
+                  </div>
+                ))}
               </div>
             ) : personalInfo?.education?.displayText && personalInfo.privacy?.showEducationInfo && (
               <div className="flex items-center text-sm text-gray-600">
