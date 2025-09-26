@@ -1450,22 +1450,28 @@ const Profile = () => {
             {/* Experiência de trabalho - primeira das múltiplas ou campo simples */}
             {personalInfo?.privacy?.showWorkInfo && (
               <div className="space-y-2">
-                {personalInfo?.work?.displayText && (
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Briefcase size={16} className="mr-3 text-gray-500" />
-                    <span>{personalInfo.work.displayText}</span>
-                  </div>
-                )}
-                {personalInfo?.workExperiences && personalInfo.workExperiences.length > 0 && (
-                  <>
-                    {personalInfo.workExperiences.map((we, idx) => (
-                      <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
-                        <Briefcase size={16} className="mr-3 text-gray-500" />
-                        <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
+                {(() => {
+                  const base = []
+                  if (personalInfo?.work && (personalInfo.work.position || personalInfo.work.company || personalInfo.work.displayText)) {
+                    base.push(personalInfo.work)
+                  }
+                  if (Array.isArray(personalInfo?.workExperiences)) {
+                    base.push(...personalInfo.workExperiences)
+                  }
+                  const seen = new Set()
+                  const items = base.filter(Boolean).filter((it) => {
+                    const key = `${(it.position || '').toLowerCase()}::${(it.company || '').toLowerCase()}::${it.displayText || ''}`
+                    if (seen.has(key)) return false
+                    seen.add(key)
+                    return true
+                  })
+                  return items.map((we, idx) => (
+                    <div key={we.id || idx} className="flex items-center text-sm text-gray-600">
+                      <Briefcase size={16} className="mr-3 text-gray-500" />
+                      <span>{we.displayText || [we.position, we.company].filter(Boolean).join(' • ')}</span>
+                    </div>
+                  ))
+                })()}
               </div>
             )}
 
