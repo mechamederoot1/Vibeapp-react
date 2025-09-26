@@ -221,7 +221,11 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
                   src={post.imageUrl}
                   alt="Foto de capa atualizada"
                   className="w-full object-contain"
-                  onClick={() => navigate(`/photo/id/${post.publicId}`)}
+                  onClick={() => {
+                    const m = (post.imageUrl || '').match(/\/profile\/cover\/id\/([^?&#]+)/)
+                    if (m && m[1]) navigate(`/profile/cover/id/${m[1]}`)
+                    else navigate(`/photo/id/${post.publicId}`)
+                  }}
                 />
               ) : (
                 <div className="w-full h-64 bg-gray-200" />

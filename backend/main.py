@@ -51,6 +51,8 @@ from app.models.personal_info import PersonalInfo
 from app.models.highlight import Highlight, HighlightStory
 from app.models.work_experience import WorkExperience
 from app.models.education import Education
+from app.models.profile_photo import ProfilePhoto
+from app.models.profile_cover import ProfileCover
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -5,6 +5,8 @@ from ..database.database import get_db
 from ..models.post import Post
 from ..models.user import User
 from ..models.story import Story
+from ..models.profile_photo import ProfilePhoto
+from ..models.profile_cover import ProfileCover
 
 router = APIRouter()
 
@@ -50,3 +52,17 @@ async def get_message_media(message_id: int, db: Session = Depends(get_db)):
     if not message or not getattr(message, 'media_blob', None):
         raise HTTPException(status_code=404, detail='Message media not found')
     return Response(content=message.media_blob, media_type=message.media_mime or 'audio/ogg')
+
+@router.get("/profile/photo/id/{photo_id}")
+async def get_profile_photo_by_id(photo_id: str, db: Session = Depends(get_db)):
+    photo = db.query(ProfilePhoto).filter(ProfilePhoto.id == photo_id).first()
+    if not photo or not getattr(photo, 'blob', None):
+        raise HTTPException(status_code=404, detail='Profile photo not found')
+    return Response(content=photo.blob, media_type=photo.mime or 'image/jpeg')
+
+@router.get("/profile/cover/id/{cover_id}")
+async def get_profile_cover_by_id(cover_id: str, db: Session = Depends(get_db)):
+    cover = db.query(ProfileCover).filter(ProfileCover.id == cover_id).first()
+    if not cover or not getattr(cover, 'blob', None):
+        raise HTTPException(status_code=404, detail='Profile cover not found')
+    return Response(content=cover.blob, media_type=cover.mime or 'image/jpeg')
