@@ -135,6 +135,14 @@ async def lifespan(app: FastAPI):
         except Exception as me:
             print(f"⚠️ Migration profile_photos failed or skipped: {me}")
         try:
+            from scripts.migrate_profile_covers import migrate as migrate_profile_covers
+            if migrate_profile_covers():
+                print("✅ Migration profile_covers applied")
+            else:
+                print("⚠️ Migration profile_covers returned False (possibly already migrated)")
+        except Exception as me:
+            print(f"⚠️ Migration profile_covers failed or skipped: {me}")
+        try:
             from scripts.migrate_add_indexes import migrate as migrate_add_indexes
             if migrate_add_indexes():
                 print("✅ Migration add_indexes applied")
