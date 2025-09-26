@@ -230,7 +230,10 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
           </div>
         </>
       ) : post.type === 'text' ? (
-        <div className="mx-3 mb-3">
+        <div
+          className="mx-3 mb-3 cursor-pointer"
+          onClick={() => post.publicId && navigate(`/posts/id/${post.publicId}`)}
+        >
           {post.backgroundColor ? (
             <div className={`
               rounded-lg p-6 min-h-[200px] flex items-center justify-center
