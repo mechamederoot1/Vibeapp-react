@@ -240,7 +240,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         <div className="flex-1 p-4 overflow-y-auto" ref={contentRef}>
           {/* Image preview first when present */}
           {imageFile && (
-            <div className="mb-4 relative flex items-center justify-center">
+            <div className={`mb-4 relative flex items-center justify-center transition-all duration-300 ${mediaAppear ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               <img
                 src={imagePreviewUrl || ''}
                 alt="Imagem"
