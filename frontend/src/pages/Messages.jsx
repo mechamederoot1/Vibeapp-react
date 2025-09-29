@@ -256,7 +256,7 @@ const Messages = () => {
     formData.append('audio_file', audioBlob, 'audio.ogg');
 
     try {
-      await api.post('/api/messages/upload-audio', formData, {
+      await api.post('/messages/upload-audio', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
     } catch (error) {
