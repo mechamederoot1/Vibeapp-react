@@ -25,6 +25,13 @@ const Messages = () => {
   const { user } = useAuth();
   const { lastMessage, sendMessage: sendWebSocketMessage } = useWebSocket();
 
+  const TypingDots = ({ className = '' }) => (
+    <span className={`inline-flex items-center space-x-1 ${className}`}>
+      <span className="text-sm text-vibe-blue">digitando</span>
+      <span className="text-sm text-vibe-blue animate-pulse">...</span>
+    </span>
+  );
+
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
