@@ -280,28 +280,47 @@ const Messages = () => {
 
   const sendVideo = async (file) => {
     if (!selectedConversation) return
-    if (file.type !== 'video/mp4') {
-      alert('Apenas vídeos MP4 são suportados.');
+    if (!file.type.startsWith('video/')) {
+      alert('Apenas arquivos de vídeo são suportados.');
       return
     }
-    const url = URL.createObjectURL(file)
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: '',
-      messageType: 'video',
-      mediaUrl: url,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
+
+    try {
+      const up = await uploadsAPI.uploadStoryMedia(file)
+      const url = up.data?.url || URL.createObjectURL(file)
+
+      try {
+        await api.post('/messages/send', {
+          receiverId: selectedConversation.otherUser.id,
+          content: '',
+          messageType: 'video',
+          mediaUrl: url
+        })
+      } catch (e) {
+        console.warn('Erro ao enviar mensagem de vídeo ao backend, usando modo demo', e)
+      }
+
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'video',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+    } catch (err) {
+      console.error('Erro ao enviar vídeo:', err)
     }
-    setMessages(prev => [...prev, tempMsg])
-    setTimeout(scrollToBottom, 100)
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+
     setVideoInputKey(k => k + 1)
   }
 
