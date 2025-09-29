@@ -639,6 +639,15 @@ const Messages = () => {
                 <VideoIcon size={20} />
                 <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
               </label>
+
+              {/* Typing indicator next to composer (shows name + animation) */}
+              {selectedConversation && typingUsers[selectedConversation.otherUser.id] && (
+                <div className="flex items-center mr-2">
+                  <div className="text-sm text-vibe-blue mr-1">{selectedConversation.otherUser.firstName}</div>
+                  <TypingDots />
+                </div>
+              )}
+
               <input
                 type="text"
                 value={newMessage}
@@ -650,7 +659,7 @@ const Messages = () => {
                   }
                 }}
                 placeholder="Digite uma mensagem..."
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+                className="flex-1 min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
               />
 
               <button
