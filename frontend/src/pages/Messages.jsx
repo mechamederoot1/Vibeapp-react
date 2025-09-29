@@ -384,7 +384,7 @@ const Messages = () => {
 
         if (username) {
           try {
-            const res = await api.get(`/api/users/by-username/${username}`);
+            const res = await api.get(`/users/by-username/${username}`);
             const other = res.data;
             if (other && other.id) {
               const existing = (conversations || []).find(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username));
