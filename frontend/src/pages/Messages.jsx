@@ -574,7 +574,7 @@ const Messages = () => {
                   {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                 </h3>
                 {typingUsers[selectedConversation.otherUser.id] && (
-                  <p className="text-sm text-vibe-blue">digitando...</p>
+                  <p className="text-sm"><TypingDots /></p>
                 )}
               </div>
 
