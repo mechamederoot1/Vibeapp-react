@@ -33,7 +33,6 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [backgroundColor, setBackgroundColor] = useState(null)
   const [showColorPicker, setShowColorPicker] = useState(false)
 
-  const [showImageFullscreen, setShowImageFullscreen] = useState(false)
 
   useEffect(() => {
     if (!imageFile) { setImagePreviewUrl(null); return }
