@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import useWebSocket from '../hooks/useWebSocket'
 import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
-import PostModal from '../components/PostModal'
+import ModernPostModal from '../components/ModernPostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
 import ShareAsStoryModal from '../components/ShareAsStoryModal'
@@ -962,7 +962,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         </div>
       </div>
 
-      <PostModal
+      <ModernPostModal
         isOpen={isPostModalOpen}
         onClose={onClosePostModal}
         onPost={handleAddPost}
