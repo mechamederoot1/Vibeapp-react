@@ -657,10 +657,12 @@ const Messages = () => {
                 </div>
               )}
 
-              <input
-                type="text"
+              <textarea
+                ref={textareaRef}
+                rows={1}
                 value={newMessage}
-                onChange={(e) => handleTyping(e.target.value)}
+                onChange={(e) => { handleTyping(e.target.value); autoResizeTextarea(); }}
+                onInput={autoResizeTextarea}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -668,7 +670,7 @@ const Messages = () => {
                   }
                 }}
                 placeholder="Digite uma mensagem..."
-                className="flex-1 min-w-0 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+                className="flex-1 min-w-0 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent h-10"
               />
 
               <button
