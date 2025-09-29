@@ -274,7 +274,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 <Calendar size={24} className="text-red-500 group-hover:text-red-600" />
               </button>
               <button type="button" onClick={() => setShowOptions(!showOptions)} className="p-3 hover:bg-gray-50 rounded-full transition-colors" title="Mais opções">
-                <Plus size={24} className="text-gray-500" />
+                <Plus size={24} className="text-gray-600" />
               </button>
             </div>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
