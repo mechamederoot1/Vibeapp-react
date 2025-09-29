@@ -353,12 +353,17 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         </div>
       </div>
 
-      {/* Fullscreen image viewer */}
-      {showImageFullscreen && imageFile && (
+      {/* Fullscreen media viewer */}
+      {showMediaFullscreen && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <img src={imagePreviewUrl || ''} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          {fullscreenType === 'image' && (
+            <img src={imagePreviewUrl || ''} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          )}
+          {fullscreenType === 'video' && (
+            <video src={videoPreviewUrl || ''} controls className="max-w-[90vw] max-h-[90vh] object-contain" />
+          )}
           <button
-            onClick={() => setShowImageFullscreen(false)}
+            onClick={() => setShowMediaFullscreen(false)}
             className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
             aria-label="Fechar"
           >
