@@ -76,6 +76,15 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     }
   }, [showMediaFullscreen])
 
+  // Animate media preview when a file is selected
+  useEffect(() => {
+    if (imageFile || videoFile || audioFile) {
+      requestAnimationFrame(() => setMediaAppear(true))
+    } else {
+      setMediaAppear(false)
+    }
+  }, [imageFile, videoFile, audioFile])
+
   const colorOptions = [
     { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
     { name: 'Azul', value: 'blue', gradient: 'bg-gradient-to-br from-blue-400 to-blue-600' },
@@ -88,13 +97,81 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     { name: 'Sunset', value: 'sunset', gradient: 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600' }
   ]
 
-  const handleFileUpload = (file, type) => {
+  // Process and normalize images to JPEG, keeping orientation and limiting size
+  const processImageFile = async (file) => {
+    const MAX_DIMENSION = 2048
+    const TARGET_MIME = 'image/jpeg'
+    let imageBitmap
+    try {
+      if ('createImageBitmap' in window) {
+        imageBitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+      }
+    } catch (e) {
+      imageBitmap = null
+    }
+
+    if (!imageBitmap) {
+      // Fallback using HTMLImageElement
+      const objectUrl = URL.createObjectURL(file)
+      try {
+        const img = await new Promise((resolve, reject) => {
+          const i = new Image()
+          i.onload = () => resolve(i)
+          i.onerror = reject
+          i.src = objectUrl
+        })
+        imageBitmap = img
+      } finally {
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+
+    const iw = imageBitmap.width
+    const ih = imageBitmap.height
+    const scale = Math.min(1, MAX_DIMENSION / Math.max(iw, ih))
+    const tw = Math.max(1, Math.round(iw * scale))
+    const th = Math.max(1, Math.round(ih * scale))
+
+    const canvas = document.createElement('canvas')
+    canvas.width = tw
+    canvas.height = th
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(imageBitmap, 0, 0, tw, th)
+
+    // Aim for <= ~6MB. Reduce quality progressively if needed
+    let quality = 0.88
+    let dataUrl = canvas.toDataURL(TARGET_MIME, quality)
+    const approxBytes = () => Math.ceil((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3 / 4)
+    const MAX_BYTES = 6 * 1024 * 1024
+    while (approxBytes() > MAX_BYTES && quality > 0.4) {
+      quality = Math.max(0.4, quality - 0.08)
+      dataUrl = canvas.toDataURL(TARGET_MIME, quality)
+    }
+
+    // Convert back to File for existing pipeline
+    const res = await fetch(dataUrl)
+    const blob = await res.blob()
+    return new File([blob], file.name.replace(/\.(heic|heif|avif|png|webp)$/i, '.jpg'), { type: TARGET_MIME })
+  }
+
+  const handleFileUpload = async (file, type) => {
     if (type === 'image') {
-      setImageFile(file)
-      setVideoFile(null)
-      setAudioFile(null)
-      setPostType('image')
+      try {
+        const processed = await processImageFile(file)
+        setImageFile(processed)
+        setVideoFile(null)
+        setAudioFile(null)
+        setPostType('image')
+      } catch (e) {
+        console.error('Falha ao processar imagem', e)
+        setError('Formato de imagem não suportado pelo navegador. Tente JPEG/PNG/WEBP.')
+        return
+      }
     } else if (type === 'video') {
+      if (file.type !== 'video/mp4') {
+        setError('Vídeo suportado apenas em MP4.')
+        return
+      }
       setVideoFile(file)
       setImageFile(null)
       setAudioFile(null)
@@ -177,7 +254,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setError('')
     setPrivacy('public')
     setShowOptions(false)
-    setShowImageFullscreen(false)
+    setShowMediaFullscreen(false)
     onClose()
   }
 
@@ -307,11 +384,11 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
             <div className="flex items-center space-x-1">
               <label className="p-3 hover:bg-blue-50 rounded-full cursor-pointer group" title="Adicionar foto">
                 <Image size={24} className="text-blue-500 group-hover:text-blue-600" />
-                <input type="file" accept="image/*" onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0], 'image')} className="hidden" />
+                <input type="file" accept="image/*" onChange={async (e) => { const f = e.target.files?.[0]; if (f) await handleFileUpload(f, 'image') }} className="hidden" />
               </label>
               <label className="p-3 hover:bg-green-50 rounded-full cursor-pointer group" title="Adicionar vídeo">
                 <Video size={24} className="text-green-500 group-hover:text-green-600" />
-                <input type="file" accept="video/*" onChange={(e) => e.target.files[0] && handleFileUpload(e.target.files[0], 'video')} className="hidden" />
+                <input type="file" accept="video/mp4" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, 'video') }} className="hidden" />
               </label>
               <label className="p-3 hover:bg-purple-50 rounded-full cursor-pointer group" title="Adicionar áudio">
                 <Mic size={24} className="text-purple-500 group-hover:text-purple-600" />
@@ -352,12 +429,17 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         </div>
       </div>
 
-      {/* Fullscreen image viewer */}
-      {showImageFullscreen && imageFile && (
+      {/* Fullscreen media viewer */}
+      {showMediaFullscreen && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <img src={imagePreviewUrl || ''} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          {fullscreenType === 'image' && (
+            <img src={imagePreviewUrl || ''} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          )}
+          {fullscreenType === 'video' && (
+            <video src={videoPreviewUrl || ''} controls className="max-w-[90vw] max-h-[90vh] object-contain" />
+          )}
           <button
-            onClick={() => setShowImageFullscreen(false)}
+            onClick={() => setShowMediaFullscreen(false)}
             className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
             aria-label="Fechar"
           >
