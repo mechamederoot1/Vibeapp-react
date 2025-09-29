@@ -48,6 +48,15 @@ const Messages = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const typingTimeoutRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const autoResizeTextarea = () => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    const maxHeight = 180; // limit to reasonable height
+    ta.style.height = Math.min(ta.scrollHeight, maxHeight) + 'px';
+  }
 
   // Helpers de demo/localStorage
   const demoKey = (suffix) => `demo:messages:${suffix}`
