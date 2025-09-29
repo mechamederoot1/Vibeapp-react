@@ -51,6 +51,7 @@ const Messages = () => {
   const [loadingOlder, setLoadingOlder] = useState(false);
 
   const messagesEndRef = useRef(null);
+  const msgListRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const typingTimeoutRef = useRef(null);
