@@ -1005,6 +1005,7 @@ const Profile = () => {
   const handleViewPhoto = () => {
     setShowAvatarDropdown(false)
     setShowPhotoModal(true)
+    try { window.history.pushState({ photoModal: true }, ''); } catch(e) {}
   }
 
   const handleViewStory = () => {
