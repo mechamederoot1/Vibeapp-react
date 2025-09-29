@@ -237,24 +237,44 @@ const Messages = () => {
   // Enviar mídia
   const sendImage = async (file) => {
     if (!selectedConversation) return
-    const url = URL.createObjectURL(file)
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: '',
-      messageType: 'image',
-      mediaUrl: url,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
+    // Upload to server to get data URL
+    try {
+      const up = await uploadsAPI.uploadStoryMedia(file)
+      const url = up.data?.url || URL.createObjectURL(file)
+
+      // Send message with mediaUrl
+      try {
+        await api.post('/messages/send', {
+          receiverId: selectedConversation.otherUser.id,
+          content: '',
+          messageType: 'image',
+          mediaUrl: url
+        })
+      } catch (e) {
+        console.warn('Erro ao enviar mensagem de imagem ao backend, usando modo demo', e)
+      }
+
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'image',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+    } catch (err) {
+      console.error('Erro ao enviar imagem:', err)
     }
-    setMessages(prev => [...prev, tempMsg])
-    setTimeout(scrollToBottom, 100)
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+
     setImageInputKey(k => k + 1)
   }
 
