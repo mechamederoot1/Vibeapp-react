@@ -76,6 +76,15 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     }
   }, [showMediaFullscreen])
 
+  // Animate media preview when a file is selected
+  useEffect(() => {
+    if (imageFile || videoFile || audioFile) {
+      requestAnimationFrame(() => setMediaAppear(true))
+    } else {
+      setMediaAppear(false)
+    }
+  }, [imageFile, videoFile, audioFile])
+
   const colorOptions = [
     { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
     { name: 'Azul', value: 'blue', gradient: 'bg-gradient-to-br from-blue-400 to-blue-600' },
