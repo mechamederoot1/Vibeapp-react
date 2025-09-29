@@ -44,6 +44,12 @@ const Messages = () => {
   const [imageInputKey, setImageInputKey] = useState(0)
   const [videoInputKey, setVideoInputKey] = useState(0)
 
+  // Pagination state for messages
+  const [messagesPage, setMessagesPage] = useState(1);
+  const [messagesLimit] = useState(20);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+
   const messagesEndRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
