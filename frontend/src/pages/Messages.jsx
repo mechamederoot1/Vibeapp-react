@@ -143,7 +143,7 @@ const Messages = () => {
     }
 
     try {
-      await api.post('/api/messages/send', {
+      await api.post('/messages/send', {
         receiverId: selectedConversation.otherUser.id,
         content: messageText,
         messageType: 'text'
