@@ -483,126 +483,251 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col">
-          {/* Header da Conversa */}
-          <div className="p-4 border-b border-gray-200 bg-white">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setSelectedConversation(null)}
-                className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <ArrowLeft size={20} />
-              </button>
-
-              <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
-                {selectedConversation.otherUser.firstName.charAt(0)}
-              </div>
-
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">
-                  {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
-                </h3>
-                {typingUsers[selectedConversation.otherUser.id] && (
-                  <p className="text-sm text-primary-500">digitando...</p>
-                )}
-              </div>
-
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <MoreVertical size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Lista de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden ${
-                    message.senderId === user.id
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-200 text-gray-900'
-                  }`}
+        <>
+          {/* Desktop/Tablet */}
+          <div className="hidden md:flex flex-1 flex-col">
+            {/* Header da Conversa */}
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setSelectedConversation(null)}
+                  className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
                 >
-                  {message.messageType === 'audio' ? (
-                    <div className="flex items-center space-x-2">
-                      <audio controls className="w-full">
-                        <source src={message.mediaUrl} type="audio/ogg" />
-                        Seu navegador não suporta áudio.
-                      </audio>
-                    </div>
-                  ) : message.messageType === 'image' ? (
-                    <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
-                  ) : message.messageType === 'video' ? (
-                    <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
-                  ) : (
-                    <p>{message.content}</p>
-                  )}
+                  <ArrowLeft size={20} />
+                </button>
 
-                  <div className={`text-xs mt-1 flex items-center ${
-                    message.senderId === user.id ? 'text-primary-100' : 'text-gray-500'
-                  }`}>
-                    {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                    {statusIcon(message.status, message.senderId === user.id)}
+                <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  {selectedConversation.otherUser.firstName.charAt(0)}
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">
+                    {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
+                  </h3>
+                  {typingUsers[selectedConversation.otherUser.id] && (
+                    <p className="text-sm text-primary-500">digitando...</p>
+                  )}
+                </div>
+
+                <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <MoreVertical size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de Mensagens */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden ${
+                      message.senderId === user.id
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-gray-200 text-gray-900'
+                    }`}
+                  >
+                    {message.messageType === 'audio' ? (
+                      <div className="flex items-center space-x-2">
+                        <audio controls className="w-full">
+                          <source src={message.mediaUrl} type="audio/ogg" />
+                          Seu navegador não suporta áudio.
+                        </audio>
+                      </div>
+                    ) : message.messageType === 'image' ? (
+                      <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
+                    ) : message.messageType === 'video' ? (
+                      <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
+                    ) : (
+                      <p>{message.content}</p>
+                    )}
+
+                    <div className={`text-xs mt-1 flex items-center ${
+                      message.senderId === user.id ? 'text-primary-100' : 'text-gray-500'
+                    }`}>
+                      {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      {statusIcon(message.status, message.senderId === user.id)}
+                    </div>
                   </div>
                 </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Campo de Entrada */}
+            <div className="p-4 border-t border-gray-200 bg-white">
+              <div className="flex items-center space-x-2">
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+                  <ImageIcon size={20} />
+                  <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
+                </label>
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+                  <VideoIcon size={20} />
+                  <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
+                </label>
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => handleTyping(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Digite uma mensagem..."
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`p-2 rounded-lg ${
+                    isRecording
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+
+                <button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim()}
+                  className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send size={20} />
+                </button>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Campo de Entrada */}
-          <div className="p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center space-x-2">
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
-                <ImageIcon size={20} />
-                <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
-              </label>
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
-                <VideoIcon size={20} />
-                <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
-              </label>
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => handleTyping(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder="Digite uma mensagem..."
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-
-              <button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`p-2 rounded-lg ${
-                  isRecording
-                    ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-              </button>
-
-              <button
-                onClick={sendMessage}
-                disabled={!newMessage.trim()}
-                className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send size={20} />
-              </button>
             </div>
           </div>
-        </div>
+
+          {/* Mobile fullscreen */}
+          <div className="fixed inset-0 z-50 bg-white flex flex-col md:hidden">
+            {/* Header da Conversa */}
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setSelectedConversation(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+
+                <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
+                  {selectedConversation.otherUser.firstName.charAt(0)}
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">
+                    {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
+                  </h3>
+                  {typingUsers[selectedConversation.otherUser.id] && (
+                    <p className="text-sm text-primary-500">digitando...</p>
+                  )}
+                </div>
+
+                <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <MoreVertical size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Lista de Mensagens */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden ${
+                      message.senderId === user.id
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-gray-200 text-gray-900'
+                    }`}
+                  >
+                    {message.messageType === 'audio' ? (
+                      <div className="flex items-center space-x-2">
+                        <audio controls className="w-full">
+                          <source src={message.mediaUrl} type="audio/ogg" />
+                          Seu navegador não suporta áudio.
+                        </audio>
+                      </div>
+                    ) : message.messageType === 'image' ? (
+                      <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
+                    ) : message.messageType === 'video' ? (
+                      <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
+                    ) : (
+                      <p>{message.content}</p>
+                    )}
+
+                    <div className={`text-xs mt-1 flex items-center ${
+                      message.senderId === user.id ? 'text-primary-100' : 'text-gray-500'
+                    }`}>
+                      {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      {statusIcon(message.status, message.senderId === user.id)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Campo de Entrada */}
+            <div className="p-4 border-t border-gray-200 bg-white">
+              <div className="flex items-center space-x-2">
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+                  <ImageIcon size={20} />
+                  <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
+                </label>
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+                  <VideoIcon size={20} />
+                  <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
+                </label>
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => handleTyping(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Digite uma mensagem..."
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`p-2 rounded-lg ${
+                    isRecording
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+
+                <button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim()}
+                  className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       ) : (
         <div className="flex-1 flex items-center justify-center bg-gray-50">
           <div className="text-center">
