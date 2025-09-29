@@ -19,6 +19,7 @@ class MessageCreate(BaseModel):
     receiverId: int
     content: Optional[str] = None
     messageType: str = "text"  # text, audio, image, video
+    mediaUrl: Optional[str] = None
 
 class MessageResponse(BaseModel):
     id: int
