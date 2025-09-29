@@ -470,7 +470,7 @@ const Messages = () => {
   }
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-white pb-20 md:pb-0">
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''}`}>
         <div className="p-4 border-b border-gray-200">
