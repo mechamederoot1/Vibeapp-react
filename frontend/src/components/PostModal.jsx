@@ -237,7 +237,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 overflow-y-auto">
+        <div className="flex-1 p-4 overflow-y-auto" ref={contentRef}>
           {/* Image preview first when present */}
           {imageFile && (
             <div className="mb-4 relative flex items-center justify-center">
