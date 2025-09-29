@@ -521,14 +521,16 @@ const Messages = () => {
                     )}
                   </div>
 
-                  {conversation.lastMessage && (
+                  {typingUsers[conversation.otherUser.id] ? (
+                    <p className="text-sm mt-1"><TypingDots /></p>
+                  ) : conversation.lastMessage ? (
                     <p className="text-sm text-gray-600 truncate mt-1">
                       {conversation.lastMessage.messageType === 'audio'
                         ? '🎵 Mensagem de áudio'
                         : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
                       }
                     </p>
-                  )}
+                  ) : null}
 
                   {conversation.unreadCount > 0 && (
                     <div className="mt-1">
