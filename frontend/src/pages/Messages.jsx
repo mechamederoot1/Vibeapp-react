@@ -631,11 +631,11 @@ const Messages = () => {
           {/* Campo de Entrada */}
           <div className="p-4 border-t border-gray-200 bg-white">
             <div className="flex items-center space-x-2">
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
                 <ImageIcon size={20} />
                 <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
               </label>
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer">
+              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
                 <VideoIcon size={20} />
                 <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
               </label>
