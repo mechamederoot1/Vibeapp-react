@@ -54,8 +54,8 @@ const Header = ({ onOpenPostModal }) => {
 
     try {
       const [messagesRes, notificationsRes] = await Promise.all([
-        api.get('/api/messages/unread-count'),
-        api.get('/api/notifications/unread-count')
+        api.get('/messages/unread-count'),
+        api.get('/notifications/unread-count')
       ])
 
       setUnreadCounts({
