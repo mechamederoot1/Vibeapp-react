@@ -260,7 +260,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           {/* Video preview */}
           {videoFile && (
             <div className={`mb-4 relative flex items-center justify-center transition-all duration-300 ${mediaAppear ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-              <video src={videoPreviewUrl || ''} controls className="max-h-80 w-auto object-contain rounded-lg" />
+              <video src={videoPreviewUrl || ''} controls className="max-h-80 w-auto object-contain rounded-lg cursor-pointer" onClick={() => { setFullscreenType('video'); setShowMediaFullscreen(true) }} />
               <button type="button" onClick={() => setVideoFile(null)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70">
                 <X size={16} />
               </button>
