@@ -548,7 +548,7 @@ const Messages = () => {
               key={conversation.id}
               onClick={async () => {
                 setSelectedConversation(conversation);
-                await loadMessages(conversation.otherUser.id);
+                await loadMessages(conversation.otherUser.id, 1);
                 try { window.history.pushState({ openedConversation: conversation.otherUser.id }, ''); } catch(e) { }
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
@@ -580,7 +580,7 @@ const Messages = () => {
                   ) : conversation.lastMessage ? (
                     <p className="text-sm text-gray-600 truncate mt-1">
                       {conversation.lastMessage.messageType === 'audio'
-                        ? '🎵 Mensagem de ��udio'
+                        ? '🎵 Mensagem de áudio'
                         : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
                       }
                     </p>
