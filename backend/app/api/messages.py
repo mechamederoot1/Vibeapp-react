@@ -170,10 +170,14 @@ async def get_conversations(
 async def get_messages(
     user_id: int,
     limit: int = 50,
+    page: int = 1,
     offset: int = 0,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    # Support page param for ease from frontend
+    if page and page > 0:
+        offset = (page - 1) * limit
     """Obter mensagens de uma conversa"""
     # Verificar se o usuário existe
     other_user = db.query(User).filter(User.id == user_id).first()
