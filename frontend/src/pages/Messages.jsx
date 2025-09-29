@@ -391,7 +391,8 @@ const Messages = () => {
               const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
               if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              loadMessages(other.id);
+              await loadMessages(other.id);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             }
           } catch (e) {
             console.warn('Usuário não encontrado por username:', username, e);
@@ -406,7 +407,8 @@ const Messages = () => {
               const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
               if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              loadMessages(other.id);
+              await loadMessages(other.id);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             } catch (e) {
               console.warn('Usuário não encontrado por id:', uid, e);
             }
@@ -418,7 +420,17 @@ const Messages = () => {
     };
 
     init();
-  }, []);
+
+    const onPop = (e) => {
+      if (selectedConversation) {
+        setSelectedConversation(null);
+        try { window.history.pushState({}, ''); } catch(err){}
+      }
+    }
+
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [location, selectedConversation]);
 
 
   // Scroll quando mensagens mudarem
