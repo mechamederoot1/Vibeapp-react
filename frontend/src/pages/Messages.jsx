@@ -163,6 +163,17 @@ const Messages = () => {
     }
   };
 
+  const handleScroll = () => {
+    const c = msgListRef.current;
+    if (!c || loadingOlder || !hasMoreMessages || !selectedConversation) return;
+    // If near top, load older messages
+    if (c.scrollTop < 120) {
+      const nextPage = messagesPage + 1;
+      setLoadingOlder(true);
+      loadMessages(selectedConversation.otherUser.id, nextPage).finally(() => setLoadingOlder(false));
+    }
+  };
+
   const scheduleStatusProgress = (msg, otherId) => {
     // Progressão de status local: sending -> sent -> delivered -> read
     setTimeout(() => {
@@ -639,46 +650,62 @@ const Messages = () => {
           </div>
 
           {/* Lista de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden whitespace-pre-wrap break-words ${
-                    message.senderId === user.id
-                      ? 'bg-vibe-blue text-white'
-                      : 'bg-gray-200 text-gray-900'
-                  }`}
-                >
-                  {message.messageType === 'audio' ? (
-                    <div className="flex items-center space-x-2">
-                      <audio controls className="w-full">
-                        <source src={message.mediaUrl} type="audio/ogg" />
-                        Seu navegador não suporta áudio.
-                      </audio>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={msgListRef} onScroll={handleScroll}>
+            {loadingOlder && (
+              <div className="flex justify-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
+              </div>
+            )}
+
+            {messages.map((message, idx) => {
+              const prev = messages[idx - 1];
+              const dateKey = message?.createdAt ? new Date(message.createdAt).toDateString() : '';
+              const prevDateKey = prev?.createdAt ? new Date(prev.createdAt).toDateString() : null;
+
+              return (
+                <div key={message.id}>
+                  {(idx === 0 || dateKey !== prevDateKey) && (
+                    <div className="text-center text-xs text-gray-500 my-2">
+                      <span className="bg-gray-100 px-3 py-1 rounded-full">{formatDateLabel(message.createdAt)}</span>
                     </div>
-                  ) : message.messageType === 'image' ? (
-                    <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
-                  ) : message.messageType === 'video' ? (
-                    <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
-                  ) : (
-                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   )}
 
-                  <div className={`text-xs mt-1 flex items-center ${
-                    message.senderId === user.id ? 'text-white/80' : 'text-gray-500'
-                  }`}>
-                    {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                    {statusIcon(message.status, message.senderId === user.id)}
+                  <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden whitespace-pre-wrap break-words ${
+                      message.senderId === user.id
+                        ? 'bg-vibe-blue text-white'
+                        : 'bg-gray-200 text-gray-900'
+                    }`}>
+                      {message.messageType === 'audio' ? (
+                        <div className="flex items-center space-x-2">
+                          <audio controls className="w-full">
+                            <source src={message.mediaUrl} type="audio/ogg" />
+                            Seu navegador não suporta áudio.
+                          </audio>
+                        </div>
+                      ) : message.messageType === 'image' ? (
+                        <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
+                      ) : message.messageType === 'video' ? (
+                        <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
+                      ) : (
+                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      )}
+
+                      <div className={`text-xs mt-1 flex items-center ${
+                        message.senderId === user.id ? 'text-white/80' : 'text-gray-500'
+                      }`}>
+                        {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                        {statusIcon(message.status, message.senderId === user.id)}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
+
             <div ref={messagesEndRef} />
           </div>
 
