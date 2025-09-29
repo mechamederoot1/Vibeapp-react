@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
@@ -10,6 +10,9 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [imageFile, setImageFile] = useState(null)
   const [videoFile, setVideoFile] = useState(null)
   const [audioFile, setAudioFile] = useState(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null)
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState(null)
+  const [audioPreviewUrl, setAudioPreviewUrl] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showOptions, setShowOptions] = useState(false)
@@ -25,6 +28,27 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [showColorPicker, setShowColorPicker] = useState(false)
 
   const [showImageFullscreen, setShowImageFullscreen] = useState(false)
+
+  useEffect(() => {
+    if (!imageFile) { setImagePreviewUrl(null); return }
+    const url = URL.createObjectURL(imageFile)
+    setImagePreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [imageFile])
+
+  useEffect(() => {
+    if (!videoFile) { setVideoPreviewUrl(null); return }
+    const url = URL.createObjectURL(videoFile)
+    setVideoPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [videoFile])
+
+  useEffect(() => {
+    if (!audioFile) { setAudioPreviewUrl(null); return }
+    const url = URL.createObjectURL(audioFile)
+    setAudioPreviewUrl(url)
+    return () => URL.revokeObjectURL(url)
+  }, [audioFile])
 
   const colorOptions = [
     { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
@@ -192,8 +216,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           {imageFile && (
             <div className="mb-4 relative flex items-center justify-center">
               <img
-                src={URL.createObjectURL(imageFile)}
-                alt="Preview"
+                src={imagePreviewUrl || ''}
+                alt="Imagem"
                 className="max-h-80 w-auto object-contain rounded-lg cursor-pointer mx-auto"
                 onClick={() => setShowImageFullscreen(true)}
               />
@@ -210,7 +234,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           {/* Video preview */}
           {videoFile && (
             <div className="mb-4 relative flex items-center justify-center">
-              <video src={URL.createObjectURL(videoFile)} controls className="max-h-80 w-auto object-contain rounded-lg" />
+              <video src={videoPreviewUrl || ''} controls className="max-h-80 w-auto object-contain rounded-lg" />
               <button type="button" onClick={() => setVideoFile(null)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70">
                 <X size={16} />
               </button>
@@ -220,7 +244,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           {/* Audio preview */}
           {audioFile && (
             <div className="mb-4 relative">
-              <audio src={URL.createObjectURL(audioFile)} controls className="w-full" />
+              <audio src={audioPreviewUrl || ''} controls className="w-full" />
               <button type="button" onClick={() => setAudioFile(null)} className="absolute -top-3 right-0 p-1 text-gray-600 hover:text-gray-900">
                 <X size={16} />
               </button>
@@ -305,7 +329,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
       {/* Fullscreen image viewer */}
       {showImageFullscreen && imageFile && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <img src={URL.createObjectURL(imageFile)} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          <img src={imagePreviewUrl || ''} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
           <button
             onClick={() => setShowImageFullscreen(false)}
             className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
