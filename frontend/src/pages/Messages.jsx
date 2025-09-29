@@ -322,8 +322,9 @@ const Messages = () => {
     if (isTyping && selectedConversation) {
       setIsTyping(false);
       sendWebSocketMessage({
-        type: 'typing',
+        type: 'user_typing',
         data: {
+          senderId: user.id,
           receiverId: selectedConversation.otherUser.id,
           isTyping: false
         }
