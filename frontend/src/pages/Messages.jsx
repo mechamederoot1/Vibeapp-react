@@ -111,17 +111,55 @@ const Messages = () => {
     }
   };
 
-  // Carregar mensagens de uma conversa
-  const loadMessages = async (userId) => {
+  // Carregar mensagens de uma conversa com paginação (page=1 returns latest page)
+  const loadMessages = async (userId, page = 1, limit = messagesLimit) => {
+    if (!userId) return;
+    if (page === 1) {
+      setHasMoreMessages(true);
+      setMessagesPage(1);
+    }
+
     try {
-      const response = await api.get(`/messages/${userId}`);
-      setMessages(response.data);
-      setTimeout(scrollToBottom, 100);
+      const response = await api.get(`/messages/${userId}?page=${page}&limit=${limit}`);
+      const fetched = Array.isArray(response.data) ? response.data : (response.data.messages || []);
+
+      // Ensure messages sorted oldest -> newest
+      fetched.sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
+
+      if (page === 1) {
+        setMessages(fetched);
+        setTimeout(() => scrollToBottom(), 120);
+      } else {
+        // Prepend older messages and keep scroll position
+        setLoadingOlder(true);
+        const container = msgListRef.current;
+        const prevScrollHeight = container?.scrollHeight || 0;
+
+        setMessages(prev => {
+          // Avoid duplicates by id
+          const ids = new Set(prev.map(m => m.id));
+          const uniqueFetched = fetched.filter(m => !ids.has(m.id));
+          return [...uniqueFetched, ...prev];
+        });
+
+        setTimeout(() => {
+          if (container) {
+            const newScrollHeight = container.scrollHeight || 0;
+            container.scrollTop = newScrollHeight - prevScrollHeight + (container.scrollTop || 0);
+          }
+          setLoadingOlder(false);
+        }, 60);
+      }
+
+      // Update pagination state
+      setHasMoreMessages(fetched.length === limit);
+      setMessagesPage(page);
     } catch (error) {
       console.error('Erro ao carregar mensagens (usando modo demo):', error);
       const msgs = loadDemo(userId)
+      msgs.sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
       setMessages(msgs)
-      setTimeout(scrollToBottom, 100);
+      setTimeout(() => scrollToBottom(), 120);
     }
   };
 
@@ -542,7 +580,7 @@ const Messages = () => {
                   ) : conversation.lastMessage ? (
                     <p className="text-sm text-gray-600 truncate mt-1">
                       {conversation.lastMessage.messageType === 'audio'
-                        ? '🎵 Mensagem de áudio'
+                        ? '🎵 Mensagem de ��udio'
                         : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
                       }
                     </p>
