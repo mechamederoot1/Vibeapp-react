@@ -370,9 +370,55 @@ const Messages = () => {
   }, [lastMessage, selectedConversation]);
 
   // Carregar conversas ao montar
+  const location = require('react-router-dom').useLocation ? require('react-router-dom').useLocation() : null
+
   useEffect(() => {
-    loadConversations().finally(() => setLoading(false));
+    const init = async () => {
+      await loadConversations().finally(() => setLoading(false));
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('user');
+        const userIdParam = params.get('userId') || params.get('id');
+
+        if (username) {
+          try {
+            const res = await api.get(`/api/users/by-username/${username}`);
+            const other = res.data;
+            if (other && other.id) {
+              const existing = (conversations || []).find(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username));
+              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
+              loadMessages(other.id);
+            }
+          } catch (e) {
+            console.warn('Usuário não encontrado por username:', username, e);
+          }
+        } else if (userIdParam) {
+          const uid = Number(userIdParam);
+          if (!Number.isNaN(uid)) {
+            try {
+              const res = await api.get(`/api/users/${uid}`);
+              const other = res.data;
+              const existing = (conversations || []).find(c => c.otherUser && c.otherUser.id === other.id);
+              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
+              loadMessages(other.id);
+            } catch (e) {
+              console.warn('Usuário não encontrado por id:', uid, e);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Erro ao processar params de mensagens:', err);
+      }
+    };
+
+    init();
   }, []);
+
 
   // Scroll quando mensagens mudarem
   useEffect(() => {
