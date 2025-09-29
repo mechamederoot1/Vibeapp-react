@@ -401,7 +401,7 @@ const Messages = () => {
           const uid = Number(userIdParam);
           if (!Number.isNaN(uid)) {
             try {
-              const res = await api.get(`/api/users/${uid}`);
+              const res = await api.get(`/users/${uid}`);
               const other = res.data;
               const existing = (conversations || []).find(c => c.otherUser && c.otherUser.id === other.id);
               const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
