@@ -178,7 +178,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setError('')
     setPrivacy('public')
     setShowOptions(false)
-    setShowImageFullscreen(false)
+    setShowMediaFullscreen(false)
     onClose()
   }
 
