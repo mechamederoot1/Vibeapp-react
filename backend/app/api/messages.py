@@ -124,7 +124,7 @@ async def send_message(
         # Still send message notification event via websocket (but not persistent Notification)
         try:
             from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId, persistent=False)
+            await manager.send_message_notification(message_dict, message_data.receiverId)
         except ImportError:
             pass
 
