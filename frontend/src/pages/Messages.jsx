@@ -189,7 +189,7 @@ const Messages = () => {
   const sendVideo = async (file) => {
     if (!selectedConversation) return
     if (file.type !== 'video/mp4') {
-      alert('Apenas v��deos MP4 são suportados.');
+      alert('Apenas vídeos MP4 são suportados.');
       return
     }
     const url = URL.createObjectURL(file)
@@ -378,7 +378,7 @@ const Messages = () => {
       await loadConversations().finally(() => setLoading(false));
 
       try {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(location?.search || window.location.search);
         const username = params.get('user');
         const userIdParam = params.get('userId') || params.get('id');
 
