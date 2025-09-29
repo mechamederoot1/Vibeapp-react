@@ -396,7 +396,7 @@ const Messages = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-vibe-blue"></div>
       </div>
     );
   }
@@ -415,7 +415,7 @@ const Messages = () => {
               placeholder="Buscar conversas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
             />
           </div>
         </div>
@@ -429,11 +429,11 @@ const Messages = () => {
                 loadMessages(conversation.otherUser.id);
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                selectedConversation?.id === conversation.id ? 'bg-primary-50 border-primary-200' : ''
+                selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
               }`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-12 h-12 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold">
                   {conversation.otherUser.firstName.charAt(0)}
                 </div>
 
@@ -463,7 +463,7 @@ const Messages = () => {
 
                   {conversation.unreadCount > 0 && (
                     <div className="mt-1">
-                      <span className="bg-primary-500 text-white text-xs rounded-full px-2 py-1">
+                      <span className="bg-vibe-blue text-white text-xs rounded-full px-2 py-1">
                         {conversation.unreadCount}
                       </span>
                     </div>
@@ -494,7 +494,7 @@ const Messages = () => {
                 <ArrowLeft size={20} />
               </button>
 
-              <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-semibold">
+              <div className="w-10 h-10 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold">
                 {selectedConversation.otherUser.firstName.charAt(0)}
               </div>
 
@@ -503,7 +503,7 @@ const Messages = () => {
                   {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                 </h3>
                 {typingUsers[selectedConversation.otherUser.id] && (
-                  <p className="text-sm text-primary-500">digitando...</p>
+                  <p className="text-sm text-vibe-blue">digitando...</p>
                 )}
               </div>
 
@@ -523,7 +523,7 @@ const Messages = () => {
                 <div
                   className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden ${
                     message.senderId === user.id
-                      ? 'bg-primary-500 text-white'
+                      ? 'bg-vibe-blue text-white'
                       : 'bg-gray-200 text-gray-900'
                   }`}
                 >
@@ -543,7 +543,7 @@ const Messages = () => {
                   )}
 
                   <div className={`text-xs mt-1 flex items-center ${
-                    message.senderId === user.id ? 'text-primary-100' : 'text-gray-500'
+                    message.senderId === user.id ? 'text-white/80' : 'text-gray-500'
                   }`}>
                     {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
                       hour: '2-digit',
@@ -579,7 +579,7 @@ const Messages = () => {
                   }
                 }}
                 placeholder="Digite uma mensagem..."
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
               />
 
               <button
@@ -596,7 +596,7 @@ const Messages = () => {
               <button
                 onClick={sendMessage}
                 disabled={!newMessage.trim()}
-                className="bg-primary-500 text-white p-2 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-vibe-blue text-white p-2 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send size={20} />
               </button>
