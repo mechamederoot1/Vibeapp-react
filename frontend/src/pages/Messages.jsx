@@ -454,7 +454,7 @@ const Messages = () => {
               const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
               if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              await loadMessages(other.id);
+              await loadMessages(other.id, 1);
               try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             }
           } catch (e) {
@@ -470,7 +470,7 @@ const Messages = () => {
               const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
               if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              await loadMessages(other.id);
+              await loadMessages(other.id, 1);
               try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             } catch (e) {
               console.warn('Usuário não encontrado por id:', uid, e);
