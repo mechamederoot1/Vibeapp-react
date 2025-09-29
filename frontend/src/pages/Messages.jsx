@@ -598,10 +598,10 @@ const Messages = () => {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
+                className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden ${
+                  className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden whitespace-pre-wrap break-words ${
                     message.senderId === user.id
                       ? 'bg-vibe-blue text-white'
                       : 'bg-gray-200 text-gray-900'
@@ -619,7 +619,7 @@ const Messages = () => {
                   ) : message.messageType === 'video' ? (
                     <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
                   ) : (
-                    <p>{message.content}</p>
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
                   )}
 
                   <div className={`text-xs mt-1 flex items-center ${
