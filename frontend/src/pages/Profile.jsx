@@ -1444,7 +1444,7 @@ const Profile = () => {
                 }}
               />
               <button
-                onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
+                onClick={() => navigate(`/messages?user=${encodeURIComponent(currentProfileData.username)}&userId=${currentProfileData.id}`)}
                 className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
                 title="Enviar mensagem"
               >
