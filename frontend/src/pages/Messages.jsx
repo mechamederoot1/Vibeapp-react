@@ -91,7 +91,7 @@ const Messages = () => {
   // Carregar mensagens de uma conversa
   const loadMessages = async (userId) => {
     try {
-      const response = await api.get(`/api/messages/${userId}`);
+      const response = await api.get(`/messages/${userId}`);
       setMessages(response.data);
       setTimeout(scrollToBottom, 100);
     } catch (error) {
