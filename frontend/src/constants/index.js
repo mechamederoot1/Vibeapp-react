@@ -16,8 +16,8 @@ export const API_CONFIG = {
 // Configurações de mídia
 export const MEDIA_CONFIG = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
-  allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp'],
-  allowedVideoTypes: ['video/mp4', 'video/webm'],
+  allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/heic', 'image/heif'],
+  allowedVideoTypes: ['video/mp4'],
   maxVideoDuration: 60, // segundos
 }
 
