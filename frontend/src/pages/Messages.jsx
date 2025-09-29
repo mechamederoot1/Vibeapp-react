@@ -654,8 +654,8 @@ const Messages = () => {
               />
 
               <button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`p-2 rounded-lg ${
+              onClick={isRecording ? stopRecording : startRecording}
+                className={`p-2 rounded-lg flex-shrink-0 ${
                   isRecording
                     ? 'bg-red-500 text-white animate-pulse'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
