@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe } from 'lucide-react'
+import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI } from '../services/api'
 
@@ -23,6 +23,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
 
   const [backgroundColor, setBackgroundColor] = useState(null)
   const [showColorPicker, setShowColorPicker] = useState(false)
+
+  const [showImageFullscreen, setShowImageFullscreen] = useState(false)
 
   const colorOptions = [
     { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
@@ -125,6 +127,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setError('')
     setPrivacy('public')
     setShowOptions(false)
+    setShowImageFullscreen(false)
     onClose()
   }
 
@@ -166,15 +169,18 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               <p className="font-semibold text-gray-900">{user?.fullName || 'Usuário'}</p>
               <div className="flex items-center space-x-2">
                 <Globe size={14} className="text-gray-500" />
-                <select
-                  value={privacy}
-                  onChange={(e) => setPrivacy(e.target.value)}
-                  className="text-sm text-gray-600 bg-gray-100 border-none rounded-full px-3 py-1 focus:outline-none focus:ring-2 focus:ring-vibe-blue"
-                >
-                  {privacyOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={privacy}
+                    onChange={(e) => setPrivacy(e.target.value)}
+                    className="text-sm text-gray-600 bg-gray-100 border-none rounded-full px-3 pr-8 py-1 focus:outline-none focus:ring-2 focus:ring-vibe-blue min-w-[140px] appearance-none"
+                  >
+                    {privacyOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
@@ -182,6 +188,45 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
 
         {/* Main Content */}
         <div className="flex-1 p-4 overflow-y-auto">
+          {/* Image preview first when present */}
+          {imageFile && (
+            <div className="mb-4 relative flex items-center justify-center">
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="Preview"
+                className="max-h-80 w-auto object-contain rounded-lg cursor-pointer mx-auto"
+                onClick={() => setShowImageFullscreen(true)}
+              />
+              <button
+                type="button"
+                onClick={() => setImageFile(null)}
+                className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {/* Video preview */}
+          {videoFile && (
+            <div className="mb-4 relative flex items-center justify-center">
+              <video src={URL.createObjectURL(videoFile)} controls className="max-h-80 w-auto object-contain rounded-lg" />
+              <button type="button" onClick={() => setVideoFile(null)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70">
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
+          {/* Audio preview */}
+          {audioFile && (
+            <div className="mb-4 relative">
+              <audio src={URL.createObjectURL(audioFile)} controls className="w-full" />
+              <button type="button" onClick={() => setAudioFile(null)} className="absolute -top-3 right-0 p-1 text-gray-600 hover:text-gray-900">
+                <X size={16} />
+              </button>
+            </div>
+          )}
+
           {/* Text background preview */}
           {postType === 'text' && backgroundColor && content.trim() && (
             <div className="mb-4">
@@ -192,77 +237,18 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
             </div>
           )}
 
+          {/* Editor */}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="O que está acontecendo?"
-            className="w-full h-32 text-lg placeholder-gray-400 border-none resize-none focus:outline-none"
+            className={`w-full ${imageFile || videoFile ? 'h-24' : 'h-32'} text-lg placeholder-gray-400 border-none resize-none focus:outline-none`}
             maxLength={500}
           />
 
           <div className="flex justify-end mb-4">
             <span className="text-sm text-gray-500">{content.length}/500</span>
           </div>
-
-          {/* Media preview */}
-          {imageFile && (
-            <div className="mb-4 relative">
-              <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
-              <button type="button" onClick={() => setImageFile(null)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70">
-                <X size={16} />
-              </button>
-            </div>
-          )}
-
-          {videoFile && (
-            <div className="mb-4 relative">
-              <video src={URL.createObjectURL(videoFile)} controls className="w-full h-48 object-cover rounded-lg" />
-              <button type="button" onClick={() => setVideoFile(null)} className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 text-white rounded-full hover:bg-opacity-70">
-                <X size={16} />
-              </button>
-            </div>
-          )}
-
-          {audioFile && (
-            <div className="mb-4 relative">
-              <audio src={URL.createObjectURL(audioFile)} controls className="w-full" />
-              <button type="button" onClick={() => setAudioFile(null)} className="absolute -top-3 right-0 p-1 text-gray-600 hover:text-gray-900">
-                <X size={16} />
-              </button>
-            </div>
-          )}
-
-          {/* Color picker for text posts */}
-          {postType === 'text' && !imageFile && !videoFile && !audioFile && (
-            <div className="mt-2">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700">Cor de fundo (opcional):</span>
-                <button type="button" onClick={() => setShowColorPicker(!showColorPicker)} className="flex items-center space-x-2 text-sm text-vibe-blue hover:text-vibe-blue-dark">
-                  <Palette size={16} />
-                  <span>{showColorPicker ? 'Ocultar' : 'Mostrar'} cores</span>
-                </button>
-              </div>
-              {showColorPicker && (
-                <div className="grid grid-cols-5 gap-2">
-                  {colorOptions.map((color) => (
-                    <button
-                      key={color.value || 'none'}
-                      type="button"
-                      onClick={() => setBackgroundColor(color.value)}
-                      className={`w-12 h-12 rounded-lg border-2 transition-all ${color.gradient} ${backgroundColor === color.value ? 'border-gray-900 scale-110' : 'border-gray-200 hover:border-gray-400'}`}
-                      title={color.name}
-                    >
-                      {color.value === null && (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <X size={16} className="text-gray-400" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Actions */}
@@ -315,6 +301,20 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           )}
         </div>
       </div>
+
+      {/* Fullscreen image viewer */}
+      {showImageFullscreen && imageFile && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+          <img src={URL.createObjectURL(imageFile)} alt="Imagem" className="max-w-[90vw] max-h-[90vh] object-contain" />
+          <button
+            onClick={() => setShowImageFullscreen(false)}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full"
+            aria-label="Fechar"
+          >
+            <X size={24} className="text-white" />
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="absolute bottom-4 left-4 right-4 p-3 bg-red-50 border border-red-200 rounded-lg">
