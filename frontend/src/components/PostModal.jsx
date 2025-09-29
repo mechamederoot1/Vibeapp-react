@@ -16,6 +16,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showOptions, setShowOptions] = useState(false)
+  const [showMediaFullscreen, setShowMediaFullscreen] = useState(false)
+  const [fullscreenType, setFullscreenType] = useState(null)
+  const [mediaAppear, setMediaAppear] = useState(false)
+  const [reachedBottom, setReachedBottom] = useState(false)
+  const [fsAnim, setFsAnim] = useState(false)
+  const contentRef = useRef(null)
 
   const [privacy, setPrivacy] = useState('public')
   const privacyOptions = [
