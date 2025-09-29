@@ -189,7 +189,7 @@ const Messages = () => {
   const sendVideo = async (file) => {
     if (!selectedConversation) return
     if (file.type !== 'video/mp4') {
-      alert('Apenas vídeos MP4 são suportados.');
+      alert('Apenas v��deos MP4 são suportados.');
       return
     }
     const url = URL.createObjectURL(file)
@@ -371,7 +371,7 @@ const Messages = () => {
   }, [lastMessage, selectedConversation]);
 
   // Carregar conversas ao montar
-  const location = require('react-router-dom').useLocation ? require('react-router-dom').useLocation() : null
+  const location = useLocation();
 
   useEffect(() => {
     const init = async () => {
