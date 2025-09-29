@@ -245,7 +245,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 src={imagePreviewUrl || ''}
                 alt="Imagem"
                 className="max-h-80 w-auto object-contain rounded-lg cursor-pointer mx-auto"
-                onClick={() => setShowImageFullscreen(true)}
+                onClick={() => { setFullscreenType('image'); setShowMediaFullscreen(true) }}
               />
               <button
                 type="button"
