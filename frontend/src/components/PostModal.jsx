@@ -55,6 +55,27 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     return () => URL.revokeObjectURL(url)
   }, [audioFile])
 
+  useEffect(() => {
+    const el = contentRef.current
+    if (!el) return
+    const onScroll = () => {
+      const threshold = 8
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold
+      setReachedBottom(atBottom)
+    }
+    onScroll()
+    el.addEventListener('scroll', onScroll)
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [contentRef, imageFile, videoFile])
+
+  useEffect(() => {
+    if (showMediaFullscreen) {
+      requestAnimationFrame(() => setFsAnim(true))
+    } else {
+      setFsAnim(false)
+    }
+  }, [showMediaFullscreen])
+
   const colorOptions = [
     { name: 'Sem cor', value: null, gradient: 'bg-white border-2 border-gray-300' },
     { name: 'Azul', value: 'blue', gradient: 'bg-gradient-to-br from-blue-400 to-blue-600' },
