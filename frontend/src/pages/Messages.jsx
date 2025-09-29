@@ -73,7 +73,7 @@ const Messages = () => {
   // Carregar conversas
   const loadConversations = async () => {
     try {
-      const response = await api.get('/api/messages/conversations');
+      const response = await api.get('/messages/conversations');
       setConversations(response.data);
     } catch (error) {
       console.error('Erro ao carregar conversas (usando modo demo):', error);
