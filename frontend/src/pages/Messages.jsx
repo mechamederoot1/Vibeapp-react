@@ -483,9 +483,10 @@ const Messages = () => {
           {filteredConversations.map((conversation) => (
             <div
               key={conversation.id}
-              onClick={() => {
+              onClick={async () => {
                 setSelectedConversation(conversation);
-                loadMessages(conversation.otherUser.id);
+                await loadMessages(conversation.otherUser.id);
+                try { window.history.pushState({ openedConversation: conversation.otherUser.id }, ''); } catch(e) { }
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
                 selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
