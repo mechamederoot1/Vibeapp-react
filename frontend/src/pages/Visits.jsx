@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Eye, MessageCircle, ChevronLeft, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 import FriendshipButton from '../components/FriendshipButton'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI } from '../services/api'
