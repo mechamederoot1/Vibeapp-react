@@ -270,7 +270,17 @@ async def mark_message_read(
     message.is_read = True
     message.read_at = datetime.utcnow()
     db.commit()
-    
+
+    # Notificar remetente via WebSocket
+    try:
+        from ..websocket import manager
+        await manager.send_personal_message({
+            "type": "message_status",
+            "data": {"messageId": message.id, "status": "read"}
+        }, message.sender_id)
+    except ImportError:
+        pass
+
     return {"message": "Message marked as read"}
 
 @router.delete("/{message_id}")
