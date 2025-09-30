@@ -692,6 +692,9 @@ const Messages = () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
+      const timers = typingTimersRef.current || {};
+      Object.values(timers).forEach(t => t && clearTimeout(t));
+      typingTimersRef.current = {};
     };
   }, []);
 
