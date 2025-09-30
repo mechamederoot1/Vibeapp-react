@@ -114,19 +114,24 @@ async def send_message(
         db.commit()
         db.refresh(notification)
 
-        # Enviar notificação em tempo real
-        try:
-            from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass  # WebSocket não disponível
-    else:
-        # Still send message notification event via websocket (but not persistent Notification)
-        try:
-            from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass
+    # Após persistir, tentar entrega imediata via WebSocket
+    try:
+        from ..websocket import manager
+        await manager.send_message_notification(message_dict, message_data.receiverId)
+        # Se o destinatário estiver online, marcar como entregue e emitir ACK ao remetente
+        if manager.is_user_online(message_data.receiverId):
+            new_message.is_delivered = True
+            new_message.delivered_at = datetime.utcnow()
+            db.commit()
+            # ACK para remetente
+            try:
+                await manager.send_delivery_ack(new_message.id, new_message.receiver_id, new_message.delivered_at.isoformat(), new_message.sender_id)
+            except Exception:
+                pass
+            # Atualizar dict com status de entrega
+            message_dict = new_message.to_dict()
+    except ImportError:
+        pass
 
     return {
         "message": "Message sent successfully",
@@ -219,9 +224,20 @@ async def get_messages(
     for msg in unread_messages:
         msg.is_read = True
         msg.read_at = datetime.utcnow()
-    
+
     db.commit()
-    
+
+    # Notificar remetente sobre leitura (ACK)
+    if unread_messages:
+        try:
+            from ..websocket import manager
+            ids = [m.id for m in unread_messages]
+            read_at = datetime.utcnow().isoformat()
+            payload = {"type": "messages_read", "data": {"messageIds": ids, "readerId": current_user.id, "readAt": read_at}}
+            await manager.send_personal_message(payload, user_id)
+        except ImportError:
+            pass
+
     return [msg.to_dict() for msg in reversed(messages)]
 
 @router.put("/{message_id}/read")
@@ -247,7 +263,17 @@ async def mark_message_read(
     message.is_read = True
     message.read_at = datetime.utcnow()
     db.commit()
-    
+
+    # Enviar ACK para remetente
+    try:
+        from ..websocket import manager
+        await manager.send_personal_message({
+            "type": "messages_read",
+            "data": {"messageIds": [message.id], "readerId": current_user.id, "readAt": message.read_at.isoformat()}
+        }, message.sender_id)
+    except ImportError:
+        pass
+
     return {"message": "Message marked as read"}
 
 @router.delete("/{message_id}")
