@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { buildProfileUrl } from '../utils/profileId'
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
@@ -424,7 +425,7 @@ const Messages = () => {
       mediaRecorderRef.current.start();
       setIsRecording(true);
     } catch (error) {
-      console.error('Erro ao iniciar gravação:', error);
+      console.error('Erro ao iniciar gravaç��o:', error);
       alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.');
     }
   };
@@ -510,7 +511,7 @@ const Messages = () => {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Parar de indicar digitação após 3 segundos de inatividade
+    // Parar de indicar digitação ap��s 3 segundos de inatividade
     typingTimeoutRef.current = setTimeout(() => {
       stopTyping();
     }, 3000);
