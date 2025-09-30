@@ -4,21 +4,14 @@ import { Home, Search, PlusCircle, Eye, User, MessageCircle } from 'lucide-react
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 import { useAuth } from '../contexts/AuthContext'
-import { getPublicProfileId } from '../utils/profileId'
+import { getPublicProfileId, buildProfileUrl } from '../utils/profileId'
 
 const BottomNavigation = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { lastMessage } = useWebSocket()
   const { user } = useAuth()
-  const myProfilePath = (() => {
-    try {
-      const pub = getPublicProfileId(user)
-      if (pub) return `/profile/id/${pub}`
-    } catch (e) {}
-    const fallback = user?.publicProfileId || user?.public_profile_id || user?.id
-    return fallback ? `/profile/id/${fallback}` : '/profile'
-  })()
+  const myProfilePath = buildProfileUrl(user)
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
     visits: 0

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { X, Eye, MessageCircle, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 import FriendshipButton from './FriendshipButton'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI } from '../services/api'
@@ -92,8 +93,8 @@ const ProfileVisitors = ({ onClose }) => {
   }, [visitors, filter])
 
   const handleProfileClick = (username, id) => {
-    if (username) navigate(`/profile/id/${username}`)
-    else if (id) navigate(`/profile/id/${id}`)
+    if (username) navigate(buildProfileUrl(username))
+    else if (id) navigate(buildProfileUrl(id))
     onClose()
   }
 

@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, reactionsAPI } from '../services/api'
 import ReactionPicker from './ReactionPicker'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 
 const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth()
@@ -298,11 +299,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
-                  const u = currentPost.author || {}
-                  const publicId = u.publicProfileId || u.public_profile_id
-                  if (publicId) navigate(`/profile/id/${publicId}`)
-                  else if (u.id) navigate(`/profile/id/${u.id}`)
-                  else if (u.username) navigate(`/profile/id/${u.username}`)
+                  navigate(buildProfileUrl(currentPost.author))
                 }}
                 className="flex-shrink-0"
                 aria-label="Ver perfil"
@@ -326,11 +323,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => {
-                      const u = currentPost.author || {}
-                      const publicId = u.publicProfileId || u.public_profile_id
-                      if (publicId) navigate(`/profile/id/${publicId}`)
-                      else if (u.id) navigate(`/profile/id/${u.id}`)
-                      else if (u.username) navigate(`/profile/id/${u.username}`)
+                      navigate(buildProfileUrl(currentPost.author))
                     }}
                     className="font-semibold text-gray-900 hover:text-vibe-blue"
                   >
@@ -375,11 +368,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                     <div key={comment.id} className="flex space-x-3">
                       <button
                         onClick={() => {
-                          const u = comment.author || {}
-                          const publicId = u.publicProfileId || u.public_profile_id
-                          if (publicId) navigate(`/profile/id/${publicId}`)
-                          else if (u.id) navigate(`/profile/id/${u.id}`)
-                          else if (u.username) navigate(`/profile/id/${u.username}`)
+                          navigate(buildProfileUrl(comment.author))
                         }}
                         className="flex-shrink-0"
                         aria-label="Ver perfil"
@@ -403,11 +392,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                           <div className="flex items-center space-x-2 mb-1">
                             <button
                               onClick={() => {
-                                const u = comment.author || {}
-                                const publicId = u.publicProfileId || u.public_profile_id
-                                if (publicId) navigate(`/profile/id/${publicId}`)
-                                else if (u.id) navigate(`/profile/id/${u.id}`)
-                                else if (u.username) navigate(`/profile/id/${u.username}`)
+                                navigate(buildProfileUrl(comment.author))
                               }}
                               className="font-medium text-sm hover:text-vibe-blue"
                             >

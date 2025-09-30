@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Heart, MessageCircle, Share, Bookmark, MoreHorizontal, Repeat2, Eye } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import { buildProfileUrl } from '../utils/profileId'
 import useWebSocket from '../hooks/useWebSocket'
 import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
@@ -115,11 +116,7 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
             <div className="flex items-center space-x-2 flex-wrap">
               <button
                 onClick={() => {
-                  const u = post.author || {}
-                  const publicId = u.publicProfileId || u.public_profile_id
-                  if (publicId) navigate(`/profile/id/${publicId}`)
-                  else if (u.id) navigate(`/profile/id/${u.id}`)
-                  else if (u.username) navigate(`/profile/id/${u.username}`)
+                  navigate(buildProfileUrl(post.author))
                 }}
                 className="font-semibold text-sm truncate hover:text-vibe-blue"
               >
@@ -416,10 +413,7 @@ const Story = ({ storyGroup, hasUnviewed = false, onClick }) => {
   const thumbnailUrl = imageStory?.mediaUrl || null
   const navigate = useNavigate()
   const goToProfile = () => {
-    const publicId = user?.publicProfileId || user?.public_profile_id
-    if (publicId) navigate(`/profile/id/${publicId}`)
-    else if (user?.id) navigate(`/profile/id/${user.id}`)
-    else if (user?.username) navigate(`/profile/id/${user.username}`)
+    navigate(buildProfileUrl(user))
   }
 
   return (

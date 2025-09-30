@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Search as SearchIcon, Users, X } from 'lucide-react'
 import FollowButton from '../components/FollowButton'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 import { usersAPI } from '../services/api'
 
 const Search = () => {
@@ -67,7 +68,7 @@ const Search = () => {
         addToRecentSearches(user)
       }
       // Navegar para o perfil do usuário
-      navigate(`/profile/id/${user.publicProfileId || user.id || user.username}`)
+      navigate(buildProfileUrl(user))
     }
 
     return (

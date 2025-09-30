@@ -174,15 +174,16 @@ const Profile = () => {
       }
 
       // Garantir URL com id público
-      const myPublicId = getPublicProfileId(user)
+      const myPublicId = user?.publicProfileId || user?.public_profile_id
       const identifier = publicId || userId || myPublicId
       if (!identifier) {
-        navigate(`/profile/id/${myPublicId}`, { replace: true })
+        // No public id available yet; navigate to generic profile route
+        navigate('/profile', { replace: true })
         return
       }
 
       // Determinar se é perfil próprio ou de outro usuário e resolver targetId
-      const own = identifier === user.id?.toString() || identifier === user.username || identifier === myPublicId
+      const own = identifier === String(user?.id) || identifier === user?.username || identifier === myPublicId
       setIsOwnProfile(!!own)
 
       let targetUserId = user.id
