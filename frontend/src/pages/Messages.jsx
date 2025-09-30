@@ -529,7 +529,7 @@ const Messages = () => {
 
   useEffect(() => {
     const init = async () => {
-      await loadConversations().finally(() => setLoading(false));
+      await loadConversations(1).finally(() => setLoading(false));
 
       try {
         const params = new URLSearchParams(location?.search || window.location.search);
