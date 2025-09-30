@@ -297,6 +297,27 @@ async def get_user_by_id(
             )
             db.add(profile_view)
             db.commit()
+
+            # Persist Notification
+            try:
+                action_path = f"/profile/id/{current_user.public_profile_id or current_user.id}"
+            except Exception:
+                action_path = f"/profile/{current_user.id}"
+            try:
+                notif = Notification(
+                    user_id=user_id,
+                    type="profile_view",
+                    title="Seu perfil foi visitado",
+                    message=f"{current_user.first_name or current_user.username} visitou seu perfil",
+                    related_user_id=current_user.id,
+                    action_url=action_path
+                )
+                db.add(notif)
+                db.commit()
+                db.refresh(notif)
+            except Exception:
+                db.rollback()
+
             try:
                 from ..websocket import manager
                 await manager.send_personal_message({
@@ -307,6 +328,18 @@ async def get_user_by_id(
                         "createdAt": profile_view.created_at.isoformat() if getattr(profile_view, 'created_at', None) else None
                     }
                 }, user_id)
+
+                if 'notif' in locals() and notif:
+                    await manager.send_notification({
+                        "id": notif.id,
+                        "type": notif.type,
+                        "title": notif.title,
+                        "message": notif.message,
+                        "related_user_id": notif.related_user_id,
+                        "action_url": notif.action_url,
+                        "created_at": notif.created_at.isoformat() if getattr(notif, 'created_at', None) else None
+                    }, user_id)
+
             except Exception:
                 pass
 
