@@ -4,7 +4,7 @@ import { Home, Search, PlusCircle, Eye, User, MessageCircle } from 'lucide-react
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 import { useAuth } from '../contexts/AuthContext'
-import { getPublicProfileId } from '../utils/profileId'
+import { getPublicProfileId, buildProfileUrl } from '../utils/profileId'
 
 const BottomNavigation = () => {
   const location = useLocation()
