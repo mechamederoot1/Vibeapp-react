@@ -47,39 +47,11 @@ const uploadApi = axios.create({
 
 // Function to add interceptors
 const addInterceptors = (apiInstance) => {
-  // Interceptor para adicionar token de autenticação
-  apiInstance.interceptors.request.use(
-    (config) => {
-      // Não adicionar Authorization para endpoints públicos
-      const isPublicEndpoint = config.url?.includes('/auth/register') ||
-                               config.url?.includes('/auth/login')
-
-      if (!isPublicEndpoint) {
-        const token = localStorage.getItem('token')
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-      }
-      return config
-    },
-    (error) => {
-      return Promise.reject(error)
-    }
-  )
-
   // Interceptor para tratar respostas
   apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        // Clear local token and broadcast an unauthorized event so SPA can handle gracefully
-        try {
-          localStorage.removeItem('token')
-          if (apiInstance && apiInstance.defaults && apiInstance.defaults.headers) {
-            delete apiInstance.defaults.headers.Authorization
-          }
-        } catch (e) {}
-
         try {
           window.dispatchEvent(new Event('unauthorized'))
         } catch (e) {}
