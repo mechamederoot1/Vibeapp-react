@@ -836,8 +836,7 @@ const Messages = () => {
                     const u = selectedConversation.otherUser || {};
                     const pub = u.publicProfileId || u.public_profile_id;
                     if (pub) navigate(`/profile/id/${pub}`);
-                    else if (u.id) navigate(`/profile/${u.id}`);
-                    else if (u.username) navigate(`/profile/${u.username}`);
+                    else if (u.id) navigate(`/profile/id/${u.id}`);
                   }} className="text-left w-full text-inherit hover:underline">
                     {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                   </button>
