@@ -55,11 +55,21 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
         if not _has_col(conn, 'messages', 'media_mime'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
-        # ensure read status columns
+        if not _has_col(conn, 'messages', 'conversation_id'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN conversation_id INTEGER"))
+        if not _has_col(conn, 'messages', 'is_delivered'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN is_delivered BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'messages', 'delivered_at'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN delivered_at DATETIME"))
         if not _has_col(conn, 'messages', 'is_read'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
         if not _has_col(conn, 'messages', 'read_at'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN read_at DATETIME"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_conversation_id ON messages(conversation_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_is_delivered ON messages(is_delivered)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_delivered_at ON messages(delivered_at)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_is_read ON messages(is_read)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_messages_read_at ON messages(read_at)"))
 
         # user sessions table (tracks tokens per device/browser)
         conn.execute(text(
