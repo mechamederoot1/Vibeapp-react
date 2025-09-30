@@ -105,18 +105,35 @@ const Messages = () => {
 
   const updateConversationsFromMessages = (otherId, msgs) => {
     const last = msgs[msgs.length - 1]
+
+    // Optimistically update the list (move conversation to top)
     setConversations(prev => {
       const others = prev.filter(c => c.otherUser.id !== otherId)
-      const conv = prev.find(c => c.otherUser.id === otherId) || {
-        id: otherId,
-        otherUser: { id: otherId, firstName: 'Contato', lastName: String(otherId) }
-      }
+      const existing = prev.find(c => c.otherUser.id === otherId)
       const unread = msgs.filter(m => m.senderId === otherId && !m.isRead).length
-      const updated = { ...conv, lastMessage: last, unreadCount: unread }
+      const baseUser = existing ? existing.otherUser : { id: otherId, firstName: 'Carregando...', lastName: '' }
+      const updated = { id: otherId, otherUser: baseUser, lastMessage: last, unreadCount: unread }
       const next = [updated, ...others].sort((a,b)=> (b.lastMessage?.createdAt||'') > (a.lastMessage?.createdAt||'') ? 1 : -1)
       saveDemoConvs(next)
       return next
     })
+
+    // Fetch full user info in background and replace in list
+    (async () => {
+      try {
+        const res = await api.get(`/users/${otherId}`)
+        const otherUserInfo = res.data
+        setConversations(prev => prev.map(c => c.otherUser.id === otherId ? { ...c, otherUser: otherUserInfo } : c))
+        // Persist updated convs
+        try {
+          const convs = JSON.parse(localStorage.getItem(demoKey('conversations')) || '[]')
+          const updatedConvs = convs.map(c => c.otherUser && c.otherUser.id === otherId ? { ...c, otherUser: otherUserInfo } : c)
+          localStorage.setItem(demoKey('conversations'), JSON.stringify(updatedConvs))
+        } catch (e) {}
+      } catch (e) {
+        // keep optimistic label if fetch fails
+      }
+    })()
   }
 
   // Scroll para o final das mensagens
