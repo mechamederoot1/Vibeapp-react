@@ -19,3 +19,11 @@ export function getPublicProfileId(user) {
     return rand
   }
 }
+
+export function buildProfileUrl(userOrIdentifier) {
+  let id = userOrIdentifier
+  if (userOrIdentifier && typeof userOrIdentifier === 'object') {
+    id = userOrIdentifier.publicProfileId || userOrIdentifier.public_profile_id || userOrIdentifier.id || userOrIdentifier.username
+  }
+  return `/profile/id/${encodeURIComponent(String(id))}`
+}
