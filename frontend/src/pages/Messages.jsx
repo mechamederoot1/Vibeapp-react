@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Camera as CameraIcon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
+import Camera from '../components/Camera';
 import useWebSocket from '../hooks/useWebSocket';
 
 const statusIcon = (status, isOwn) => {
@@ -57,6 +58,7 @@ const Messages = () => {
   const [typingUsers, setTypingUsers] = useState({});
   const [imageInputKey, setImageInputKey] = useState(0)
   const [videoInputKey, setVideoInputKey] = useState(0)
+  const [showCamera, setShowCamera] = useState(false)
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
@@ -85,6 +87,21 @@ const Messages = () => {
   const loadDemo = (userId) => JSON.parse(localStorage.getItem(demoKey(`thread:${userId}`)) || '[]')
   const saveDemoConvs = (convs) => localStorage.setItem(demoKey('conversations'), JSON.stringify(convs))
   const loadDemoConvs = () => JSON.parse(localStorage.getItem(demoKey('conversations')) || '[]')
+
+  const dataURLtoFile = (dataUrl, filename) => {
+    try {
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) u8arr[n] = bstr.charCodeAt(n);
+      return new File([u8arr], filename, { type: mime });
+    } catch (e) {
+      console.error('Falha ao converter imagem da câmera:', e);
+      return null;
+    }
+  }
 
   const updateConversationsFromMessages = (otherId, msgs) => {
     const last = msgs[msgs.length - 1]
@@ -218,18 +235,12 @@ const Messages = () => {
   };
 
   const scheduleStatusProgress = (msg, otherId) => {
-    // Progressão de status local: sending -> sent -> delivered -> read
+    // Definir como 'sent' rapidamente; estados posteriores virão via WebSocket (delivered/read)
     setTimeout(() => {
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m))
-    }, 300)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m))
-    }, 1000)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read', isRead: true } : m))
-    }, 2500)
+    }, 200)
 
-    // Persistir demo
+    // Persistir demo mínimo
     setTimeout(() => {
       const next = messages.concat([{ ...msg, status: 'sending' }])
       saveDemo(otherId, next)
@@ -246,6 +257,7 @@ const Messages = () => {
 
     const tempMsg = {
       id: Date.now(),
+      tempId: Date.now(),
       senderId: user.id,
       receiverId: selectedConversation.otherUser.id,
       content: messageText,
@@ -257,21 +269,25 @@ const Messages = () => {
       status: 'sending'
     }
 
-    try {
-      await api.post('/messages/send', {
-        receiverId: selectedConversation.otherUser.id,
-        content: messageText,
-        messageType: 'text'
-      });
-    } catch (error) {
-      // Sem backend: segue local
-      console.warn('Sem backend para enviar texto, usando modo demo')
-    }
-
     setMessages(prev => [...prev, tempMsg]);
     setTimeout(scrollToBottom, 100);
     updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
     scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+
+    try {
+      const res = await api.post('/messages/send', {
+        receiverId: selectedConversation.otherUser.id,
+        content: messageText,
+        messageType: 'text'
+      });
+      const serverMsg = res?.data?.data;
+      if (serverMsg && serverMsg.id) {
+        setMessages(prev => prev.map(m => (m.tempId === tempMsg.tempId ? { ...serverMsg, status: 'sent' } : m)));
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages.filter(m => m.tempId !== tempMsg.tempId), { ...serverMsg, status: 'sent' }]);
+      }
+    } catch (error) {
+      console.warn('Sem backend para enviar texto, usando modo demo', error)
+    }
 
     // Parar de indicar que está digitando
     stopTyping();
@@ -567,6 +583,14 @@ const Messages = () => {
       }, 5000);
     }
   }, [lastMessage, selectedConversation]);
+
+  // Atualizar status das mensagens via WebSocket
+  useEffect(() => {
+    if (!lastMessage || lastMessage.type !== 'message_status') return;
+    const { messageId, status } = lastMessage.data || {};
+    if (!messageId || !status) return;
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, status, isRead: status === 'read' ? true : m.isRead } : m));
+  }, [lastMessage]);
 
   // Carregar conversas ao montar
   const location = useLocation();
@@ -946,6 +970,16 @@ const Messages = () => {
           </div>
         </div>
       )}
+
+      <Camera
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={(imageData) => {
+          const file = dataURLtoFile(imageData, 'photo.jpg');
+          if (file) sendImage(file);
+          setShowCamera(false);
+        }}
+      />
     </div>
   );
 };
