@@ -95,14 +95,11 @@ export const AuthProvider = ({ children }) => {
     try {
       await authAPI.logout()
     } catch (e) {
-      // ignore errors, ensure local cleanup
+      // ignore errors
     }
 
+    // Clear local user state; backend should clear cookie if needed
     setUser(null)
-    setToken(null)
-    try { sessionStorage.removeItem('token') } catch(e){}
-    try { localStorage.removeItem('token') } catch(e){}
-    delete api.defaults.headers.Authorization
   }
 
   const updateProfile = async (profileData) => {
