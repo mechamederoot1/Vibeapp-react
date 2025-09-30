@@ -103,10 +103,13 @@ manager = ConnectionManager()
 
 async def websocket_endpoint(websocket: WebSocket, token: str = None):
     """Endpoint principal do WebSocket"""
+    # Support token via query param OR HttpOnly cookie
+    if not token:
+        token = websocket.cookies.get('access_token')
     if not token:
         await websocket.close(code=4001, reason="Token not provided")
         return
-        
+
     # Verificar autenticação
     try:
         user = await get_user_from_websocket(token)
@@ -116,7 +119,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
     except Exception as e:
         await websocket.close(code=4001, reason="Authentication failed")
         return
-        
+
     user_id = user.id
     await manager.connect(websocket, user_id)
     
