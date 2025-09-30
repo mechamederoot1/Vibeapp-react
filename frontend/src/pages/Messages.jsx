@@ -697,6 +697,12 @@ const Messages = () => {
               <p>Nenhuma conversa encontrada</p>
             </div>
           )}
+
+          {loadingMoreConversations && (
+            <div className="py-4 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
+            </div>
+          )}
         </div>
       </div>
 
