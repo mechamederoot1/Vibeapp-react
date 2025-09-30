@@ -6,7 +6,7 @@ import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
 import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
-import { getPublicProfileId } from '../utils/profileId'
+import { getPublicProfileId, buildProfileUrl } from '../utils/profileId'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
@@ -26,14 +26,7 @@ const Header = ({ onOpenPostModal }) => {
   const searchRef = useRef(null)
 
   const handleEditPhoto = () => {
-    try {
-      const pubId = getPublicProfileId(user)
-      navigate(`/profile/id/${pubId}`)
-    } catch (e) {
-      const fallback = user?.publicProfileId || user?.public_profile_id || user?.id
-      if (fallback) navigate(`/profile/id/${fallback}`)
-      else navigate('/profile')
-    }
+    navigate(buildProfileUrl(user))
     setShowAvatarDropdown(false)
   }
 
@@ -125,13 +118,7 @@ const Header = ({ onOpenPostModal }) => {
   }, [searchQuery, showSearch])
 
   const handleChooseUser = (u) => {
-    const publicId = u?.publicProfileId || u?.public_profile_id
-    const id = u?.id
-    if (publicId) {
-      navigate(`/profile/id/${publicId}`)
-    } else if (id) {
-      navigate(`/profile/id/${id}`)
-    }
+    navigate(buildProfileUrl(u))
     setShowSearch(false)
     setSearchQuery('')
     setSearchResults([])
