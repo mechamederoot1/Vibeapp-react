@@ -680,7 +680,10 @@ const Messages = () => {
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => setSelectedConversation(null)}
+                onClick={() => {
+                  setSelectedConversation(null);
+                  try { navigate('/messages'); } catch(e) {}
+                }}
                 className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
               >
                 <ArrowLeft size={20} />
