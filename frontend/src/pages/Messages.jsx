@@ -331,37 +331,40 @@ const Messages = () => {
     }
 
     try {
-      const up = await uploadsAPI.uploadStoryMedia(file)
-      const url = up.data?.url || URL.createObjectURL(file)
+      const formData = new FormData()
+      formData.append('receiver_id', selectedConversation.otherUser.id)
+      formData.append('file', file)
 
-      try {
-        await api.post('/messages/send', {
+      const res = await api.post('/messages/upload-media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      const msg = res.data?.data
+      if (msg) {
+        setMessages(prev => [...prev, msg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
+        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
+        setTimeout(scrollToBottom, 100)
+      } else {
+        const url = URL.createObjectURL(file)
+        const tempMsg = {
+          id: Date.now(),
+          senderId: user.id,
           receiverId: selectedConversation.otherUser.id,
           content: '',
           messageType: 'video',
-          mediaUrl: url
-        })
-      } catch (e) {
-        console.warn('Erro ao enviar mensagem de vídeo ao backend, usando modo demo', e)
+          mediaUrl: url,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          sender: user,
+          receiver: selectedConversation.otherUser,
+          status: 'sending'
+        }
+        setMessages(prev => [...prev, tempMsg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+        scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+        setTimeout(scrollToBottom, 100)
       }
-
-      const tempMsg = {
-        id: Date.now(),
-        senderId: user.id,
-        receiverId: selectedConversation.otherUser.id,
-        content: '',
-        messageType: 'video',
-        mediaUrl: url,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        sender: user,
-        receiver: selectedConversation.otherUser,
-        status: 'sending'
-      }
-      setMessages(prev => [...prev, tempMsg])
-      setTimeout(scrollToBottom, 100)
-      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
     } catch (err) {
       console.error('Erro ao enviar vídeo:', err)
     }
