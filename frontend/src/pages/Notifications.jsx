@@ -232,10 +232,7 @@ const Notifications = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   const u = notification.relatedUser || {};
-                  const publicId = u.publicProfileId || u.public_profile_id;
-                  if (publicId) navigate(`/profile/id/${publicId}`);
-                  else if (u.id) navigate(`/profile/id/${u.id}`);
-                  else if (u.username) navigate(`/profile/id/${u.username}`);
+                  navigate(buildProfileUrl(u));
                 }}
                 className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0 hover:opacity-90"
                 aria-label="Ver perfil"
