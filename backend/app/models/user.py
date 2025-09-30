@@ -93,6 +93,14 @@ class User(Base):
 
     def to_dict(self):
         """Convert user to dictionary for API responses"""
+        # Normalize media URLs to always be public/absolute-ish paths
+        avatar_src = self.avatar_url or self.avatar
+        cover_src = self.cover_photo
+        # Map legacy relative upload paths to media endpoints
+        if avatar_src and isinstance(avatar_src, str) and avatar_src.startswith('/uploads/'):
+            avatar_src = f"/api/media/users/{self.id}/avatar"
+        if cover_src and isinstance(cover_src, str) and cover_src.startswith('/uploads/'):
+            cover_src = f"/api/media/users/{self.id}/cover"
         return {
             "id": self.id,
             "email": self.email,
@@ -103,9 +111,9 @@ class User(Base):
             "fullName": self.full_name,
             "displayName": self.display_name,
             "bio": self.bio,
-            "avatar": self.avatar,
-            "avatar_url": self.avatar_url or self.avatar,
-            "coverPhoto": self.cover_photo,
+            "avatar": avatar_src,
+            "avatar_url": avatar_src,
+            "coverPhoto": cover_src,
             "location": self.location,
             "website": self.website,
             "phone": self.phone,
@@ -122,6 +130,12 @@ class User(Base):
 
     def to_public_dict(self):
         """Convert user to public dictionary (limited info)"""
+        avatar_src = self.avatar_url or self.avatar
+        cover_src = self.cover_photo
+        if avatar_src and isinstance(avatar_src, str) and avatar_src.startswith('/uploads/'):
+            avatar_src = f"/api/media/users/{self.id}/avatar"
+        if cover_src and isinstance(cover_src, str) and cover_src.startswith('/uploads/'):
+            cover_src = f"/api/media/users/{self.id}/cover"
         return {
             "id": self.id,
             "username": self.username,
@@ -131,9 +145,9 @@ class User(Base):
             "fullName": self.full_name,
             "displayName": self.display_name,
             "bio": self.bio,
-            "avatar": self.avatar,
-            "avatar_url": self.avatar_url or self.avatar,
-            "coverPhoto": self.cover_photo,
+            "avatar": avatar_src,
+            "avatar_url": avatar_src,
+            "coverPhoto": cover_src,
             "location": self.location,
             "website": self.website,
             "isVerified": self.is_verified,
