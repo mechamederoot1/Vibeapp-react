@@ -625,9 +625,15 @@ const Messages = () => {
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''}`}>
         <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900 mb-4">Mensagens</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-900 mb-2">Mensagens</h1>
+            <div className="flex items-center space-x-2">
+              <button onClick={() => setConversationsFilter('all')} className={`px-3 py-1 rounded ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Todas</button>
+              <button onClick={() => setConversationsFilter('unread')} className={`px-3 py-1 rounded ${conversationsFilter === 'unread' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Não lidas</button>
+            </div>
+          </div>
 
-          <div className="relative">
+          <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
