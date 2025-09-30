@@ -29,6 +29,7 @@ const API_BASE_URL = getApiBaseUrl()
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,6 +39,7 @@ const api = axios.create({
 const uploadApi = axios.create({
   baseURL: API_BASE_URL,
   timeout: 120000, // 2 minutes for uploads
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
