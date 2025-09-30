@@ -125,7 +125,37 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 "message": "Connected successfully"
             }
         }))
-        
+
+        # Ao conectar, enviar quaisquer notificações pendentes (notificações persistentes não enviadas)
+        try:
+            from .database.database import get_db
+            db = get_db()
+            with db() as session:
+                pending = session.query(\
+                    __import__('app').app.models.notification.Notification \
+                ).filter_by(user_id=user_id, is_sent=False).all()
+                for n in pending:
+                    await manager.send_personal_message({
+                        "type": "notification",
+                        "data": {
+                            "id": n.id,
+                            "type": n.type,
+                            "title": n.title,
+                            "message": n.message,
+                            "relatedUserId": n.related_user_id,
+                            "actionUrl": n.action_url,
+                            "createdAt": n.created_at.isoformat() if n.created_at else None
+                        }
+                    }, user_id)
+                    # marcar enviado
+                    try:
+                        n.is_sent = True
+                        session.commit()
+                    except Exception:
+                        session.rollback()
+        except Exception as e:
+            print('Erro ao enviar notificações pendentes:', e)
+
         # Loop principal para manter conexão viva
         while True:
             try:
