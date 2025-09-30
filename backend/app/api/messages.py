@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 from typing import Optional, List
 from pydantic import BaseModel
+from typing import Optional, List, Dict
 from datetime import datetime
 import aiofiles
 import os
@@ -28,19 +29,27 @@ class MessageResponse(BaseModel):
     content: Optional[str]
     messageType: str
     mediaUrl: Optional[str]
+    isDelivered: Optional[bool] = None
+    deliveredAt: Optional[str] = None
     isRead: bool
+    readAt: Optional[str] = None
     createdAt: str
-    sender: dict
-    receiver: dict
+    conversationId: Optional[int] = None
+    sender: Dict
+    receiver: Dict
+
+class MessageSendResponse(BaseModel):
+    message: str
+    data: MessageResponse
 
 class ConversationResponse(BaseModel):
     id: int
-    otherUser: dict
-    lastMessage: Optional[dict]
+    otherUser: Dict
+    lastMessage: Optional[Dict]
     unreadCount: int
     updatedAt: str
 
-@router.post("/send", response_model=dict)
+@router.post("/send", response_model=MessageSendResponse)
 async def send_message(
     message_data: MessageCreate,
     db: Session = Depends(get_db),
@@ -90,6 +99,7 @@ async def send_message(
             user2_id=max(current_user.id, message_data.receiverId)
         )
         db.add(conversation)
+        db.flush()  # ensure conversation.id
         conversation_created = True
 
     # Atualizar última mensagem da conversa
@@ -99,6 +109,7 @@ async def send_message(
     db.commit()
 
     message_dict = new_message.to_dict()
+    message_dict["conversationId"] = conversation.id if conversation else None
 
     # Criar notificação APENAS se a conversa foi criada agora (primeiro contato)
     if conversation_created:
@@ -112,7 +123,6 @@ async def send_message(
         )
         db.add(notification)
         db.commit()
-        db.refresh(notification)
 
     # Após persistir, tentar entrega imediata via WebSocket
     try:
@@ -138,7 +148,7 @@ async def send_message(
         "data": message_dict
     }
 
-@router.get("/conversations", response_model=List[dict])
+@router.get("/conversations", response_model=List[ConversationResponse])
 async def get_conversations(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -178,7 +188,7 @@ async def get_conversations(
 
     return result
 
-@router.get("/{user_id}", response_model=List[dict])
+@router.get("/{user_id}", response_model=List[MessageResponse])
 async def get_messages(
     user_id: int,
     limit: int = 50,
@@ -238,7 +248,16 @@ async def get_messages(
         except ImportError:
             pass
 
-    return [msg.to_dict() for msg in reversed(messages)]
+    result = [msg.to_dict() for msg in reversed(messages)]
+    # Attach conversationId convenience for frontend if available
+    for item in result:
+        try:
+            c = db.query(Conversation).filter(or_(and_(Conversation.user1_id == current_user.id, Conversation.user2_id == user_id), and_(Conversation.user1_id == user_id, Conversation.user2_id == current_user.id))).first()
+            if c:
+                item["conversationId"] = c.id
+        except Exception:
+            pass
+    return result
 
 @router.put("/{message_id}/read")
 async def mark_message_read(
@@ -337,7 +356,7 @@ async def clear_conversation(
     
     return {"message": "Conversation cleared successfully"}
 
-@router.post("/upload-audio")
+@router.post("/upload-audio", response_model=MessageSendResponse)
 async def upload_audio_message(
     receiver_id: int = Form(...),
     audio_file: UploadFile = File(...),
@@ -387,35 +406,39 @@ async def upload_audio_message(
         )
     ).first()
 
+    conversation_created = False
     if not conversation:
         conversation = Conversation(
             user1_id=min(current_user.id, receiver_id),
             user2_id=max(current_user.id, receiver_id)
         )
         db.add(conversation)
+        db.flush()
+        conversation_created = True
 
     conversation.last_message_id = new_message.id
     conversation.updated_at = datetime.utcnow()
 
     db.commit()
 
-    # Criar notificação
-    notification = Notification(
-        user_id=receiver_id,
-        type="message",
-        title=f"Nova mensagem de áudio de {current_user.full_name}",
-        message="Enviou uma mensagem de áudio",
-        related_user_id=current_user.id,
-        action_url=f"/messages/{current_user.id}"
-    )
-
-    db.add(notification)
-    db.commit()
+    # Notificação somente no primeiro contato
+    if conversation_created:
+        notification = Notification(
+            user_id=receiver_id,
+            type="message",
+            title=f"Nova mensagem de áudio de {current_user.full_name}",
+            message="Enviou uma mensagem de áudio",
+            related_user_id=current_user.id,
+            action_url=f"/messages/{current_user.id}"
+        )
+        db.add(notification)
+        db.commit()
 
     # Enviar notificação em tempo real e marcar entrega se online
     try:
         from ..websocket import manager
         message_dict = new_message.to_dict()
+        message_dict["conversationId"] = conversation.id if conversation else None
         await manager.send_message_notification(message_dict, receiver_id)
         if manager.is_user_online(receiver_id):
             new_message.is_delivered = True
@@ -426,6 +449,7 @@ async def upload_audio_message(
             except Exception:
                 pass
             message_dict = new_message.to_dict()
+            message_dict["conversationId"] = conversation.id if conversation else None
     except ImportError:
         pass  # WebSocket não disponível
 
@@ -435,7 +459,7 @@ async def upload_audio_message(
     }
 
 
-@router.post("/upload-media")
+@router.post("/upload-media", response_model=MessageSendResponse)
 async def upload_media_message(
     receiver_id: int = Form(...),
     file: UploadFile = File(...),
@@ -492,32 +516,37 @@ async def upload_media_message(
         )
     ).first()
 
+    conversation_created = False
     if not conversation:
         conversation = Conversation(
             user1_id=min(current_user.id, receiver_id),
             user2_id=max(current_user.id, receiver_id)
         )
         db.add(conversation)
+        db.flush()
+        conversation_created = True
 
     conversation.last_message_id = new_message.id
     conversation.updated_at = datetime.utcnow()
     db.commit()
 
-    # Notification
-    notification = Notification(
-        user_id=receiver_id,
-        type="message",
-        title=f"Nova mensagem de {'imagem' if mtype=='image' else 'vídeo'} de {current_user.full_name}",
-        message="Enviou uma mídia",
-        related_user_id=current_user.id,
-        action_url=f"/messages/{current_user.id}"
-    )
-    db.add(notification)
-    db.commit()
+    # Notification condicionada
+    if conversation_created:
+        notification = Notification(
+            user_id=receiver_id,
+            type="message",
+            title=f"Nova mensagem de {'imagem' if mtype=='image' else 'vídeo'} de {current_user.full_name}",
+            message="Enviou uma mídia",
+            related_user_id=current_user.id,
+            action_url=f"/messages/{current_user.id}"
+        )
+        db.add(notification)
+        db.commit()
 
     try:
         from ..websocket import manager
         message_dict = new_message.to_dict()
+        message_dict["conversationId"] = conversation.id if conversation else None
         await manager.send_message_notification(message_dict, receiver_id)
         if manager.is_user_online(receiver_id):
             new_message.is_delivered = True
@@ -528,6 +557,7 @@ async def upload_media_message(
             except Exception:
                 pass
             message_dict = new_message.to_dict()
+            message_dict["conversationId"] = conversation.id if conversation else None
     except ImportError:
         pass
 
