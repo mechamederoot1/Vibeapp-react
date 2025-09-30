@@ -9,6 +9,7 @@ const NotificationsList = ({ onClose }) => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const { lastMessage } = useWebSocket();
+  const navigate = useNavigate();
 
   // Carregar notificações
   const loadNotifications = async () => {
