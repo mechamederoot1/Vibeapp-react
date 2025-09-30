@@ -107,6 +107,57 @@ class ConnectionManager:
 # Instância global do gerenciador de conexões
 manager = ConnectionManager()
 
+async def flush_pending_messages(user_id: int):
+    session = SessionLocal()
+    receiver_payloads: List[dict] = []
+    sender_ack_payloads: List[tuple[int, dict]] = []
+    try:
+        pending_messages = (
+            session.query(Message)
+            .filter(
+                Message.receiver_id == user_id,
+                Message.is_delivered == False,
+                Message.is_deleted_by_receiver == False
+            )
+            .order_by(Message.created_at)
+            .all()
+        )
+
+        if not pending_messages:
+            return
+
+        for msg in pending_messages:
+            delivered_time = datetime.utcnow()
+            msg.is_delivered = True
+            msg.delivered_at = delivered_time
+            message_dict = msg.to_dict()
+            if not message_dict.get("sender") and msg.sender:
+                message_dict["sender"] = msg.sender.to_public_dict()
+            if not message_dict.get("receiver") and msg.receiver:
+                message_dict["receiver"] = msg.receiver.to_public_dict()
+            receiver_payloads.append(message_dict)
+            sender_ack_payloads.append((
+                msg.sender_id,
+                {
+                    "messageId": msg.id,
+                    "conversationId": msg.conversation_id,
+                    "status": "delivered",
+                    "deliveredAt": delivered_time.isoformat(),
+                    "receiverId": user_id
+                }
+            ))
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    for payload in receiver_payloads:
+        await manager.send_message_notification(payload, user_id)
+    for sender_id, ack_payload in sender_ack_payloads:
+        await manager.send_message_status_update(ack_payload, sender_id)
+
 async def websocket_endpoint(websocket: WebSocket, token: str = None):
     """Endpoint principal do WebSocket"""
     if not token:
