@@ -532,8 +532,6 @@ async def upload_media_message(
         pass
 
     return {"message": "Media message sent successfully", "data": message_dict}
-}
-
 @router.get("/unread-count")
 async def get_unread_count(
     db: Session = Depends(get_db),
