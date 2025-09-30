@@ -67,7 +67,7 @@ const Search = () => {
         addToRecentSearches(user)
       }
       // Navegar para o perfil do usuário
-      navigate(`/profile/${user.id}`)
+      navigate(`/profile/id/${user.publicProfileId || user.id || user.username}`)
     }
 
     return (
