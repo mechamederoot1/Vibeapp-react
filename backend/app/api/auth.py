@@ -70,8 +70,21 @@ def verify_token(token: str):
 
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
-    token = credentials.credentials
+def get_current_user(request: Request, db: Session = Depends(get_db)):
+    # Support Authorization header or HttpOnly cookie
+    token = None
+    auth_header = request.headers.get('authorization')
+    if auth_header and auth_header.lower().startswith('bearer '):
+        token = auth_header.split(' ', 1)[1]
+    else:
+        token = request.cookies.get('access_token')
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials"
+        )
+
     verified = verify_token(token)
     user_id = verified.get('user_id')
     jti = verified.get('jti')
