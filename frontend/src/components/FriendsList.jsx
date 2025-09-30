@@ -104,7 +104,7 @@ const FriendsList = ({ onClose, userId = null }) => {
   }
 
   const handleProfileClick = (username) => {
-    navigate(`/profile/${username}`)
+    navigate(`/profile/id/${username}`)
     onClose()
   }
 
