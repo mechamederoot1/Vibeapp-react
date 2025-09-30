@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -7,7 +7,9 @@ import jwt
 from pydantic import BaseModel, EmailStr
 from ..database.database import get_db
 from ..models.user import User
+from ..models.session import UserSession
 import os
+import uuid
 
 router = APIRouter()
 
@@ -49,6 +51,7 @@ def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id_str = payload.get("sub")
+        jti = payload.get("jti")
         if user_id_str is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,7 +59,7 @@ def verify_token(token: str):
                 headers={"WWW-Authenticate": "Bearer"},
             )
         user_id = int(user_id_str)
-        return user_id
+        return {"user_id": user_id, "jti": jti}
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,7 +71,30 @@ security = HTTPBearer()
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     token = credentials.credentials
-    user_id = verify_token(token)
+    verified = verify_token(token)
+    user_id = verified.get('user_id')
+    jti = verified.get('jti')
+
+    # Check session record exists and is active
+    session = None
+    try:
+        session = db.query(UserSession).filter(UserSession.jti == jti, UserSession.user_id == user_id, UserSession.is_active == True).first()
+    except Exception:
+        session = None
+
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session not found or revoked"
+        )
+
+    # Optionally update last_used_at
+    try:
+        session.last_used_at = datetime.utcnow()
+        db.commit()
+    except Exception:
+        db.rollback()
+
     user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(
@@ -78,7 +104,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 @router.post("/register", response_model=Token)
-async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+async def register(user_data: UserRegister, request: Request, db: Session = Depends(get_db)):
     try:
         print(f"🚀 Endpoint de registro chamado com dados: {user_data}")
 
@@ -152,11 +178,23 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
                 # Other integrity errors should bubble up
                 raise
 
-        # Create access token
+        # Create access token + persist session
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": str(new_user.id)}, expires_delta=access_token_expires
-        )
+        jti = str(uuid.uuid4())
+        token_payload = {"sub": str(new_user.id), "jti": jti}
+        access_token = create_access_token(data=token_payload, expires_delta=access_token_expires)
+
+        # Persist session
+        try:
+            ua = request.headers.get('user-agent') if request else None
+            ip = request.client.host if request and request.client else None
+            sess = UserSession(user_id=new_user.id, jti=jti, user_agent=ua, ip_address=ip, is_active=True)
+            db.add(sess)
+            db.commit()
+            db.refresh(sess)
+        except Exception:
+            db.rollback()
+
         print(f"🔑 Token criado para usuário {new_user.id}")
 
         response_data = {
@@ -181,7 +219,7 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         )
 
 @router.post("/login", response_model=Token)
-async def login(user_data: UserLogin, db: Session = Depends(get_db)):
+async def login(user_data: UserLogin, request: Request, db: Session = Depends(get_db)):
     # Find user by email
     user = db.query(User).filter(User.email == user_data.email).first()
     if not user or not user.verify_password(user_data.password):
@@ -189,23 +227,33 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
         )
-    
+
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Inactive user"
         )
-    
+
     # Update last login
     user.last_login = datetime.utcnow()
     db.commit()
-    
-    # Create access token
+
+    # Create access token + session record
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": str(user.id)}, expires_delta=access_token_expires
-    )
-    
+    jti = str(uuid.uuid4())
+    token_payload = {"sub": str(user.id), "jti": jti}
+    access_token = create_access_token(data=token_payload, expires_delta=access_token_expires)
+
+    try:
+        ua = request.headers.get('user-agent') if request else None
+        ip = request.client.host if request and request.client else None
+        sess = UserSession(user_id=user.id, jti=jti, user_agent=ua, ip_address=ip, is_active=True)
+        db.add(sess)
+        db.commit()
+        db.refresh(sess)
+    except Exception:
+        db.rollback()
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -217,8 +265,25 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user.to_dict()
 
 @router.post("/logout")
-async def logout():
-    # In a real app, you might want to blacklist the token
+async def logout(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    try:
+        verified = verify_token(token)
+        jti = verified.get('jti')
+        user_id = verified.get('user_id')
+    except Exception:
+        jti = None
+        user_id = None
+
+    if jti and user_id:
+        try:
+            sess = db.query(UserSession).filter(UserSession.jti == jti, UserSession.user_id == user_id).first()
+            if sess:
+                sess.is_active = False
+                db.commit()
+        except Exception:
+            db.rollback()
+
     return {"message": "Successfully logged out"}
 
 
@@ -239,7 +304,15 @@ async def get_user_from_websocket(token: str, db: Session = None):
         should_close = False
 
     try:
-        user_id = verify_token(token)
+        verified = verify_token(token)
+        user_id = verified.get('user_id')
+        jti = verified.get('jti')
+        # Ensure session is active
+        if not user_id:
+            return None
+        sess = db.query(UserSession).filter(UserSession.jti == jti, UserSession.user_id == user_id, UserSession.is_active == True).first()
+        if not sess:
+            return None
         user = db.query(User).filter(User.id == user_id).first()
         return user
     except Exception:
