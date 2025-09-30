@@ -11,14 +11,7 @@ const BottomNavigation = () => {
   const navigate = useNavigate()
   const { lastMessage } = useWebSocket()
   const { user } = useAuth()
-  const myProfilePath = (() => {
-    try {
-      const pub = getPublicProfileId(user)
-      if (pub) return `/profile/id/${pub}`
-    } catch (e) {}
-    const fallback = user?.publicProfileId || user?.public_profile_id || user?.id
-    return fallback ? `/profile/id/${fallback}` : '/profile'
-  })()
+  const myProfilePath = buildProfileUrl(user)
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
     visits: 0
