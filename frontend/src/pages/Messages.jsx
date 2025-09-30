@@ -832,12 +832,7 @@ const Messages = () => {
 
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">
-                  <button onClick={() => {
-                    const u = selectedConversation.otherUser || {};
-                    const pub = u.publicProfileId || u.public_profile_id;
-                    if (pub) navigate(`/profile/id/${pub}`);
-                    else if (u.id) navigate(`/profile/id/${u.id}`);
-                  }} className="text-left w-full text-inherit hover:underline">
+                  <button onClick={() => { const u = selectedConversation.otherUser || {}; navigate(buildProfileUrl(u)); }} className="text-left w-full text-inherit hover:underline">
                     {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                   </button>
                 </h3>
