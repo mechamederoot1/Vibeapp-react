@@ -72,6 +72,7 @@ const LegacyPostRedirect = () => {
 const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
   const [permissionsGranted, setPermissionsGranted] = useState(false)
+  const { user } = useAuth()
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
@@ -312,8 +313,10 @@ const AppContent = () => {
         <Route path="*" element={<Navigate to="/feed" replace />} />
       </Routes>
 
-      {/* Permissions Handler */}
-      <PermissionsHandler onPermissionsGranted={handlePermissionsGranted} />
+      {/* Permissions Handler - only after authentication */}
+      {user && (
+        <PermissionsHandler onPermissionsGranted={handlePermissionsGranted} />
+      )}
     </div>
   )
 }
