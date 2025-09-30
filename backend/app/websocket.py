@@ -195,7 +195,7 @@ async def handle_websocket_message(websocket: WebSocket, user_id: int, message: 
     if message_type == "pong":
         # Resposta ao ping - não fazer nada
         pass
-    elif message_type == "typing":
+    elif message_type in ("typing", "user_typing"):
         # Notificar usuário que está recebendo que alguém está digitando
         data = message.get("data", {})
         receiver_id = data.get("receiverId")
