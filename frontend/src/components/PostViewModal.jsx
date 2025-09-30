@@ -299,11 +299,7 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
-                  const u = currentPost.author || {}
-                  const publicId = u.publicProfileId || u.public_profile_id
-                  if (publicId) navigate(`/profile/id/${publicId}`)
-                  else if (u.id) navigate(`/profile/id/${u.id}`)
-                  else if (u.username) navigate(`/profile/id/${u.username}`)
+                  navigate(buildProfileUrl(currentPost.author))
                 }}
                 className="flex-shrink-0"
                 aria-label="Ver perfil"
