@@ -55,6 +55,11 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
         if not _has_col(conn, 'messages', 'media_mime'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
+        # ensure read status columns
+        if not _has_col(conn, 'messages', 'is_read'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'messages', 'read_at'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN read_at DATETIME"))
 
 def _ensure_work_education_tables():
     """Ensure tables and essential columns/indexes for multiple work/education entries (SQLite-safe)."""
