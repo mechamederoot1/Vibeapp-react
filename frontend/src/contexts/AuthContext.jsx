@@ -14,28 +14,16 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [token, setToken] = useState(sessionStorage.getItem('token') || localStorage.getItem('token'))
 
   useEffect(() => {
     let mounted = true
     const initAuth = async () => {
-      if (token) {
-        try {
-          if (api) {
-            api.defaults.headers.Authorization = `Bearer ${token}`
-            const response = await authAPI.me()
-            if (mounted) setUser(response.data)
-          }
-        } catch (error) {
-          // Clear state but avoid full reload; let SPA handle redirect
-          console.error('Token inválido:', error.message)
-          try { localStorage.removeItem('token') } catch(e){}
-          try { delete api.defaults.headers.Authorization } catch(e){}
-          if (mounted) {
-            setUser(null)
-            setToken(null)
-          }
-        }
+      try {
+        // Try to read current user using cookie-based auth
+        const response = await authAPI.me()
+        if (mounted) setUser(response.data)
+      } catch (error) {
+        if (mounted) setUser(null)
       }
       if (mounted) setLoading(false)
     }
@@ -58,18 +46,14 @@ export const AuthProvider = ({ children }) => {
       mounted = false
       window.removeEventListener('unauthorized', onUnauthorized)
     }
-  }, [token])
+  }, [])
 
   const login = async (email, password) => {
     try {
-      const response = await authAPI.login(email, password)
-      const { user: userData, access_token: authToken } = response.data
-
-      setUser(userData)
-      setToken(authToken)
-      sessionStorage.setItem('token', authToken)
-      api.defaults.headers.Authorization = `Bearer ${authToken}`
-
+      // Server will set HttpOnly cookie on success
+      await authAPI.login(email, password)
+      const res = await authAPI.me()
+      setUser(res.data)
       return { success: true }
     } catch (error) {
       return {
@@ -81,16 +65,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData)
-      const { user: newUser, access_token: authToken } = response.data
-
-      setUser(newUser)
-      setToken(authToken)
-      sessionStorage.setItem('token', authToken)
-      if (api) {
-        api.defaults.headers.Authorization = `Bearer ${authToken}`
-      }
-
+      await authAPI.register(userData)
+      const res = await authAPI.me()
+      setUser(res.data)
       return { success: true }
     } catch (error) {
       let errorMessage = 'Erro ao criar conta'
