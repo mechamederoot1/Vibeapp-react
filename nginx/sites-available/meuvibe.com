@@ -61,18 +61,24 @@ server {
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
         
-        # CORS headers (caso o backend não configure)
-        add_header Access-Control-Allow-Origin https://meuvibe.com always;
-        add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
-        add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
-        add_header Access-Control-Expose-Headers 'Content-Length,Content-Range' always;
-        
+        # CORS headers (fallback caso o backend não configure)
+        if ($http_origin ~* ^https?:\/\/(meuvibe\.com|www\.meuvibe\.com)$) {
+            add_header Access-Control-Allow-Origin $http_origin always;
+            add_header Access-Control-Allow-Credentials true always;
+            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+            add_header Access-Control-Expose-Headers 'Content-Length,Content-Range' always;
+        }
+
         # Handle preflight requests
         if ($request_method = 'OPTIONS') {
-            add_header Access-Control-Allow-Origin https://meuvibe.com;
-            add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS';
-            add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
-            add_header Access-Control-Max-Age 1728000;
+            if ($http_origin ~* ^https?:\/\/(meuvibe\.com|www\.meuvibe\.com)$) {
+                add_header Access-Control-Allow-Origin $http_origin;
+                add_header Access-Control-Allow-Credentials true;
+                add_header Access-Control-Allow-Methods 'GET, POST, PUT, DELETE, OPTIONS';
+                add_header Access-Control-Allow-Headers 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
+                add_header Access-Control-Max-Age 1728000;
+            }
             add_header Content-Type 'text/plain; charset=utf-8';
             add_header Content-Length 0;
             return 204;
