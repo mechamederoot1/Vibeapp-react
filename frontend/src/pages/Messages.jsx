@@ -667,38 +667,44 @@ const Messages = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-semibold text-gray-900 truncate">
-                      {conversation.otherUser.firstName} {conversation.otherUser.lastName}
-                    </h3>
-                    {conversation.lastMessage && (
-                      <span className="text-xs text-gray-500">
-                        {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    )}
-                  </div>
-
-                  {typingUsers[conversation.otherUser.id] ? (
-                    <p className="text-sm mt-1"><TypingDots /></p>
-                  ) : conversation.lastMessage ? (
-                    <p className="text-sm text-gray-600 truncate mt-1">
-                      {conversation.lastMessage.messageType === 'audio'
-                        ? '🎵 Mensagem de áudio'
-                        : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
-                      }
-                    </p>
-                  ) : null}
-
-                  {conversation.unreadCount > 0 && (
-                    <div className="mt-1">
-                      <span className="bg-vibe-blue text-white text-xs rounded-full px-2 py-1">
-                        {conversation.unreadCount}
-                      </span>
+                  <div className="flex items-center justify-between">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-gray-900 truncate">
+                        {conversation.otherUser.firstName} {conversation.otherUser.lastName}
+                      </h3>
+                      {typingUsers[conversation.otherUser.id] ? (
+                        <p className="text-sm mt-1"><TypingDots /></p>
+                      ) : conversation.lastMessage ? (
+                        <p className="text-sm text-gray-600 truncate mt-1">
+                          {conversation.lastMessage.messageType === 'audio'
+                            ? '🎵 Mensagem de áudio'
+                            : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
+                          }
+                        </p>
+                      ) : null}
                     </div>
-                  )}
+
+                    <div className="flex flex-col items-end ml-3">
+                      {conversation.lastMessage && (
+                        <span className="text-xs text-gray-500">
+                          {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      )}
+
+                      <div className="mt-2">
+                        {conversation.unreadCount > 0 ? (
+                          <span className="bg-vibe-blue text-white text-xs rounded-full px-2 py-1 inline-flex items-center justify-center">
+                            {conversation.unreadCount}
+                          </span>
+                        ) : (
+                          <span className="w-6 h-6" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
