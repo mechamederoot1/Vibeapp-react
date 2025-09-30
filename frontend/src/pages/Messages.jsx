@@ -371,15 +371,34 @@ const Messages = () => {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+
+      // Select supported mimeType for MediaRecorder
+      const candidates = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
+      let mimeType = '';
+      if (window.MediaRecorder && typeof MediaRecorder.isTypeSupported === 'function') {
+        for (const c of candidates) {
+          if (MediaRecorder.isTypeSupported(c)) {
+            mimeType = c;
+            break;
+          }
+        }
+      }
+
+      try {
+        mediaRecorderRef.current = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      } catch (err) {
+        // Fallback without options
+        mediaRecorderRef.current = new MediaRecorder(stream);
+      }
+
       audioChunksRef.current = [];
 
       mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+        if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current?.mimeType || 'audio/ogg' });
         await sendAudioMessage(audioBlob);
 
         // Parar stream
@@ -390,6 +409,7 @@ const Messages = () => {
       setIsRecording(true);
     } catch (error) {
       console.error('Erro ao iniciar gravação:', error);
+      alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.');
     }
   };
 
