@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, reactionsAPI } from '../services/api'
 import ReactionPicker from './ReactionPicker'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 
 const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth()
