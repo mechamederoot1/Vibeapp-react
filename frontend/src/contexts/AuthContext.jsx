@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
 
       setUser(userData)
       setToken(authToken)
-      localStorage.setItem('token', authToken)
+      sessionStorage.setItem('token', authToken)
       api.defaults.headers.Authorization = `Bearer ${authToken}`
 
       return { success: true }
