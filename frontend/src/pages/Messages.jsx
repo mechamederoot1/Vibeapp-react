@@ -601,10 +601,16 @@ const Messages = () => {
     };
   }, []);
 
-  const filteredConversations = conversations.filter(conv =>
+  const [conversationsFilter, setConversationsFilter] = useState('all'); // 'all' | 'unread'
+
+  let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     conv.otherUser.lastName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (conversationsFilter === 'unread') {
+    filteredConversations = filteredConversations.filter(c => (c.unreadCount || 0) > 0);
+  }
 
   if (loading) {
     return (
