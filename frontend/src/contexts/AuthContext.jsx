@@ -102,7 +102,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authAPI.logout()
+    } catch (e) {
+      // ignore errors, ensure local cleanup
+    }
+
     setUser(null)
     setToken(null)
     localStorage.removeItem('token')
