@@ -57,6 +57,7 @@ class ConnectionManager:
         
     async def send_message_notification(self, message_data: dict, user_id: int):
         """Enviar notificação de nova mensagem"""
+        print(f"WS NEW_MESSAGE -> to:{user_id} messageId:{message_data.get('id')} senderId:{message_data.get('senderId')}")
         message = {
             "type": "new_message",
             "data": message_data
