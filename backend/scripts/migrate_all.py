@@ -55,7 +55,11 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
         if not _has_col(conn, 'messages', 'media_mime'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
-        # ensure read status columns
+        # ensure delivery/read status columns
+        if not _has_col(conn, 'messages', 'is_delivered'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN is_delivered BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'messages', 'delivered_at'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN delivered_at DATETIME"))
         if not _has_col(conn, 'messages', 'is_read'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
         if not _has_col(conn, 'messages', 'read_at'):
@@ -309,6 +313,10 @@ def _add_indexes():
         "CREATE INDEX IF NOT EXISTS ix_shares_post_id_created_at ON shares (post_id, created_at)",
         # Post likes
         "CREATE INDEX IF NOT EXISTS ix_post_likes_user_id_post_id ON post_likes (user_id, post_id)",
+        # Messages indexes for performance
+        "CREATE INDEX IF NOT EXISTS ix_messages_receiver_is_delivered ON messages (receiver_id, is_delivered)",
+        "CREATE INDEX IF NOT EXISTS ix_messages_receiver_is_read ON messages (receiver_id, is_read)",
+        "CREATE INDEX IF NOT EXISTS ix_messages_sender_receiver_created ON messages (sender_id, receiver_id, created_at)",
     ]
     with engine.begin() as conn:
         for sql in statements:

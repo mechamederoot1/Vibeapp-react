@@ -6,6 +6,7 @@ import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
 import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
+import { getPublicProfileId } from '../utils/profileId'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
@@ -26,11 +27,12 @@ const Header = ({ onOpenPostModal }) => {
 
   const handleEditPhoto = () => {
     try {
-      const { getPublicProfileId } = require('../utils/profileId')
       const pubId = getPublicProfileId(user)
       navigate(`/profile/id/${pubId}`)
     } catch (e) {
-      navigate('/profile')
+      const fallback = user?.publicProfileId || user?.public_profile_id || user?.id
+      if (fallback) navigate(`/profile/id/${fallback}`)
+      else navigate('/profile')
     }
     setShowAvatarDropdown(false)
   }
@@ -128,7 +130,7 @@ const Header = ({ onOpenPostModal }) => {
     if (publicId) {
       navigate(`/profile/id/${publicId}`)
     } else if (id) {
-      navigate(`/profile/${id}`)
+      navigate(`/profile/id/${id}`)
     }
     setShowSearch(false)
     setSearchQuery('')

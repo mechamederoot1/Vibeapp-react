@@ -5,6 +5,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 
+const deriveStatus = (m) => {
+  if (m.status) return m.status
+  if (m.isRead || m.readAt) return 'read'
+  if (m.isDelivered || m.deliveredAt) return 'delivered'
+  return 'sent'
+}
+
 const statusIcon = (status, isOwn) => {
   if (!isOwn) return null
   switch (status) {
@@ -244,34 +251,40 @@ const Messages = () => {
     const messageText = newMessage.trim();
     setNewMessage('');
 
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: messageText,
-      messageType: 'text',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
-    }
-
+    let appended = null
     try {
-      await api.post('/messages/send', {
+      const res = await api.post('/messages/send', {
         receiverId: selectedConversation.otherUser.id,
         content: messageText,
         messageType: 'text'
       });
+      const msg = res?.data?.data
+      if (msg) {
+        appended = { ...msg }
+        setMessages(prev => [...prev, appended]);
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, appended])
+        setTimeout(scrollToBottom, 80)
+      }
     } catch (error) {
-      // Sem backend: segue local
-      console.warn('Sem backend para enviar texto, usando modo demo')
+      console.warn('Falha no envio via backend, usando fallback demo')
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: messageText,
+        messageType: 'text',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      appended = tempMsg
+      setMessages(prev => [...prev, tempMsg]);
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+      setTimeout(scrollToBottom, 80)
     }
-
-    setMessages(prev => [...prev, tempMsg]);
-    setTimeout(scrollToBottom, 100);
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
 
     // Parar de indicar que está digitando
     stopTyping();
@@ -293,7 +306,6 @@ const Messages = () => {
       if (msg) {
         setMessages(prev => [...prev, msg])
         updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
-        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
         setTimeout(scrollToBottom, 100)
       } else {
         // fallback to previous behavior
@@ -343,7 +355,6 @@ const Messages = () => {
       if (msg) {
         setMessages(prev => [...prev, msg])
         updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
-        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
         setTimeout(scrollToBottom, 100)
       } else {
         const url = URL.createObjectURL(file)
@@ -450,7 +461,6 @@ const Messages = () => {
         const msg = res.data.data;
         setMessages(prev => [...prev, msg]);
         updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
-        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
         setTimeout(scrollToBottom, 100)
         return
       }
@@ -551,6 +561,22 @@ const Messages = () => {
       loadConversations();
     }
 
+    if (lastMessage.type === 'message_delivered') {
+      const { messageId } = lastMessage.data || {}
+      if (messageId) {
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt: lastMessage.data.deliveredAt, status: 'delivered' } : m))
+      }
+    }
+
+    if (lastMessage.type === 'messages_read') {
+      const ids = lastMessage.data?.messageIds || []
+      if (ids.length) {
+        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt: lastMessage.data.readAt, status: 'read' } : m))
+      }
+      // Conversas podem mudar ordenação
+      loadConversations();
+    }
+
     if (lastMessage.type === 'user_typing') {
       const { senderId, isTyping } = lastMessage.data;
       setTypingUsers(prev => ({
@@ -593,36 +619,40 @@ const Messages = () => {
         const username = params.get('user');
         const userIdParam = params.get('userId') || params.get('id');
 
-        if (username) {
-          try {
-            const res = await api.get(`/users/by-username/${username}`);
-            const other = res.data;
-            if (other && other.id) {
-              const existing = (conversations || []).find(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username));
-              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
-              setSelectedConversation(conv);
-              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              await loadMessages(other.id, 1);
-              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
-            }
-          } catch (e) {
-            console.warn('Usuário não encontrado por username:', username, e);
-          }
-        } else if (userIdParam) {
+        if (userIdParam) {
           const uid = Number(userIdParam);
           if (!Number.isNaN(uid)) {
             try {
               const res = await api.get(`/users/${uid}`);
               const other = res.data;
-              const existing = (conversations || []).find(c => c.otherUser && c.otherUser.id === other.id);
-              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
-              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && c.otherUser.id === other.id)
+                return exists ? prev : [conv, ...(prev || [])]
+              })
               await loadMessages(other.id, 1);
               try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             } catch (e) {
               console.warn('Usuário não encontrado por id:', uid, e);
             }
+          }
+        } else if (username) {
+          try {
+            const res = await api.get(`/users/by-username/${username}`);
+            const other = res.data;
+            if (other && other.id) {
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username))
+                return exists ? prev : [conv, ...(prev || [])]
+              })
+              await loadMessages(other.id, 1);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+            }
+          } catch (e) {
+            console.warn('Usuário não encontrado por username:', username, e);
           }
         }
       } catch (err) {
@@ -739,11 +769,16 @@ const Messages = () => {
 
                     <div className="flex flex-col items-end ml-3 flex-shrink-0">
                       {conversation.lastMessage && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 flex items-center">
                           {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('pt-BR', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
+                          {conversation.lastMessage.senderId === (user?.id) && (
+                            <span className="ml-1 inline-block">
+                              {statusIcon(deriveStatus(conversation.lastMessage), true)}
+                            </span>
+                          )}
                         </span>
                       )}
 
@@ -801,8 +836,7 @@ const Messages = () => {
                     const u = selectedConversation.otherUser || {};
                     const pub = u.publicProfileId || u.public_profile_id;
                     if (pub) navigate(`/profile/id/${pub}`);
-                    else if (u.id) navigate(`/profile/${u.id}`);
-                    else if (u.username) navigate(`/profile/${u.username}`);
+                    else if (u.id) navigate(`/profile/id/${u.id}`);
                   }} className="text-left w-full text-inherit hover:underline">
                     {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                   </button>
@@ -867,7 +901,7 @@ const Messages = () => {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}
-                        {statusIcon(message.status, message.senderId === user.id)}
+                        {statusIcon(deriveStatus(message), message.senderId === user.id)}
                       </div>
                     </div>
                   </div>

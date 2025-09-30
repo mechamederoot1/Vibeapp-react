@@ -14,28 +14,30 @@ class MessageType(str, Enum):
 
 class Message(Base):
     __tablename__ = "messages"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
+
     # Conteúdo da mensagem
     content = Column(Text, nullable=True)
     message_type = Column(SQLEnum(MessageType), default=MessageType.TEXT)
     media_url = Column(String(500), nullable=True)  # Para áudio, imagem, vídeo
     media_blob = Column(LargeBinary, nullable=True)
     media_mime = Column(String(100), nullable=True)
-    
+
     # Status da mensagem
+    is_delivered = Column(Boolean, default=False)
     is_read = Column(Boolean, default=False)
     is_deleted_by_sender = Column(Boolean, default=False)
     is_deleted_by_receiver = Column(Boolean, default=False)
-    
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    delivered_at = Column(DateTime(timezone=True), nullable=True)
     read_at = Column(DateTime(timezone=True), nullable=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relacionamentos
     sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_messages")
     receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_messages")
@@ -48,10 +50,12 @@ class Message(Base):
             "content": self.content,
             "messageType": self.message_type.value,
             "mediaUrl": self.media_url,
+            "isDelivered": self.is_delivered,
             "isRead": self.is_read,
             "isDeletedBySender": self.is_deleted_by_sender,
             "isDeletedByReceiver": self.is_deleted_by_receiver,
             "createdAt": self.created_at.isoformat() if self.created_at else None,
+            "deliveredAt": self.delivered_at.isoformat() if self.delivered_at else None,
             "readAt": self.read_at.isoformat() if self.read_at else None,
             "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
             "sender": self.sender.to_public_dict() if self.sender else None,
