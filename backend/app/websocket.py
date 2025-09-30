@@ -63,7 +63,15 @@ class ConnectionManager:
             "data": message_data
         }
         await self.send_personal_message(message, user_id)
-        
+
+    async def send_message_status_update(self, status_data: dict, user_id: int):
+        """Enviar atualização de status de mensagem (entregue, lida)."""
+        message = {
+            "type": "message_status_update",
+            "data": status_data
+        }
+        await self.send_personal_message(message, user_id)
+
     async def send_reaction_notification(self, reaction_data: dict, user_id: int):
         """Enviar notificação de nova reação"""
         message = {
