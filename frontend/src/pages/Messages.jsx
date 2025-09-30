@@ -528,6 +528,15 @@ const Messages = () => {
 
   // Carregar conversas ao montar
   const location = useLocation();
+  const { user: authUser, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  // If not authenticated, redirect to login immediately and prevent loading conversa directly from URL
+  useEffect(() => {
+    if (!authLoading && !authUser) {
+      try { navigate('/login'); } catch(e) {}
+    }
+  }, [authLoading, authUser, navigate]);
 
   useEffect(() => {
     const init = async () => {
