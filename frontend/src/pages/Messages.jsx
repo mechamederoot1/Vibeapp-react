@@ -689,7 +689,15 @@ const Messages = () => {
 
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">
-                  {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
+                  <button onClick={() => {
+                    const u = selectedConversation.otherUser || {};
+                    const pub = u.publicProfileId || u.public_profile_id;
+                    if (pub) navigate(`/profile/id/${pub}`);
+                    else if (u.id) navigate(`/profile/${u.id}`);
+                    else if (u.username) navigate(`/profile/${u.username}`);
+                  }} className="text-left w-full text-inherit hover:underline">
+                    {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
+                  </button>
                 </h3>
                 {typingUsers[selectedConversation.otherUser.id] && (
                   <p className="text-sm"><TypingDots /></p>
