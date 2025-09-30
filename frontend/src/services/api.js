@@ -70,16 +70,17 @@ const addInterceptors = (apiInstance) => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        // Só redirecionar se não estiver em uma página pública
-        const currentPath = window.location.pathname
-        const isPublicPage = currentPath === '/login' ||
-                            currentPath === '/register'
+        // Clear local token and broadcast an unauthorized event so SPA can handle gracefully
+        try {
+          localStorage.removeItem('token')
+          if (apiInstance && apiInstance.defaults && apiInstance.defaults.headers) {
+            delete apiInstance.defaults.headers.Authorization
+          }
+        } catch (e) {}
 
-        localStorage.removeItem('token')
-
-        if (!isPublicPage) {
-          window.location.href = '/login'
-        }
+        try {
+          window.dispatchEvent(new Event('unauthorized'))
+        } catch (e) {}
       }
 
       return Promise.reject(error)
