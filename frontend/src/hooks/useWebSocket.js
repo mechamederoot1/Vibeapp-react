@@ -94,7 +94,7 @@ export const useWebSocket = () => {
     } catch (error) {
       console.error('❌ Erro ao criar WebSocket:', error);
     }
-  }, [token]);
+  }, []);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
