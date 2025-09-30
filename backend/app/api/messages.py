@@ -136,16 +136,23 @@ async def send_message(
 @router.get("/conversations", response_model=List[dict])
 async def get_conversations(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    limit: int = 50,
+    page: int = 1
 ):
-    """Obter todas as conversas do usuário"""
+    """Obter conversas do usuário com paginação"""
+    if page and page > 0:
+        offset = (page - 1) * limit
+    else:
+        offset = 0
+
     conversations = db.query(Conversation).filter(
         or_(
             Conversation.user1_id == current_user.id,
             Conversation.user2_id == current_user.id
         )
-    ).order_by(desc(Conversation.updated_at)).all()
-    
+    ).order_by(desc(Conversation.updated_at)).offset(offset).limit(limit).all()
+
     result = []
     for conv in conversations:
         # Contar mensagens não lidas
@@ -159,11 +166,11 @@ async def get_conversations(
                 Message.is_read == False
             )
         ).count()
-        
+
         conv_dict = conv.to_dict(current_user.id)
         conv_dict["unreadCount"] = unread_count
         result.append(conv_dict)
-    
+
     return result
 
 @router.get("/{user_id}", response_model=List[dict])
