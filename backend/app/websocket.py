@@ -1,9 +1,11 @@
-from fastapi import WebSocket, WebSocketDisconnect, Depends
+from fastapi import WebSocket, WebSocketDisconnect
 from typing import Dict, List
 import json
 import asyncio
+from datetime import datetime
 from .api.auth import get_user_from_websocket
-from .models import User
+from .database.database import SessionLocal
+from .models import User, Message
 
 class ConnectionManager:
     def __init__(self):
