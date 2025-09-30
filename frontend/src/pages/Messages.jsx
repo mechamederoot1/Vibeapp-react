@@ -306,7 +306,6 @@ const Messages = () => {
       if (msg) {
         setMessages(prev => [...prev, msg])
         updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
-        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
         setTimeout(scrollToBottom, 100)
       } else {
         // fallback to previous behavior
