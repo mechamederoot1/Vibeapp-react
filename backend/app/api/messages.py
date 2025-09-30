@@ -211,14 +211,23 @@ async def get_messages(
     ).order_by(desc(Message.created_at)).offset(offset).limit(limit).all()
 
     changed = False
-    delivery_update_ids = []
-    now = datetime.utcnow()
+    status_updates = []
     for msg in messages:
         if msg.receiver_id == current_user.id and not msg.is_delivered:
+            delivered_time = datetime.utcnow()
             msg.is_delivered = True
-            msg.delivered_at = now
+            msg.delivered_at = delivered_time
             changed = True
-            delivery_update_ids.append(msg.id)
+            status_updates.append((
+                msg.sender_id,
+                {
+                    "messageId": msg.id,
+                    "conversationId": msg.conversation_id,
+                    "status": "delivered",
+                    "deliveredAt": delivered_time.isoformat(),
+                    "receiverId": current_user.id
+                }
+            ))
 
     unread_messages = db.query(Message).filter(
         and_(
