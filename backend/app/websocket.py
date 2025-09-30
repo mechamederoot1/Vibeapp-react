@@ -2,8 +2,10 @@ from fastapi import WebSocket, WebSocketDisconnect, Depends
 from typing import Dict, List
 import json
 import asyncio
+from datetime import datetime
 from .api.auth import get_user_from_websocket
-from .models import User
+from .models import User, Message
+from .database.database import SessionLocal
 
 class ConnectionManager:
     def __init__(self):
@@ -61,7 +63,19 @@ class ConnectionManager:
             "data": message_data
         }
         await self.send_personal_message(message, user_id)
-        
+
+    async def send_delivery_ack(self, message_id: int, receiver_id: int, delivered_at: str, sender_id: int):
+        """Enviar confirmação de entrega para o remetente"""
+        payload = {
+            "type": "message_delivered",
+            "data": {
+                "messageId": message_id,
+                "receiverId": receiver_id,
+                "deliveredAt": delivered_at,
+                "senderId": sender_id
+            }
+        }
+        await self.send_personal_message(payload, sender_id)        
     async def send_reaction_notification(self, reaction_data: dict, user_id: int):
         """Enviar notificação de nova reação"""
         message = {
@@ -125,7 +139,26 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 "message": "Connected successfully"
             }
         }))
-        
+
+        # Flush de mensagens pendentes (não entregues)
+        db = SessionLocal()
+        try:
+            pending = db.query(Message).filter(Message.receiver_id == user_id, Message.is_delivered == False).order_by(Message.created_at.asc()).all()
+            for msg in pending:
+                data = msg.to_dict()
+                await manager.send_message_notification(data, user_id)
+                # Marcar como entregue
+                msg.is_delivered = True
+                msg.delivered_at = datetime.utcnow()
+                db.commit()
+                # Enviar ACK para remetente
+                try:
+                    await manager.send_delivery_ack(msg.id, msg.receiver_id, msg.delivered_at.isoformat(), msg.sender_id)
+                except Exception:
+                    pass
+        finally:
+            db.close()
+
         # Loop principal para manter conexão viva
         while True:
             try:
