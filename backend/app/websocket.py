@@ -3,7 +3,8 @@ from typing import Dict, List
 import json
 import asyncio
 from .api.auth import get_user_from_websocket
-from .models import User
+from .models import User, Notification
+from .database.database import SessionLocal
 
 class ConnectionManager:
     def __init__(self):
@@ -130,31 +131,28 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
 
         # Ao conectar, enviar quaisquer notificações pendentes (notificações persistentes não enviadas)
         try:
-            from .database.database import get_db
-            db = get_db()
-            with db() as session:
-                pending = session.query(\
-                    __import__('app').app.models.notification.Notification \
-                ).filter_by(user_id=user_id, is_sent=False).all()
-                for n in pending:
-                    await manager.send_personal_message({
-                        "type": "notification",
-                        "data": {
-                            "id": n.id,
-                            "type": n.type,
-                            "title": n.title,
-                            "message": n.message,
-                            "relatedUserId": n.related_user_id,
-                            "actionUrl": n.action_url,
-                            "createdAt": n.created_at.isoformat() if n.created_at else None
-                        }
-                    }, user_id)
-                    # marcar enviado
-                    try:
-                        n.is_sent = True
-                        session.commit()
-                    except Exception:
-                        session.rollback()
+            session = SessionLocal()
+            pending = session.query(Notification).filter_by(user_id=user_id, is_sent=False).all()
+            for n in pending:
+                await manager.send_personal_message({
+                    "type": "notification",
+                    "data": {
+                        "id": n.id,
+                        "type": n.type,
+                        "title": n.title,
+                        "message": n.message,
+                        "relatedUserId": n.related_user_id,
+                        "actionUrl": n.action_url,
+                        "createdAt": n.created_at.isoformat() if n.created_at else None
+                    }
+                }, user_id)
+                # marcar enviado
+                try:
+                    n.is_sent = True
+                    session.commit()
+                except Exception:
+                    session.rollback()
+            session.close()
         except Exception as e:
             print('Erro ao enviar notificações pendentes:', e)
 
