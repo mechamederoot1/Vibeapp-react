@@ -7,8 +7,7 @@ const Layout = ({ children, onOpenPostModal }) => {
   const location = useLocation();
   const isMessagesRoute = location.pathname && location.pathname.startsWith('/messages');
   const isConversationOpened = isMessagesRoute && (
-    (location.search && (location.search.includes('user=') || location.search.includes('userId='))) ||
-    (window && window.history && window.history.state && window.history.state.openedConversation)
+    (location.search && (location.search.includes('user=') || location.search.includes('userId=')))
   );
 
   return (
