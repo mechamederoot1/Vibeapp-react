@@ -97,7 +97,7 @@ const Friends = () => {
   }
 
   const handleProfileClick = (username) => {
-    navigate(`/profile/${username}`)
+    navigate(`/profile/id/${username}`)
   }
 
   const tabs = [

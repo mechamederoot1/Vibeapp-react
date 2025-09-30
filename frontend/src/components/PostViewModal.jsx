@@ -301,8 +301,8 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                   const u = currentPost.author || {}
                   const publicId = u.publicProfileId || u.public_profile_id
                   if (publicId) navigate(`/profile/id/${publicId}`)
-                  else if (u.id) navigate(`/profile/${u.id}`)
-                  else if (u.username) navigate(`/profile/${u.username}`)
+                  else if (u.id) navigate(`/profile/id/${u.id}`)
+                  else if (u.username) navigate(`/profile/id/${u.username}`)
                 }}
                 className="flex-shrink-0"
                 aria-label="Ver perfil"
@@ -329,8 +329,8 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                       const u = currentPost.author || {}
                       const publicId = u.publicProfileId || u.public_profile_id
                       if (publicId) navigate(`/profile/id/${publicId}`)
-                      else if (u.id) navigate(`/profile/${u.id}`)
-                      else if (u.username) navigate(`/profile/${u.username}`)
+                      else if (u.id) navigate(`/profile/id/${u.id}`)
+                      else if (u.username) navigate(`/profile/id/${u.username}`)
                     }}
                     className="font-semibold text-gray-900 hover:text-vibe-blue"
                   >
@@ -378,8 +378,8 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                           const u = comment.author || {}
                           const publicId = u.publicProfileId || u.public_profile_id
                           if (publicId) navigate(`/profile/id/${publicId}`)
-                          else if (u.id) navigate(`/profile/${u.id}`)
-                          else if (u.username) navigate(`/profile/${u.username}`)
+                          else if (u.id) navigate(`/profile/id/${u.id}`)
+                          else if (u.username) navigate(`/profile/id/${u.username}`)
                         }}
                         className="flex-shrink-0"
                         aria-label="Ver perfil"
@@ -406,8 +406,8 @@ const PostViewModal = ({ isOpen, onClose, post, onPostUpdate, onPostDelete }) =>
                                 const u = comment.author || {}
                                 const publicId = u.publicProfileId || u.public_profile_id
                                 if (publicId) navigate(`/profile/id/${publicId}`)
-                                else if (u.id) navigate(`/profile/${u.id}`)
-                                else if (u.username) navigate(`/profile/${u.username}`)
+                                else if (u.id) navigate(`/profile/id/${u.id}`)
+                                else if (u.username) navigate(`/profile/id/${u.username}`)
                               }}
                               className="font-medium text-sm hover:text-vibe-blue"
                             >

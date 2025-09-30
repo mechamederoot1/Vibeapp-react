@@ -82,7 +82,7 @@ const Visits = () => {
   }
 
   const handleProfileClick = (username) => {
-    navigate(`/profile/${username}`)
+    navigate(`/profile/id/${username}`)
   }
 
   return (

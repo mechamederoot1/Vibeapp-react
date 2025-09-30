@@ -236,8 +236,8 @@ const NotificationsList = ({ onClose }) => {
                       const u = notification.relatedUser || {};
                       const pub = u.publicProfileId || u.public_profile_id;
                       if (pub) navigate(`/profile/id/${pub}`);
-                      else if (u.id) navigate(`/profile/${u.id}`);
-                      else if (u.username) navigate(`/profile/${u.username}`);
+                      else if (u.id) navigate(`/profile/id/${u.id}`);
+                      else if (u.username) navigate(`/profile/id/${u.username}`);
                     }
                   } }
                 >

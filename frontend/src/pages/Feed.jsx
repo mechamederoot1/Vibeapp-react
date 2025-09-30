@@ -118,8 +118,8 @@ const Post = ({ post, onLike, onShare, onStoryShare, onReaction, onAvatarClick, 
                   const u = post.author || {}
                   const publicId = u.publicProfileId || u.public_profile_id
                   if (publicId) navigate(`/profile/id/${publicId}`)
-                  else if (u.id) navigate(`/profile/${u.id}`)
-                  else if (u.username) navigate(`/profile/${u.username}`)
+                  else if (u.id) navigate(`/profile/id/${u.id}`)
+                  else if (u.username) navigate(`/profile/id/${u.username}`)
                 }}
                 className="font-semibold text-sm truncate hover:text-vibe-blue"
               >
@@ -418,8 +418,8 @@ const Story = ({ storyGroup, hasUnviewed = false, onClick }) => {
   const goToProfile = () => {
     const publicId = user?.publicProfileId || user?.public_profile_id
     if (publicId) navigate(`/profile/id/${publicId}`)
-    else if (user?.id) navigate(`/profile/${user.id}`)
-    else if (user?.username) navigate(`/profile/${user.username}`)
+    else if (user?.id) navigate(`/profile/id/${user.id}`)
+    else if (user?.username) navigate(`/profile/id/${user.username}`)
   }
 
   return (
