@@ -3,6 +3,7 @@ import { Bell, Check, X, Trash2, Heart, MessageCircle, Share2, UserPlus } from '
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 import { useNavigate } from 'react-router-dom';
+import { buildProfileUrl } from '../utils/profileId'
 
 const NotificationsList = ({ onClose }) => {
   const [notifications, setNotifications] = useState([]);
