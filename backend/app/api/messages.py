@@ -75,6 +75,8 @@ async def send_message(
     db.commit()
     db.refresh(new_message)
 
+    print(f"Message created id:{new_message.id} sender:{current_user.id} receiver:{message_data.receiverId} type:{message_data.messageType}")
+
     # Verificar se já existe conversa
     conversation = db.query(Conversation).filter(
         or_(
