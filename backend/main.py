@@ -93,7 +93,9 @@ def get_cors_origins():
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4001",
         "http://127.0.0.1:5173",
-        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
+        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
+        "https://meuvibe.com",
+        "https://www.meuvibe.com"
     ]
 
     # Add common local network ranges for mobile development
