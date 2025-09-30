@@ -309,6 +309,11 @@ def _add_indexes():
         "CREATE INDEX IF NOT EXISTS ix_shares_post_id_created_at ON shares (post_id, created_at)",
         # Post likes
         "CREATE INDEX IF NOT EXISTS ix_post_likes_user_id_post_id ON post_likes (user_id, post_id)",
+        # Messages
+        "CREATE INDEX IF NOT EXISTS ix_messages_receiver_is_read ON messages (receiver_id, is_read)",
+        "CREATE INDEX IF NOT EXISTS ix_messages_sender_receiver_created ON messages (sender_id, receiver_id, created_at)",
+        # Conversations
+        "CREATE INDEX IF NOT EXISTS ix_conversations_updated_at ON conversations (updated_at)"
     ]
     with engine.begin() as conn:
         for sql in statements:
