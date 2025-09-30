@@ -633,7 +633,7 @@ const Messages = () => {
           </div>
         </div>
 
-        <div className="overflow-y-auto h-full">
+        <div ref={convListRef} onScroll={handleConversationsScroll} className="overflow-y-auto h-full">
           {filteredConversations.map((conversation) => (
             <div
               key={conversation.id}
