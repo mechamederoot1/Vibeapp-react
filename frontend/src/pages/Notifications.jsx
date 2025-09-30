@@ -217,10 +217,7 @@ const Notifications = () => {
 
               if (notification.relatedUser) {
                 const u = notification.relatedUser || {};
-                const publicId2 = u.publicProfileId || u.public_profile_id;
-                if (publicId2) navigate(`/profile/id/${publicId2}`);
-                else if (u.id) navigate(`/profile/id/${u.id}`);
-                else if (u.username) navigate(`/profile/id/${u.username}`);
+                navigate(buildProfileUrl(u));
               }
             } }
           >
@@ -290,7 +287,7 @@ const Notifications = () => {
           <p className="text-gray-500 text-center">
             {activeTab === 'new' 
               ? 'Quando alguém interagir com você, aparecerá aqui.'
-              : 'Você ainda não tem notificações.'
+              : 'Você ainda não tem notificaç��es.'
             }
           </p>
         </div>
