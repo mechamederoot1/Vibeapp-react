@@ -34,10 +34,11 @@ class ConnectionManager:
         
     async def send_personal_message(self, message: dict, user_id: int):
         """Enviar mensagem para um usuário específico"""
+        print(f"WS SEND -> user:{user_id} type:{message.get('type')} data_keys:{list(message.get('data', {}).keys())}")
         if user_id in self.active_connections:
             # Criar uma cópia da lista para evitar problemas de modificação durante iteração
             connections = self.active_connections[user_id].copy()
-            
+
             for websocket in connections:
                 try:
                     await websocket.send_text(json.dumps(message))
