@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export const useWebSocket = () => {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const wsRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastMessage, setLastMessage] = useState(null);
@@ -12,7 +12,7 @@ export const useWebSocket = () => {
   const pingIntervalRef = useRef(null);
 
   const connect = useCallback(() => {
-    if (!token || wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
       return;
     }
 
@@ -23,15 +23,15 @@ export const useWebSocket = () => {
         const isHttps = window.location.protocol === 'https:'
         const scheme = isHttps ? 'wss' : 'ws'
         if (import.meta.env.VITE_WS_URL) {
-          return `${import.meta.env.VITE_WS_URL}?token=${token}`
+          return `${import.meta.env.VITE_WS_URL}`
         }
         if (isDev && (hostname === 'localhost' || hostname === '127.0.0.1')) {
-          return `${scheme}://localhost:3010/ws?token=${token}`
+          return `${scheme}://localhost:3010/ws`
         }
         if (hostname.startsWith('192.168.') || hostname.startsWith('10.0.')) {
-          return `${scheme}://${hostname}:3010/ws?token=${token}`
+          return `${scheme}://${hostname}:3010/ws`
         }
-        return `${scheme}://${hostname}/ws?token=${token}`
+        return `${scheme}://${hostname}/ws`
       }
       const wsUrl = getWsUrl();
       console.log('🔌 Conectando WebSocket...', wsUrl);
