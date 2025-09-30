@@ -22,15 +22,47 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
     }
   }, [])
 
+  const isSupportedOrigin = () => {
+    try {
+      const host = window.location.hostname
+      if (host === 'localhost' || host === '127.0.0.1') return true
+      if (window.isSecureContext) return true
+      return false
+    } catch (e) {
+      return false
+    }
+  }
+
   const requestPermission = async (type) => {
     setLoading(true)
-    
+
     try {
       let granted = false
-      
+
+      // If origin is insecure and not localhost, inform the user and don't try getUserMedia
+      if (!isSupportedOrigin()) {
+        console.warn('Insecure origin for getUserMedia:', window.location.href)
+        setPermissions(prev => ({ ...prev, [type]: false }))
+        alert('Seu navegador está usando uma origem insegura (HTTP em IP). Para acessar microfone/câmera use localhost ou HTTPS. Para testar localmente, abra o app em http://localhost:3000 ou use ngrok/https.')
+        return false
+      }
+
       switch (type) {
         case 'camera':
           try {
+            // Prefer Permissions API when available to give better UX
+            if (navigator.permissions && navigator.permissions.query) {
+              try {
+                const status = await navigator.permissions.query({ name: 'camera' })
+                if (status.state === 'denied') {
+                  granted = false
+                  break
+                }
+              } catch (err) {
+                // Some browsers don't support camera permission descriptor; fallback
+              }
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ video: true })
             stream.getTracks().forEach(track => track.stop()) // Stop immediately after getting permission
             granted = true
@@ -39,9 +71,21 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
             granted = false
           }
           break
-          
+
         case 'microphone':
           try {
+            if (navigator.permissions && navigator.permissions.query) {
+              try {
+                const status = await navigator.permissions.query({ name: 'microphone' })
+                if (status.state === 'denied') {
+                  granted = false
+                  break
+                }
+              } catch (err) {
+                // Fallback
+              }
+            }
+
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
             stream.getTracks().forEach(track => track.stop()) // Stop immediately after getting permission
             granted = true
