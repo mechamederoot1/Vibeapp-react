@@ -619,36 +619,40 @@ const Messages = () => {
         const username = params.get('user');
         const userIdParam = params.get('userId') || params.get('id');
 
-        if (username) {
-          try {
-            const res = await api.get(`/users/by-username/${username}`);
-            const other = res.data;
-            if (other && other.id) {
-              const existing = (conversations || []).find(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username));
-              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
-              setSelectedConversation(conv);
-              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
-              await loadMessages(other.id, 1);
-              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
-            }
-          } catch (e) {
-            console.warn('Usuário não encontrado por username:', username, e);
-          }
-        } else if (userIdParam) {
+        if (userIdParam) {
           const uid = Number(userIdParam);
           if (!Number.isNaN(uid)) {
             try {
               const res = await api.get(`/users/${uid}`);
               const other = res.data;
-              const existing = (conversations || []).find(c => c.otherUser && c.otherUser.id === other.id);
-              const conv = existing || { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
               setSelectedConversation(conv);
-              if (!existing) setConversations(prev => [conv, ...(prev || [])]);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && c.otherUser.id === other.id)
+                return exists ? prev : [conv, ...(prev || [])]
+              })
               await loadMessages(other.id, 1);
               try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             } catch (e) {
               console.warn('Usuário não encontrado por id:', uid, e);
             }
+          }
+        } else if (username) {
+          try {
+            const res = await api.get(`/users/by-username/${username}`);
+            const other = res.data;
+            if (other && other.id) {
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username))
+                return exists ? prev : [conv, ...(prev || [])]
+              })
+              await loadMessages(other.id, 1);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+            }
+          } catch (e) {
+            console.warn('Usuário não encontrado por username:', username, e);
           }
         }
       } catch (err) {
