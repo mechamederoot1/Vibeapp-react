@@ -519,10 +519,20 @@ async def upload_media_message(
         from ..websocket import manager
         message_dict = new_message.to_dict()
         await manager.send_message_notification(message_dict, receiver_id)
+        if manager.is_user_online(receiver_id):
+            new_message.is_delivered = True
+            new_message.delivered_at = datetime.utcnow()
+            db.commit()
+            try:
+                await manager.send_delivery_ack(new_message.id, new_message.receiver_id, new_message.delivered_at.isoformat(), new_message.sender_id)
+            except Exception:
+                pass
+            message_dict = new_message.to_dict()
     except ImportError:
         pass
 
     return {"message": "Media message sent successfully", "data": message_dict}
+}
 
 @router.get("/unread-count")
 async def get_unread_count(
