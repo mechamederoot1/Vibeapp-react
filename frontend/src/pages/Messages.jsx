@@ -76,6 +76,7 @@ const Messages = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const typingTimeoutRef = useRef(null);
+  const typingTimersRef = useRef({});
   const textareaRef = useRef(null);
 
   const autoResizeTextarea = () => {
@@ -579,18 +580,24 @@ const Messages = () => {
 
     if (lastMessage.type === 'user_typing') {
       const { senderId, isTyping } = lastMessage.data;
-      setTypingUsers(prev => ({
-        ...prev,
-        [senderId]: isTyping
-      }));
 
-      // Limpar indicação após 5 segundos
-      setTimeout(() => {
-        setTypingUsers(prev => ({
-          ...prev,
-          [senderId]: false
-        }));
-      }, 5000);
+      // Mostrar imediatamente quando receber "true"
+      if (isTyping) {
+        setTypingUsers(prev => ({ ...prev, [senderId]: true }));
+        // Adia ocultar até não receber mais "true" por um período
+        if (typingTimersRef.current[senderId]) clearTimeout(typingTimersRef.current[senderId]);
+        typingTimersRef.current[senderId] = setTimeout(() => {
+          setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+          typingTimersRef.current[senderId] = null;
+        }, 4000);
+      } else {
+        // Suaviza transição para evitar "piscar"
+        if (typingTimersRef.current[senderId]) clearTimeout(typingTimersRef.current[senderId]);
+        typingTimersRef.current[senderId] = setTimeout(() => {
+          setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+          typingTimersRef.current[senderId] = null;
+        }, 700);
+      }
     }
   }, [lastMessage, selectedConversation]);
 
@@ -755,16 +762,18 @@ const Messages = () => {
                       <h3 className={`${conversation.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'} truncate`}>
                         {conversation.otherUser.firstName} {conversation.otherUser.lastName}
                       </h3>
-                      {typingUsers[conversation.otherUser.id] ? (
-                        <p className="text-sm mt-1 text-vibe-blue"><TypingDots /></p>
-                      ) : conversation.lastMessage ? (
-                        <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate mt-1`}>
-                          {conversation.lastMessage.messageType === 'audio'
-                            ? '🎵 Mensagem de áudio'
-                            : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
-                          }
-                        </p>
-                      ) : null}
+                      <div className="mt-1 min-h-[20px]">
+                        {typingUsers[conversation.otherUser.id] ? (
+                          <p className="text-sm text-vibe-blue"><TypingDots /></p>
+                        ) : conversation.lastMessage ? (
+                          <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
+                            {conversation.lastMessage.messageType === 'audio'
+                              ? '🎵 Mensagem de áudio'
+                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
+                            }
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="flex flex-col items-end ml-3 flex-shrink-0">
@@ -841,9 +850,9 @@ const Messages = () => {
                     {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                   </button>
                 </h3>
-                {typingUsers[selectedConversation.otherUser.id] && (
-                  <p className="text-sm"><TypingDots /></p>
-                )}
+                <div className="h-5 mt-1">
+                  {typingUsers[selectedConversation.otherUser.id] && <TypingDots />}
+                </div>
               </div>
 
               <button className="p-2 hover:bg-gray-100 rounded-lg">
