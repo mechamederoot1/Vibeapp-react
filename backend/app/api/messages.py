@@ -25,11 +25,17 @@ class MessageResponse(BaseModel):
     id: int
     senderId: int
     receiverId: int
+    conversationId: Optional[int]
     content: Optional[str]
     messageType: str
     mediaUrl: Optional[str]
+    isDelivered: bool
     isRead: bool
     createdAt: str
+    deliveredAt: Optional[str]
+    readAt: Optional[str]
+    updatedAt: Optional[str]
+    status: str
     sender: dict
     receiver: dict
 
@@ -265,7 +271,7 @@ async def delete_message(
             detail="Message not found"
         )
     
-    # Verificar se o usuário pode excluir a mensagem
+    # Verificar se o usu��rio pode excluir a mensagem
     if message.sender_id != current_user.id and message.receiver_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
