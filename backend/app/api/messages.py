@@ -109,6 +109,7 @@ async def send_message(
 
     conversation_payload = conversation.to_dict(current_user.id)
     conversation_payload["lastMessage"] = message_dict
+    conversation_payload["unreadCount"] = 0
 
     if conversation_created:
         notification = Notification(
