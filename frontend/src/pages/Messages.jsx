@@ -5,6 +5,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 
+const deriveStatus = (m) => {
+  if (m.status) return m.status
+  if (m.isRead || m.readAt) return 'read'
+  if (m.isDelivered || m.deliveredAt) return 'delivered'
+  return 'sent'
+}
+
 const statusIcon = (status, isOwn) => {
   if (!isOwn) return null
   switch (status) {
@@ -244,34 +251,40 @@ const Messages = () => {
     const messageText = newMessage.trim();
     setNewMessage('');
 
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: messageText,
-      messageType: 'text',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
-    }
-
+    let appended = null
     try {
-      await api.post('/messages/send', {
+      const res = await api.post('/messages/send', {
         receiverId: selectedConversation.otherUser.id,
         content: messageText,
         messageType: 'text'
       });
+      const msg = res?.data?.data
+      if (msg) {
+        appended = { ...msg }
+        setMessages(prev => [...prev, appended]);
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, appended])
+        setTimeout(scrollToBottom, 80)
+      }
     } catch (error) {
-      // Sem backend: segue local
-      console.warn('Sem backend para enviar texto, usando modo demo')
+      console.warn('Falha no envio via backend, usando fallback demo')
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: messageText,
+        messageType: 'text',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      appended = tempMsg
+      setMessages(prev => [...prev, tempMsg]);
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+      setTimeout(scrollToBottom, 80)
     }
-
-    setMessages(prev => [...prev, tempMsg]);
-    setTimeout(scrollToBottom, 100);
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
 
     // Parar de indicar que está digitando
     stopTyping();
@@ -548,6 +561,22 @@ const Messages = () => {
       }
 
       // Atualizar lista de conversas
+      loadConversations();
+    }
+
+    if (lastMessage.type === 'message_delivered') {
+      const { messageId } = lastMessage.data || {}
+      if (messageId) {
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt: lastMessage.data.deliveredAt, status: 'delivered' } : m))
+      }
+    }
+
+    if (lastMessage.type === 'messages_read') {
+      const ids = lastMessage.data?.messageIds || []
+      if (ids.length) {
+        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt: lastMessage.data.readAt, status: 'read' } : m))
+      }
+      // Conversas podem mudar ordenação
       loadConversations();
     }
 
@@ -867,7 +896,7 @@ const Messages = () => {
                           hour: '2-digit',
                           minute: '2-digit'
                         })}
-                        {statusIcon(message.status, message.senderId === user.id)}
+                        {statusIcon(deriveStatus(message), message.senderId === user.id)}
                       </div>
                     </div>
                   </div>
