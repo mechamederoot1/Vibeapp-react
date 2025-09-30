@@ -301,10 +301,17 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user.to_dict()
 
 @router.post("/logout")
-async def logout(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
-    token = credentials.credentials
+async def logout(request: Request, db: Session = Depends(get_db)):
+    # Read token from Authorization header or cookie
+    token = None
+    auth_header = request.headers.get('authorization')
+    if auth_header and auth_header.lower().startswith('bearer '):
+        token = auth_header.split(' ', 1)[1]
+    else:
+        token = request.cookies.get('access_token')
+
     try:
-        verified = verify_token(token)
+        verified = verify_token(token) if token else {}
         jti = verified.get('jti')
         user_id = verified.get('user_id')
     except Exception:
@@ -320,7 +327,10 @@ async def logout(credentials: HTTPAuthorizationCredentials = Depends(security), 
         except Exception:
             db.rollback()
 
-    return {"message": "Successfully logged out"}
+    # Clear cookie in response
+    resp = JSONResponse(content={"message": "Successfully logged out"})
+    resp.delete_cookie('access_token')
+    return resp
 
 
 # Health check endpoint
