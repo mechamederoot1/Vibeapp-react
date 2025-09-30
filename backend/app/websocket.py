@@ -11,17 +11,19 @@ class ConnectionManager:
     def __init__(self):
         # Dicionário para armazenar conexões: {user_id: [websockets]}
         self.active_connections: Dict[int, List[WebSocket]] = {}
-        
+        self.last_seen: Dict[int, float] = {}
+
     async def connect(self, websocket: WebSocket, user_id: int):
         """Conectar um usuário"""
         await websocket.accept()
-        
+
         if user_id not in self.active_connections:
             self.active_connections[user_id] = []
-        
+
         self.active_connections[user_id].append(websocket)
+        self.last_seen[user_id] = asyncio.get_event_loop().time()
         print(f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}")
-        
+
     def disconnect(self, websocket: WebSocket, user_id: int):
         """Desconectar um usuário"""
         if user_id in self.active_connections:
@@ -37,16 +39,14 @@ class ConnectionManager:
     async def send_personal_message(self, message: dict, user_id: int):
         """Enviar mensagem para um usuário específico"""
         if user_id in self.active_connections:
-            # Criar uma cópia da lista para evitar problemas de modificação durante iteração
             connections = self.active_connections[user_id].copy()
-            
-            for websocket in connections:
+            async def _send(ws: WebSocket):
                 try:
-                    await websocket.send_text(json.dumps(message))
+                    await ws.send_text(json.dumps(message))
                 except Exception as e:
                     print(f"Error sending message to user {user_id}: {e}")
-                    # Remove conexão inválida
-                    self.disconnect(websocket, user_id)
+                    self.disconnect(ws, user_id)
+            await asyncio.gather(*[_send(ws) for ws in connections], return_exceptions=True)
                     
     async def send_notification(self, notification_data: dict, user_id: int):
         """Enviar notificação para um usuário"""
@@ -208,9 +208,35 @@ async def handle_websocket_message(websocket: WebSocket, user_id: int, message: 
                     "isTyping": data.get("isTyping", False)
                 }
             }, receiver_id)
+    elif message_type == "pong":
+        manager.last_seen[user_id] = asyncio.get_event_loop().time()
     elif message_type == "mark_messages_read":
-        # Marcar mensagens como lidas - será implementado na API
-        pass
+        # Marcar mensagens como lidas diretamente via WS
+        try:
+            from .database.database import SessionLocal
+            db = SessionLocal()
+            ids = message.get("data", {}).get("messageIds", [])
+            if ids:
+                msgs = db.query(Message).filter(Message.id.in_(ids), Message.receiver_id == user_id, Message.is_read == False).all()
+                if msgs:
+                    now = datetime.utcnow()
+                    for m in msgs:
+                        m.is_read = True
+                        m.read_at = now
+                    db.commit()
+                    senders = {m.sender_id for m in msgs}
+                    for sid in senders:
+                        await manager.send_personal_message({
+                            "type": "messages_read",
+                            "data": {"messageIds": [m.id for m in msgs if m.sender_id == sid], "readerId": user_id, "readAt": now.isoformat()}
+                        }, sid)
+        except Exception as e:
+            print(f"Error marking messages read via WS: {e}")
+        finally:
+            try:
+                db.close()
+            except Exception:
+                pass
     else:
         # Mensagem não reconhecida
         await websocket.send_text(json.dumps({
