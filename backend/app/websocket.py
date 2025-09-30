@@ -186,7 +186,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 "message": "Connected successfully"
             }
         }))
-        
+
+        await flush_pending_messages(user_id)
+
         # Loop principal para manter conexão viva
         while True:
             try:
