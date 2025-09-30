@@ -8,6 +8,7 @@ from sqlalchemy import or_, and_, func, String
 from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.profile_view import ProfileView
+from ..models import Notification
 from .auth import get_current_user
 from ..utils.privacy import can_view_profile, filter_user_data
 
