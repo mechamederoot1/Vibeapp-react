@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, UserCheck, UserPlus, MessageCircle, Search, Users, UserX, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { buildProfileUrl } from '../utils/profileId'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 
