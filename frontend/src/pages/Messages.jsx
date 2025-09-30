@@ -540,6 +540,11 @@ const Messages = () => {
 
   useEffect(() => {
     const init = async () => {
+      if (!authUser) {
+        setLoading(false);
+        return;
+      }
+
       await loadConversations(1).finally(() => setLoading(false));
 
       try {
