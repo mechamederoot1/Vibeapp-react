@@ -169,6 +169,8 @@ const Messages = () => {
 
       if (page === 1) {
         setMessages(fetched);
+        // mark conversation unread count as read in UI
+        setConversations(prev => prev.map(c => c.otherUser.id === userId ? { ...c, unreadCount: 0 } : c));
         setTimeout(() => scrollToBottom(), 120);
       } else {
         // Prepend older messages and keep scroll position
