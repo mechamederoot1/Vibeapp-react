@@ -123,7 +123,8 @@ export const AuthProvider = ({ children }) => {
 
     setUser(null)
     setToken(null)
-    localStorage.removeItem('token')
+    try { sessionStorage.removeItem('token') } catch(e){}
+    try { localStorage.removeItem('token') } catch(e){}
     delete api.defaults.headers.Authorization
   }
 
