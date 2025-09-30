@@ -502,7 +502,7 @@ const Messages = () => {
     if (!isTyping && selectedConversation) {
       setIsTyping(true);
       sendWebSocketMessage({
-        type: 'user_typing',
+        type: 'typing',
         data: {
           senderId: user.id,
           receiverId: selectedConversation.otherUser.id,
@@ -527,7 +527,7 @@ const Messages = () => {
     if (isTyping && selectedConversation) {
       setIsTyping(false);
       sendWebSocketMessage({
-        type: 'user_typing',
+        type: 'typing',
         data: {
           senderId: user.id,
           receiverId: selectedConversation.otherUser.id,
