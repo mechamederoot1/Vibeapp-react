@@ -412,11 +412,20 @@ async def upload_audio_message(
     db.add(notification)
     db.commit()
 
-    # Enviar notificação em tempo real
+    # Enviar notificação em tempo real e marcar entrega se online
     try:
         from ..websocket import manager
         message_dict = new_message.to_dict()
         await manager.send_message_notification(message_dict, receiver_id)
+        if manager.is_user_online(receiver_id):
+            new_message.is_delivered = True
+            new_message.delivered_at = datetime.utcnow()
+            db.commit()
+            try:
+                await manager.send_delivery_ack(new_message.id, new_message.receiver_id, new_message.delivered_at.isoformat(), new_message.sender_id)
+            except Exception:
+                pass
+            message_dict = new_message.to_dict()
     except ImportError:
         pass  # WebSocket não disponível
 
