@@ -417,6 +417,16 @@ async def upload_audio_message(
         from ..websocket import manager
         message_dict = new_message.to_dict()
         await manager.send_message_notification(message_dict, receiver_id)
+        # Status para o remetente
+        await manager.send_personal_message({
+            "type": "message_status",
+            "data": {"messageId": new_message.id, "status": "sent"}
+        }, current_user.id)
+        if manager.is_user_online(receiver_id):
+            await manager.send_personal_message({
+                "type": "message_status",
+                "data": {"messageId": new_message.id, "status": "delivered"}
+            }, current_user.id)
     except ImportError:
         pass  # WebSocket não disponível
 
