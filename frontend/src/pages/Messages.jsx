@@ -280,40 +280,42 @@ const Messages = () => {
   // Enviar mídia
   const sendImage = async (file) => {
     if (!selectedConversation) return
-    // Upload to server to get data URL
     try {
-      const up = await uploadsAPI.uploadStoryMedia(file)
-      const url = up.data?.url || URL.createObjectURL(file)
+      const formData = new FormData()
+      formData.append('receiver_id', selectedConversation.otherUser.id)
+      formData.append('file', file)
 
-      // Send message with mediaUrl
-      try {
-        await api.post('/messages/send', {
+      const res = await api.post('/messages/upload-media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      const msg = res.data?.data
+      if (msg) {
+        setMessages(prev => [...prev, msg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
+        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
+        setTimeout(scrollToBottom, 100)
+      } else {
+        // fallback to previous behavior
+        const url = URL.createObjectURL(file)
+        const tempMsg = {
+          id: Date.now(),
+          senderId: user.id,
           receiverId: selectedConversation.otherUser.id,
           content: '',
           messageType: 'image',
-          mediaUrl: url
-        })
-      } catch (e) {
-        console.warn('Erro ao enviar mensagem de imagem ao backend, usando modo demo', e)
+          mediaUrl: url,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          sender: user,
+          receiver: selectedConversation.otherUser,
+          status: 'sending'
+        }
+        setMessages(prev => [...prev, tempMsg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+        scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+        setTimeout(scrollToBottom, 100)
       }
-
-      const tempMsg = {
-        id: Date.now(),
-        senderId: user.id,
-        receiverId: selectedConversation.otherUser.id,
-        content: '',
-        messageType: 'image',
-        mediaUrl: url,
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        sender: user,
-        receiver: selectedConversation.otherUser,
-        status: 'sending'
-      }
-      setMessages(prev => [...prev, tempMsg])
-      setTimeout(scrollToBottom, 100)
-      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
     } catch (err) {
       console.error('Erro ao enviar imagem:', err)
     }
