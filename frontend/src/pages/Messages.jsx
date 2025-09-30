@@ -107,21 +107,48 @@ const Messages = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Carregar conversas
-  const loadConversations = async () => {
+  // Pagination state for conversations
+  const [conversationsPage, setConversationsPage] = useState(1);
+  const [conversationsLimit] = useState(20);
+  const [hasMoreConversations, setHasMoreConversations] = useState(true);
+  const [loadingMoreConversations, setLoadingMoreConversations] = useState(false);
+  const convListRef = useRef(null);
+
+  // Carregar conversas (paginated)
+  const loadConversations = async (page = 1, limit = conversationsLimit) => {
     try {
-      const response = await api.get('/messages/conversations');
-      setConversations(response.data);
+      const response = await api.get(`/messages/conversations?page=${page}&limit=${limit}`);
+      const fetched = Array.isArray(response.data) ? response.data : [];
+
+      if (page === 1) {
+        setConversations(fetched);
+        setConversationsPage(1);
+      } else {
+        setConversations(prev => {
+          const ids = new Set(prev.map(c => c.id));
+          const uniqueFetched = fetched.filter(c => !ids.has(c.id));
+          return [...prev, ...uniqueFetched];
+        });
+      }
+
+      setHasMoreConversations(fetched.length === limit);
+      setConversationsPage(page);
     } catch (error) {
       console.error('Erro ao carregar conversas (usando modo demo):', error);
-      // Fallback demo
-      const convs = loadDemoConvs()
-      setConversations(convs)
-      if (convs.length === 0) {
-        const sample = [{ id: 2, otherUser: { id: 2, firstName: 'Marina', lastName: 'Santos' }, lastMessage: null, unreadCount: 0 }]
-        setConversations(sample)
-        saveDemoConvs(sample)
-      }
+      const convs = loadDemoConvs();
+      if (page === 1) setConversations(convs);
+      setHasMoreConversations(false);
+    }
+  };
+
+  const handleConversationsScroll = () => {
+    const container = convListRef.current;
+    if (!container || loadingMoreConversations || !hasMoreConversations) return;
+    // If near bottom, load next page
+    if (container.scrollHeight - container.scrollTop - container.clientHeight < 150) {
+      const nextPage = conversationsPage + 1;
+      setLoadingMoreConversations(true);
+      loadConversations(nextPage).finally(() => setLoadingMoreConversations(false));
     }
   };
 
