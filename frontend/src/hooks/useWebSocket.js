@@ -124,16 +124,15 @@ export const useWebSocket = () => {
     return false;
   }, []);
 
-  // Conectar quando o hook for montado e tivermos token
+  // Conectar quando o hook for montado e usuário autenticado (cookie-based)
   useEffect(() => {
-    if (token) {
-      connect();
-    }
+    if (user) connect();
+    else disconnect();
 
     return () => {
       disconnect();
     };
-  }, [token, connect, disconnect]);
+  }, [user, connect, disconnect]);
 
   // Limpar timers quando o componente for desmontado
   useEffect(() => {
