@@ -100,33 +100,30 @@ async def send_message(
 
     message_dict = new_message.to_dict()
 
-    # Criar notificação APENAS se a conversa foi criada agora (primeiro contato)
-    if conversation_created:
-        notification = Notification(
-            user_id=message_data.receiverId,
-            type="message",
-            title=f"Nova mensagem de {current_user.full_name}",
-            message=message_data.content[:100] if message_data.content else "Enviou uma mídia",
-            related_user_id=current_user.id,
-            action_url=f"/messages/{current_user.id}"
-        )
-        db.add(notification)
-        db.commit()
-        db.refresh(notification)
+    # Criar notificação persistente PARA TODAS AS MENSAGENS
+    notification = Notification(
+        user_id=message_data.receiverId,
+        type="message",
+        title=f"Nova mensagem de {current_user.full_name}",
+        message=message_data.content[:100] if message_data.content else "Enviou uma mídia",
+        related_user_id=current_user.id,
+        action_url=f"/messages/{current_user.id}",
+        is_sent=False
+    )
+    db.add(notification)
+    db.commit()
+    db.refresh(notification)
 
-        # Enviar notificação em tempo real
-        try:
-            from ..websocket import manager
+    # Tentar enviar por WebSocket imediatamente; se o usuário estiver offline, ficará gravado no DB e será entregue quando ele se conectar
+    try:
+        from ..websocket import manager
+        if manager.is_user_online(message_data.receiverId):
             await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass  # WebSocket não disponível
-    else:
-        # Still send message notification event via websocket (but not persistent Notification)
-        try:
-            from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass
+            # Marcar notificação como enviada
+            notification.is_sent = True
+            db.commit()
+    except ImportError:
+        pass
 
     # Informar ao remetente os status: 'sent' sempre e 'delivered' se destinatário online
     try:
