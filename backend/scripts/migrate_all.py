@@ -170,6 +170,50 @@ def _ensure_work_education_tables():
         conn.execute(text("CREATE INDEX IF NOT EXISTS ix_education_user_order_created ON education(user_id, order_index DESC, created_at DESC)"))
 
 
+def _backfill_message_conversations():
+    session = SessionLocal()
+    try:
+        query = (
+            session.query(Message)
+            .filter(Message.conversation_id.is_(None))
+            .order_by(Message.created_at)
+        )
+        processed = 0
+        for message in query.yield_per(200):
+            if message.sender_id is None or message.receiver_id is None:
+                continue
+            user_ids = sorted([message.sender_id, message.receiver_id])
+            conv = (
+                session.query(Conversation)
+                .filter(
+                    Conversation.user1_id == user_ids[0],
+                    Conversation.user2_id == user_ids[1]
+                )
+                .first()
+            )
+            if not conv:
+                timestamp = message.created_at or datetime.utcnow()
+                conv = Conversation(
+                    user1_id=user_ids[0],
+                    user2_id=user_ids[1],
+                    created_at=timestamp,
+                    updated_at=timestamp
+                )
+                session.add(conv)
+                session.flush()
+            message.conversation_id = conv.id
+            message_time = message.created_at or datetime.utcnow()
+            if not conv.updated_at or message_time >= conv.updated_at:
+                conv.updated_at = message_time
+                conv.last_message_id = message.id
+            processed += 1
+            if processed % 200 == 0:
+                session.commit()
+        session.commit()
+    finally:
+        session.close()
+
+
 def _migrate_public_profile_id(db):
     # add column
     if not _has_col(db, 'users', 'public_profile_id'):
