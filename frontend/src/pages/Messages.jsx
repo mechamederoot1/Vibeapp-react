@@ -37,6 +37,7 @@ const formatDateLabel = (iso) => {
 const Messages = () => {
   const { user } = useAuth();
   const { lastMessage, sendMessage: sendWebSocketMessage } = useWebSocket();
+  const navigate = useNavigate();
 
   const TypingDots = ({ className = '' }) => (
     <span className={`inline-flex items-center space-x-1 ${className}`}>
@@ -337,7 +338,7 @@ const Messages = () => {
     setVideoInputKey(k => k + 1)
   }
 
-  // Iniciar gravação de áudio
+  // Iniciar gravação de ��udio
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
