@@ -240,8 +240,6 @@ async def get_messages(
 
     if changed:
         db.commit()
-    else:
-        db.rollback()
 
     return [msg.to_dict() for msg in reversed(messages)]
 
