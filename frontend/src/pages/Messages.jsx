@@ -461,7 +461,6 @@ const Messages = () => {
         const msg = res.data.data;
         setMessages(prev => [...prev, msg]);
         updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
-        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
         setTimeout(scrollToBottom, 100)
         return
       }
