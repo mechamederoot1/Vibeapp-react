@@ -124,8 +124,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
-    isAuthenticated: !!user,
-    token
+    isAuthenticated: !!user
   }
 
   return (
