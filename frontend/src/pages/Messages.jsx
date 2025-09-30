@@ -717,9 +717,7 @@ const Messages = () => {
               className={`p-3 mb-3 cursor-pointer transition-shadow rounded-lg ${conversation.unreadCount > 0 ? 'bg-blue-50 shadow-sm' : 'bg-white border'} ${selectedConversation?.id === conversation.id ? 'ring-1 ring-vibe-blue' : ''}`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  {conversation.otherUser.firstName.charAt(0)}
-                </div>
+                <img src={conversation.otherUser.avatar_url || conversation.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((conversation.otherUser.firstName||conversation.otherUser.displayName||conversation.otherUser.username||'U'))}&background=2563eb&color=fff`} alt={`${conversation.otherUser.firstName||''} ${conversation.otherUser.lastName||''}`} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -795,9 +793,7 @@ const Messages = () => {
                 <ArrowLeft size={20} />
               </button>
 
-              <div className="w-10 h-10 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold">
-                {selectedConversation.otherUser.firstName.charAt(0)}
-              </div>
+              <img src={selectedConversation.otherUser.avatar_url || selectedConversation.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((selectedConversation.otherUser.firstName||selectedConversation.otherUser.displayName||selectedConversation.otherUser.username||'U'))}&background=2563eb&color=fff`} alt={`${selectedConversation.otherUser.firstName||''} ${selectedConversation.otherUser.lastName||''}`} className="w-10 h-10 rounded-full object-cover" />
 
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">
