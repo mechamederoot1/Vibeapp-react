@@ -372,7 +372,7 @@ const Messages = () => {
     setVideoInputKey(k => k + 1)
   }
 
-  // Iniciar gravação de ��udio
+  // Iniciar gravação de áudio
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -915,7 +915,7 @@ const Messages = () => {
               />
 
               <button
-              onClick={isRecording ? stopRecording : startRecording}
+                onClick={isRecording ? stopRecording : startRecording}
                 className={`p-2 rounded-lg flex-shrink-0 ${
                   isRecording
                     ? 'bg-red-500 text-white animate-pulse'
