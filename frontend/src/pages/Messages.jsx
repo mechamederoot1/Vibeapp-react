@@ -613,7 +613,10 @@ const Messages = () => {
               onClick={async () => {
                 setSelectedConversation(conversation);
                 await loadMessages(conversation.otherUser.id, 1);
-                try { window.history.pushState({ openedConversation: conversation.otherUser.id }, ''); } catch(e) { }
+                try {
+                  const qp = `?user=${encodeURIComponent(conversation.otherUser.username||'')}&userId=${conversation.otherUser.id}`;
+                  navigate(`/messages${qp}`);
+                } catch(e) { }
               }}
               className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
                 selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
