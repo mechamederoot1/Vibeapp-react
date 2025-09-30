@@ -99,7 +99,7 @@ const FriendsList = ({ onClose, userId = null }) => {
   }
 
   const handleSendMessage = (username) => {
-    navigate(`/messages?user=${username}`)
+    navigate(`/messages?user=${encodeURIComponent(username)}&userId=${targetUserId || ''}`)
     onClose()
   }
 

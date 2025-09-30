@@ -990,6 +990,36 @@ const Profile = () => {
     }
   }
 
+  // Close modals on Android back button / browser back
+  useEffect(() => {
+    const onPop = () => {
+      let handled = false
+      if (showPhotoModal) {
+        setShowPhotoModal(false)
+        handled = true
+      }
+      if (showCoverModal) {
+        setShowCoverModal(false)
+        handled = true
+      }
+      if (showPostModal) {
+        setShowPostModal(false)
+        setSelectedPost(null)
+        handled = true
+      }
+      if (showUserStoryViewer) {
+        setShowUserStoryViewer(false)
+        handled = true
+      }
+      if (handled) {
+        try { window.history.pushState({}, ''); } catch(e) {}
+      }
+    }
+
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [showPhotoModal, showCoverModal, showPostModal, showUserStoryViewer])
+
   const handleCameraButtonClick = (e) => {
     e.stopPropagation()
     console.log('📷 Botão da câmera clicado - abrindo galeria')
@@ -1005,6 +1035,7 @@ const Profile = () => {
   const handleViewPhoto = () => {
     setShowAvatarDropdown(false)
     setShowPhotoModal(true)
+    try { window.history.pushState({ photoModal: true }, ''); } catch(e) {}
   }
 
   const handleViewStory = () => {
@@ -1413,7 +1444,7 @@ const Profile = () => {
                 }}
               />
               <button
-                onClick={() => navigate(`/messages?user=${currentProfileData.username}`)}
+                onClick={() => navigate(`/messages?user=${encodeURIComponent(currentProfileData.username)}&userId=${currentProfileData.id}`)}
                 className="btn-secondary w-12 h-12 p-0 rounded-full flex items-center justify-center"
                 title="Enviar mensagem"
               >

@@ -14,6 +14,7 @@ from .education import Education
 from .follow import Follow
 from .profile_photo import ProfilePhoto
 from .profile_cover import ProfileCover
+from .session import UserSession
 
 __all__ = [
     "User",
@@ -40,4 +41,5 @@ __all__ = [
     "Follow",
     "ProfilePhoto",
     "ProfileCover",
+    "UserSession",
 ]

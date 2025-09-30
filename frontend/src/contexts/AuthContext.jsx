@@ -17,26 +17,27 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'))
 
   useEffect(() => {
+    let mounted = true
     const initAuth = async () => {
       if (token) {
         try {
           if (api) {
             api.defaults.headers.Authorization = `Bearer ${token}`
             const response = await authAPI.me()
-            setUser(response.data)
+            if (mounted) setUser(response.data)
           }
         } catch (error) {
-          // Não fazer logout agressivo - só limpar estado
+          // Clear state but avoid full reload; let SPA handle redirect
           console.error('Token inválido:', error.message)
-          setUser(null)
-          setToken(null)
-          localStorage.removeItem('token')
-          if (api) {
-            delete api.defaults.headers.Authorization
+          try { localStorage.removeItem('token') } catch(e){}
+          try { delete api.defaults.headers.Authorization } catch(e){}
+          if (mounted) {
+            setUser(null)
+            setToken(null)
           }
         }
       }
-      setLoading(false)
+      if (mounted) setLoading(false)
     }
 
     // Só executar se não estiver na página de registro
@@ -45,6 +46,17 @@ export const AuthProvider = ({ children }) => {
       initAuth()
     } else {
       setLoading(false)
+    }
+
+    // Listen for unauthorized events from API layer
+    const onUnauthorized = () => {
+      logout()
+    }
+    window.addEventListener('unauthorized', onUnauthorized)
+
+    return () => {
+      mounted = false
+      window.removeEventListener('unauthorized', onUnauthorized)
     }
   }, [token])
 
@@ -102,7 +114,13 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await authAPI.logout()
+    } catch (e) {
+      // ignore errors, ensure local cleanup
+    }
+
     setUser(null)
     setToken(null)
     localStorage.removeItem('token')

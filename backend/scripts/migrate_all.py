@@ -55,6 +55,29 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_blob BLOB"))
         if not _has_col(conn, 'messages', 'media_mime'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN media_mime TEXT"))
+        # ensure read status columns
+        if not _has_col(conn, 'messages', 'is_read'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
+        if not _has_col(conn, 'messages', 'read_at'):
+            conn.execute(text("ALTER TABLE messages ADD COLUMN read_at DATETIME"))
+
+        # user sessions table (tracks tokens per device/browser)
+        conn.execute(text(
+            """
+            CREATE TABLE IF NOT EXISTS user_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                jti TEXT NOT NULL UNIQUE,
+                user_agent TEXT,
+                ip_address TEXT,
+                is_active BOOLEAN DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_used_at DATETIME
+            )
+            """
+        ))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_sessions_user_id ON user_sessions(user_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_sessions_jti ON user_sessions(jti)"))
 
 def _ensure_work_education_tables():
     """Ensure tables and essential columns/indexes for multiple work/education entries (SQLite-safe)."""

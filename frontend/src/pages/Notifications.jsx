@@ -194,7 +194,35 @@ const Notifications = () => {
             className={`p-4 flex items-center space-x-3 hover:bg-gray-50 transition-colors cursor-pointer ${
               !notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-400' : ''
             }`}
-            onClick={() => !notification.isRead && markAsRead(notification.id)}
+            onClick={async () => {
+              try { await markAsRead(notification.id); } catch(e){}
+
+              const action = notification.actionUrl || notification.action_url || notification.action;
+              if (action) {
+                if (typeof action === 'string' && action.startsWith('http')) { window.location.href = action; return; }
+                try { navigate(action); return; } catch(e){}
+              }
+
+              const publicId = notification.relatedPostPublicId || notification.related_post_public_id || (notification.relatedPost && notification.relatedPost.publicId);
+              const relatedPostId = notification.relatedPostId || notification.related_post || notification.related_post_id;
+              if (publicId) { navigate(`/posts/id/${publicId}`); return; }
+              if (relatedPostId) { navigate(`/posts/id/${relatedPostId}`); return; }
+
+              if (notification.type === 'message' && notification.relatedUser) {
+                const u = notification.relatedUser;
+                const qp = `?user=${encodeURIComponent(u.username||'')}&userId=${u.id||''}`;
+                navigate(`/messages${qp}`);
+                return;
+              }
+
+              if (notification.relatedUser) {
+                const u = notification.relatedUser || {};
+                const publicId2 = u.publicProfileId || u.public_profile_id;
+                if (publicId2) navigate(`/profile/id/${publicId2}`);
+                else if (u.id) navigate(`/profile/${u.id}`);
+                else if (u.username) navigate(`/profile/${u.username}`);
+              }
+            } }
           >
             {/* Ícone */}
             <div className="flex-shrink-0">

@@ -62,7 +62,7 @@ const BottomNavigation = () => {
   ]
 
   return (
-    <nav className="bg-white border-t border-gray-200 safe-area-bottom w-full max-w-full overflow-hidden">
+    <nav className="bg-white border-t border-gray-200 safe-area-bottom w-full max-w-full overflow-visible">
       <div className="flex justify-around py-2 w-full max-w-full">
         {navItems.map((item) => {
           const Icon = item.icon
@@ -94,7 +94,7 @@ const BottomNavigation = () => {
                 />
                 {/* Badge de notificação */}
                 {item.badge > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-lg z-30">
                     {item.badge > 99 ? '99+' : item.badge}
                   </span>
                 )}
