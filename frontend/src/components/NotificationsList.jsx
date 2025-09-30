@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, Check, X, Trash2, Heart, MessageCircle, Share2, UserPlus } from 'lucide-react';
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationsList = ({ onClose }) => {
   const [notifications, setNotifications] = useState([]);
