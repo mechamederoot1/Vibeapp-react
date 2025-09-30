@@ -128,6 +128,21 @@ async def send_message(
         except ImportError:
             pass
 
+    # Informar ao remetente os status: 'sent' sempre e 'delivered' se destinatário online
+    try:
+        from ..websocket import manager
+        await manager.send_personal_message({
+            "type": "message_status",
+            "data": {"messageId": new_message.id, "status": "sent"}
+        }, current_user.id)
+        if manager.is_user_online(message_data.receiverId):
+            await manager.send_personal_message({
+                "type": "message_status",
+                "data": {"messageId": new_message.id, "status": "delivered"}
+            }, current_user.id)
+    except ImportError:
+        pass
+
     return {
         "message": "Message sent successfully",
         "data": message_dict
