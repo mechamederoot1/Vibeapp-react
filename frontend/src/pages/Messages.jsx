@@ -769,11 +769,16 @@ const Messages = () => {
 
                     <div className="flex flex-col items-end ml-3 flex-shrink-0">
                       {conversation.lastMessage && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 flex items-center">
                           {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('pt-BR', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
+                          {conversation.lastMessage.senderId === (user?.id) && (
+                            <span className="ml-1 inline-block">
+                              {statusIcon(deriveStatus(conversation.lastMessage), true)}
+                            </span>
+                          )}
                         </span>
                       )}
 
