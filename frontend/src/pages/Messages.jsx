@@ -427,16 +427,33 @@ const Messages = () => {
 
     const formData = new FormData();
     formData.append('receiver_id', selectedConversation.otherUser.id);
-    formData.append('audio_file', audioBlob, 'audio.ogg');
+
+    // Ensure proper filename and type
+    const mime = audioBlob.type || 'audio/ogg';
+    const ext = mime.split('/')[1].split(';')[0] || 'ogg';
+    const file = new File([audioBlob], `audio.${ext}`, { type: mime });
+    formData.append('audio_file', file);
 
     try {
-      await api.post('/messages/upload-audio', formData, {
+      const res = await api.post('/messages/upload-audio', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+
+      const created = res.data?.data || res.data?.message || null;
+
+      if (created && res.data?.data) {
+        const msg = res.data.data;
+        setMessages(prev => [...prev, msg]);
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
+        scheduleStatusProgress(msg, selectedConversation.otherUser.id)
+        setTimeout(scrollToBottom, 100)
+        return
+      }
     } catch (error) {
-      console.warn('Sem backend para enviar áudio, usando modo demo')
+      console.warn('Sem backend para enviar áudio, usando modo demo', error)
     }
 
+    // Fallback demo
     const url = URL.createObjectURL(audioBlob)
     const tempMsg = {
       id: Date.now(),
