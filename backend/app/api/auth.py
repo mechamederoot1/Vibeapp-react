@@ -264,11 +264,23 @@ async def login(user_data: UserLogin, request: Request, db: Session = Depends(ge
     except Exception:
         db.rollback()
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": user.to_dict()
-    }
+    # Set token as HttpOnly cookie
+    try:
+        is_secure = True if str(request.url.scheme).lower() == 'https' else False
+    except Exception:
+        is_secure = False
+    # We need Response object to set cookie; use FastAPI Response by raising through context? Instead, construct Response and set cookie
+    response = JSONResponse(content={"user": user.to_dict()})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=is_secure,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path='/'
+    )
+    return response
 
 @router.get("/me")
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
