@@ -659,25 +659,23 @@ const Messages = () => {
                   navigate(`/messages${qp}`);
                 } catch(e) { }
               }}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                selectedConversation?.id === conversation.id ? 'bg-blue-50 border-blue-200' : ''
-              }`}
+              className={`p-3 mb-3 cursor-pointer transition-shadow rounded-lg ${conversation.unreadCount > 0 ? 'bg-blue-50 shadow-sm' : 'bg-white border'} ${selectedConversation?.id === conversation.id ? 'ring-1 ring-vibe-blue' : ''}`}
             >
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold">
+                <div className="w-12 h-12 bg-vibe-blue rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                   {conversation.otherUser.firstName.charAt(0)}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">
+                    <div className="min-w-0 pr-4">
+                      <h3 className={`${conversation.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'} truncate`}>
                         {conversation.otherUser.firstName} {conversation.otherUser.lastName}
                       </h3>
                       {typingUsers[conversation.otherUser.id] ? (
-                        <p className="text-sm mt-1"><TypingDots /></p>
+                        <p className="text-sm mt-1 text-vibe-blue"><TypingDots /></p>
                       ) : conversation.lastMessage ? (
-                        <p className="text-sm text-gray-600 truncate mt-1">
+                        <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate mt-1`}>
                           {conversation.lastMessage.messageType === 'audio'
                             ? '🎵 Mensagem de áudio'
                             : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
@@ -686,7 +684,7 @@ const Messages = () => {
                       ) : null}
                     </div>
 
-                    <div className="flex flex-col items-end ml-3">
+                    <div className="flex flex-col items-end ml-3 flex-shrink-0">
                       {conversation.lastMessage && (
                         <span className="text-xs text-gray-500">
                           {new Date(conversation.lastMessage.createdAt).toLocaleTimeString('pt-BR', {
