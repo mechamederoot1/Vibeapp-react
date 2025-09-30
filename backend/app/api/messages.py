@@ -52,64 +52,67 @@ async def send_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Enviar mensagem"""
-    # Verificar se o destinatário existe
+    """Enviar mensagem persistida antes de notificações em tempo real."""
     receiver = db.query(User).filter(User.id == message_data.receiverId).first()
     if not receiver:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Receiver not found"
         )
-    
-    # Não pode enviar mensagem para si mesmo
+
     if current_user.id == message_data.receiverId:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot send message to yourself"
         )
-    
-    # Criar mensagem
-    new_message = Message(
-        sender_id=current_user.id,
-        receiver_id=message_data.receiverId,
-        content=message_data.content,
-        message_type=message_data.messageType,
-        media_url=message_data.mediaUrl if getattr(message_data, 'mediaUrl', None) else None
-    )
 
-    db.add(new_message)
-    db.commit()
-    db.refresh(new_message)
-
-    # Verificar se já existe conversa
+    participant_ids = sorted([current_user.id, receiver.id])
     conversation = db.query(Conversation).filter(
-        or_(
-            and_(Conversation.user1_id == current_user.id, Conversation.user2_id == message_data.receiverId),
-            and_(Conversation.user1_id == message_data.receiverId, Conversation.user2_id == current_user.id)
-        )
+        Conversation.user1_id == participant_ids[0],
+        Conversation.user2_id == participant_ids[1]
     ).first()
 
     conversation_created = False
     if not conversation:
         conversation = Conversation(
-            user1_id=min(current_user.id, message_data.receiverId),
-            user2_id=max(current_user.id, message_data.receiverId)
+            user1_id=participant_ids[0],
+            user2_id=participant_ids[1],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
         )
         db.add(conversation)
+        db.flush()
         conversation_created = True
 
-    # Atualizar última mensagem da conversa
+    new_message = Message(
+        sender_id=current_user.id,
+        receiver_id=receiver.id,
+        conversation_id=conversation.id,
+        content=message_data.content,
+        message_type=message_data.messageType,
+        media_url=message_data.mediaUrl if getattr(message_data, "mediaUrl", None) else None
+    )
+
+    db.add(new_message)
+    db.flush()
+
     conversation.last_message_id = new_message.id
     conversation.updated_at = datetime.utcnow()
+    conversation.last_message = new_message
 
     db.commit()
+    db.refresh(new_message)
 
     message_dict = new_message.to_dict()
+    message_dict["sender"] = message_dict.get("sender") or current_user.to_public_dict()
+    message_dict["receiver"] = message_dict.get("receiver") or receiver.to_public_dict()
 
-    # Criar notificação APENAS se a conversa foi criada agora (primeiro contato)
+    conversation_payload = conversation.to_dict(current_user.id)
+    conversation_payload["lastMessage"] = message_dict
+
     if conversation_created:
         notification = Notification(
-            user_id=message_data.receiverId,
+            user_id=receiver.id,
             type="message",
             title=f"Nova mensagem de {current_user.full_name}",
             message=message_data.content[:100] if message_data.content else "Enviou uma mídia",
@@ -120,23 +123,16 @@ async def send_message(
         db.commit()
         db.refresh(notification)
 
-        # Enviar notificação em tempo real
-        try:
-            from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass  # WebSocket não disponível
-    else:
-        # Still send message notification event via websocket (but not persistent Notification)
-        try:
-            from ..websocket import manager
-            await manager.send_message_notification(message_dict, message_data.receiverId)
-        except ImportError:
-            pass
+    try:
+        from ..websocket import manager
+        await manager.send_message_notification(message_dict, receiver.id)
+    except ImportError:
+        pass
 
     return {
         "message": "Message sent successfully",
-        "data": message_dict
+        "data": message_dict,
+        "conversation": conversation_payload
     }
 
 @router.get("/conversations", response_model=List[dict])
