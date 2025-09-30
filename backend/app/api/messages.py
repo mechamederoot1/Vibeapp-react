@@ -413,18 +413,15 @@ async def upload_media_message(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Upload de mensagem de imagem ou vídeo e criar mensagem persistida em DB"""
-    # Basic validations
+    """Upload de mensagem de imagem ou vídeo com persistência resiliente."""
     receiver = db.query(User).filter(User.id == receiver_id).first()
     if not receiver:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiver not found")
 
-    # Validate content type
     if not (file.content_type.startswith('image/') or file.content_type.startswith('video/')):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be an image or video")
 
-    MAX_MSG_MEDIA_SIZE = 25 * 1024 * 1024  # 25MB
-    # Check size if provided
+    MAX_MSG_MEDIA_SIZE = 25 * 1024 * 1024
     try:
         size_attr = getattr(file, 'size', None)
         if size_attr and size_attr > MAX_MSG_MEDIA_SIZE:
@@ -437,63 +434,70 @@ async def upload_media_message(
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not read uploaded file")
 
-    mtype = 'image' if file.content_type.startswith('image/') else 'video'
+    message_type = 'image' if file.content_type.startswith('image/') else 'video'
+    participant_ids = sorted([current_user.id, receiver.id])
+    conversation = db.query(Conversation).filter(
+        Conversation.user1_id == participant_ids[0],
+        Conversation.user2_id == participant_ids[1]
+    ).first()
+
+    if not conversation:
+        conversation = Conversation(
+            user1_id=participant_ids[0],
+            user2_id=participant_ids[1],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
+        )
+        db.add(conversation)
+        db.flush()
 
     new_message = Message(
         sender_id=current_user.id,
         receiver_id=receiver_id,
-        message_type=mtype,
+        conversation_id=conversation.id,
+        message_type=message_type,
         media_blob=content,
         media_mime=file.content_type
     )
 
     db.add(new_message)
-    db.commit()
-    db.refresh(new_message)
+    db.flush()
 
     new_message.media_url = f"/api/media/messages/{new_message.id}"
+    conversation.last_message_id = new_message.id
+    conversation.updated_at = datetime.utcnow()
+    conversation.last_message = new_message
+
     db.commit()
     db.refresh(new_message)
 
-    # Update conversation
-    conversation = db.query(Conversation).filter(
-        or_(
-            and_(Conversation.user1_id == current_user.id, Conversation.user2_id == receiver_id),
-            and_(Conversation.user1_id == receiver_id, Conversation.user2_id == current_user.id)
-        )
-    ).first()
+    message_dict = new_message.to_dict()
+    message_dict["sender"] = message_dict.get("sender") or current_user.to_public_dict()
+    message_dict["receiver"] = message_dict.get("receiver") or receiver.to_public_dict()
 
-    if not conversation:
-        conversation = Conversation(
-            user1_id=min(current_user.id, receiver_id),
-            user2_id=max(current_user.id, receiver_id)
-        )
-        db.add(conversation)
+    conversation_payload = conversation.to_dict(current_user.id)
+    conversation_payload["lastMessage"] = message_dict
+    conversation_payload["unreadCount"] = 0
 
-    conversation.last_message_id = new_message.id
-    conversation.updated_at = datetime.utcnow()
-    db.commit()
-
-    # Notification
     notification = Notification(
         user_id=receiver_id,
         type="message",
-        title=f"Nova mensagem de {'imagem' if mtype=='image' else 'vídeo'} de {current_user.full_name}",
+        title=f"Nova mensagem de {'imagem' if message_type == 'image' else 'vídeo'} de {current_user.full_name}",
         message="Enviou uma mídia",
         related_user_id=current_user.id,
         action_url=f"/messages/{current_user.id}"
     )
     db.add(notification)
     db.commit()
+    db.refresh(notification)
 
     try:
         from ..websocket import manager
-        message_dict = new_message.to_dict()
         await manager.send_message_notification(message_dict, receiver_id)
     except ImportError:
         pass
 
-    return {"message": "Media message sent successfully", "data": message_dict}
+    return {"message": "Media message sent successfully", "data": message_dict, "conversation": conversation_payload}
 
 @router.get("/unread-count")
 async def get_unread_count(
