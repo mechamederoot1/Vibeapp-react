@@ -98,7 +98,7 @@ const Friends = () => {
   }
 
   const handleProfileClick = (username) => {
-    navigate(`/profile/id/${username}`)
+    navigate(buildProfileUrl(username))
   }
 
   const tabs = [
