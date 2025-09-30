@@ -236,7 +236,18 @@ async def get_messages(
         msg.read_at = datetime.utcnow()
     
     db.commit()
-    
+
+    # Notificar remetentes sobre mensagens lidas
+    try:
+        from ..websocket import manager
+        for msg in unread_messages:
+            await manager.send_personal_message({
+                "type": "message_status",
+                "data": {"messageId": msg.id, "status": "read"}
+            }, msg.sender_id)
+    except ImportError:
+        pass
+
     return [msg.to_dict() for msg in reversed(messages)]
 
 @router.put("/{message_id}/read")
