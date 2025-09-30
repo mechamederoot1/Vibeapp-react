@@ -265,8 +265,11 @@ async def mark_message_read(
     
     message.is_read = True
     message.read_at = datetime.utcnow()
+    if not message.is_delivered:
+        message.is_delivered = True
+        message.delivered_at = message.delivered_at or datetime.utcnow()
     db.commit()
-    
+
     return {"message": "Message marked as read"}
 
 @router.delete("/{message_id}")
