@@ -92,8 +92,8 @@ const ProfileVisitors = ({ onClose }) => {
   }, [visitors, filter])
 
   const handleProfileClick = (username, id) => {
-    if (username) navigate(`/profile/${username}`)
-    else if (id) navigate(`/profile/${id}`)
+    if (username) navigate(`/profile/id/${username}`)
+    else if (id) navigate(`/profile/id/${id}`)
     onClose()
   }
 
