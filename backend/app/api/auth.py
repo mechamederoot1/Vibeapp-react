@@ -104,7 +104,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     return user
 
 @router.post("/register", response_model=Token)
-async def register(user_data: UserRegister, request: Request, db: Session = Depends(get_db)):
+async def register(user_data: UserRegister, request: Request, response: Response, db: Session = Depends(get_db)):
     try:
         print(f"🚀 Endpoint de registro chamado com dados: {user_data}")
 
