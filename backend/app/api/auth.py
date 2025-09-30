@@ -33,9 +33,11 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+from typing import Optional as _Optional
+
 class Token(BaseModel):
-    access_token: str
-    token_type: str
+    access_token: _Optional[str] = None
+    token_type: _Optional[str] = None
     user: dict
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
