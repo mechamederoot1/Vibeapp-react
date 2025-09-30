@@ -197,11 +197,21 @@ async def register(user_data: UserRegister, request: Request, response: Response
 
         print(f"🔑 Token criado para usuário {new_user.id}")
 
-        response_data = {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": new_user.to_dict()
-        }
+        # Set token as HttpOnly cookie
+        try:
+            is_secure = True if str(request.url.scheme).lower() == 'https' else False
+        except Exception:
+            is_secure = False
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=is_secure,
+            samesite="lax",
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path='/'
+        )
+        response_data = {"user": new_user.to_dict()}
         print(f"📤 Retornando resposta de sucesso para usuário {new_user.email}")
         return response_data
 
