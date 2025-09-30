@@ -209,8 +209,17 @@ async def get_messages(
             Message.is_deleted_by_receiver == False
         )
     ).order_by(desc(Message.created_at)).offset(offset).limit(limit).all()
-    
-    # Marcar mensagens como lidas
+
+    changed = False
+    delivery_update_ids = []
+    now = datetime.utcnow()
+    for msg in messages:
+        if msg.receiver_id == current_user.id and not msg.is_delivered:
+            msg.is_delivered = True
+            msg.delivered_at = now
+            changed = True
+            delivery_update_ids.append(msg.id)
+
     unread_messages = db.query(Message).filter(
         and_(
             Message.sender_id == user_id,
@@ -218,13 +227,22 @@ async def get_messages(
             Message.is_read == False
         )
     ).all()
-    
-    for msg in unread_messages:
-        msg.is_read = True
-        msg.read_at = datetime.utcnow()
-    
-    db.commit()
-    
+
+    if unread_messages:
+        read_timestamp = datetime.utcnow()
+        for msg in unread_messages:
+            msg.is_read = True
+            msg.read_at = read_timestamp
+            if not msg.is_delivered:
+                msg.is_delivered = True
+                msg.delivered_at = msg.delivered_at or read_timestamp
+        changed = True
+
+    if changed:
+        db.commit()
+    else:
+        db.rollback()
+
     return [msg.to_dict() for msg in reversed(messages)]
 
 @router.put("/{message_id}/read")
