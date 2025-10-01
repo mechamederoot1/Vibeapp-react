@@ -38,8 +38,12 @@ export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5
 
     const draw = () => {
       analyser.getByteTimeDomainData(dataArray)
-      ctx2d.fillStyle = bg
-      ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      if (bg && bg !== 'transparent') {
+        ctx2d.fillStyle = bg
+        ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      } else {
+        ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      }
 
       // bars style to mimic popular chat UIs
       const barWidth = Math.max(2, Math.floor(canvas.width / 120))
@@ -163,8 +167,12 @@ export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', b
     }
 
     const drawBarsFromPeaks = (usePeaks) => {
-      ctx2d.fillStyle = bg
-      ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      if (bg && bg !== 'transparent') {
+        ctx2d.fillStyle = bg
+        ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      } else {
+        ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      }
       const centerY = Math.floor(canvas.height / 2)
       const n = Math.max(1, usePeaks?.length || 0)
       const barWidth = Math.max(2, Math.floor(canvas.width / Math.min(120, n)))
@@ -182,8 +190,12 @@ export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', b
     const drawAnalyser = () => {
       if (!analyserRef.current || !dataRef.current) return
       analyserRef.current.getByteTimeDomainData(dataRef.current)
-      ctx2d.fillStyle = bg
-      ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      if (bg && bg !== 'transparent') {
+        ctx2d.fillStyle = bg
+        ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      } else {
+        ctx2d.clearRect(0, 0, canvas.width, canvas.height)
+      }
 
       const barWidth = Math.max(2, Math.floor(canvas.width / 120))
       const gap = Math.max(1, Math.floor(barWidth * 0.6))
