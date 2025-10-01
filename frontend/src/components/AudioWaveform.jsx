@@ -211,6 +211,8 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
 
   const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0
 
+  const iconColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? '#2563eb' : '#ffffff'
+
   return (
     <div className="w-full flex items-center gap-3">
       <audio ref={audioRef} src={src} preload="metadata" />
@@ -221,7 +223,7 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
           if (a.paused) a.play(); else a.pause()
         }}
         className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
-        style={{ backgroundColor: color, color: '#ffffff' }}
+        style={{ backgroundColor: color, color: iconColor }}
         aria-label="Reproduzir/Pausar áudio"
       >
         {isPlaying ? <Pause size={18} /> : <Play size={18} />}
