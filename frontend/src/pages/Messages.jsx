@@ -75,7 +75,7 @@ const Messages = () => {
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
-  const [messagesLimit] = useState(20);
+  const [messagesLimit] = useState(5);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
 
@@ -870,7 +870,12 @@ const Messages = () => {
 
   // Scroll quando mensagens mudarem
   useEffect(() => {
-    scrollToBottom();
+    const c = msgListRef.current;
+    if (!c) return;
+    const distanceFromBottom = c.scrollHeight - c.scrollTop - c.clientHeight;
+    if (distanceFromBottom < 140) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   // Limpar timeout ao desmontar
