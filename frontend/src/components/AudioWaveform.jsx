@@ -289,11 +289,11 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
             if (!a) return
             if (a.paused) a.play(); else a.pause()
           }}
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: playBgColor, color: '#ffffff' }}
+          className="rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: playBgColor, color: '#ffffff', width: height, height: height }}
           aria-label="Reproduzir/Pausar áudio"
         >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          {isPlaying ? <Pause size={Math.max(12, Math.floor(height * 0.55))} /> : <Play size={Math.max(12, Math.floor(height * 0.55))} />}
         </button>
 
         <div className="flex-1 relative select-none" style={{ height }}
