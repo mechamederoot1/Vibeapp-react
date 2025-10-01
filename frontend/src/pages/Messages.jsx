@@ -505,7 +505,7 @@ const Messages = () => {
       setIsRecording(true);
     } catch (error) {
       console.error('Erro ao iniciar gravação:', error);
-      alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.');
+      alert('Não foi poss��vel acessar o microfone. Verifique as permissões do navegador.');
     }
   };
 
@@ -919,7 +919,7 @@ const Messages = () => {
   return (
     <div className={`flex h-screen bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
       {/* Lista de Conversas */}
-      <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''}`}>
+      <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Mensagens</h1>
@@ -941,7 +941,7 @@ const Messages = () => {
           </div>
         </div>
 
-        <div ref={convListRef} onScroll={handleConversationsScroll} className="overflow-y-auto h-full">
+        <div ref={convListRef} onScroll={handleConversationsScroll} className="flex-1 overflow-y-auto min-h-0">
           {filteredConversations.map((conversation) => (
             <div
               key={conversation.id}
@@ -1025,7 +1025,7 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Header da Conversa */}
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center space-x-3">
@@ -1064,7 +1064,7 @@ const Messages = () => {
           </div>
 
           {/* Lista de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={msgListRef} onScroll={handleScroll}>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 overscroll-contain" ref={msgListRef} onScroll={handleScroll}>
             {loadingOlder && (
               <div className="flex justify-center py-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
@@ -1086,14 +1086,14 @@ const Messages = () => {
 
                   <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
                     <div className={`${message.messageType === 'audio'
-                      ? 'w-[78%] sm:w-[70%] max-w-full px-3 py-2 rounded-full'
+                      ? 'w-[78%] sm:w-[70%] max-w-full px-3 py-1 rounded-full'
                       : 'max-w-xs lg:max-w-md px-3 py-2 rounded-2xl'} overflow-hidden whitespace-pre-wrap break-words ${
                       message.senderId === user.id
                         ? 'bg-vibe-blue text-white'
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <PlaybackWaveform variant="bubble" src={message.mediaUrl} peaks={message.waveformPeaks} height={28} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} playBg={message.senderId === user.id ? '#1d4ed8' : '#2563eb'} bg="transparent" />
+                        <PlaybackWaveform variant="bubble" src={message.mediaUrl} peaks={message.waveformPeaks} height={24} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} playBg={message.senderId === user.id ? '#1d4ed8' : '#2563eb'} bg="transparent" />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (

@@ -99,7 +99,7 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
     return `${m}:${r}`
   }
 
-  // Precompute peaks when not provided so waveform is visible before play
+  // Precompute peaks (also for blob:) so waveform is visible before play
   useEffect(() => {
     let cancelled = false
     const doCompute = async () => {
@@ -110,7 +110,7 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
         const ctx = new (window.AudioContext || window.webkitAudioContext)()
         const audioBuf = await ctx.decodeAudioData(buf)
         const channel = audioBuf.getChannelData(0)
-        const bars = 120
+        const bars = 96
         const blockSize = Math.max(1, Math.floor(channel.length / bars))
         const peakArr = new Array(bars).fill(0)
         for (let i = 0; i < bars; i++) {
@@ -119,15 +119,20 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
           for (let j = 0; j < blockSize && start + j < channel.length; j++) {
             sum += Math.abs(channel[start + j])
           }
-          peakArr[i] = Math.min(1, sum / blockSize * 2)
+          peakArr[i] = Math.min(1, (sum / blockSize) * 2)
         }
         if (!cancelled) setComputedPeaks(peakArr)
         try { ctx.close() } catch(e){}
       } catch (e) {
-        // ignore; will fallback to analyser when playing
+        // Placeholder bars if CORS or decode fails (visible even before play)
+        if (!cancelled) {
+          const n = 64
+          const arr = Array.from({ length: n }, (_, i) => (Math.sin(i / 4) + 1) / 2)
+          setComputedPeaks(arr)
+        }
       }
     }
-    if (src && typeof src === 'string' && !src.startsWith('blob:')) doCompute()
+    if (src) doCompute()
     return () => { cancelled = true }
   }, [src, peaks])
 
@@ -175,13 +180,13 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
       }
       const centerY = Math.floor(canvas.height / 2)
       const n = Math.max(1, usePeaks?.length || 0)
-      const barWidth = Math.max(2, Math.floor(canvas.width / Math.min(120, n)))
-      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const barWidth = Math.max(3, Math.floor(canvas.width / Math.min(100, n)))
+      const gap = Math.max(2, Math.floor(barWidth * 0.6))
       const totalBars = Math.floor(canvas.width / (barWidth + gap))
       for (let i = 0; i < totalBars; i++) {
         const idx = Math.floor((i / totalBars) * n)
         const v = Math.min(1, Math.max(0, usePeaks[idx] || 0))
-        const h = Math.max(2, Math.floor(v * canvas.height))
+        const h = Math.max(6, Math.floor(v * canvas.height))
         ctx2d.fillStyle = color
         ctx2d.fillRect(i * (barWidth + gap), centerY - h / 2, barWidth, h)
       }
@@ -197,15 +202,15 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
         ctx2d.clearRect(0, 0, canvas.width, canvas.height)
       }
 
-      const barWidth = Math.max(2, Math.floor(canvas.width / 120))
-      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const barWidth = Math.max(3, Math.floor(canvas.width / 100))
+      const gap = Math.max(2, Math.floor(barWidth * 0.6))
       const step = Math.max(1, Math.floor(dataRef.current.length / Math.floor(canvas.width / (barWidth + gap))))
       const centerY = Math.floor(canvas.height / 2)
       ctx2d.fillStyle = color
       let x = 0
       for (let i = 0; i < dataRef.current.length; i += step) {
         const v = Math.abs(dataRef.current[i] - 128) / 128
-        const h = Math.max(2, Math.floor(v * canvas.height))
+        const h = Math.max(6, Math.floor(v * canvas.height))
         ctx2d.fillRect(x, centerY - h / 2, barWidth, h)
         x += barWidth + gap
       }
@@ -284,11 +289,11 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
             if (!a) return
             if (a.paused) a.play(); else a.pause()
           }}
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: playBgColor, color: '#ffffff' }}
+          className="rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: playBgColor, color: '#ffffff', width: height, height: height }}
           aria-label="Reproduzir/Pausar áudio"
         >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          {isPlaying ? <Pause size={Math.max(12, Math.floor(height * 0.55))} /> : <Play size={Math.max(12, Math.floor(height * 0.55))} />}
         </button>
 
         <div className="flex-1 relative select-none" style={{ height }}
