@@ -86,6 +86,7 @@ const Messages = () => {
   const typingTimersRef = useRef({});
   const recIntervalRef = useRef(null);
   const ignoreOnStopRef = useRef(false);
+  const autoSendOnStopRef = useRef(false);
   const mediaStreamRef = useRef(null);
   const elapsedOffsetRef = useRef(0);
   const elapsedStartRef = useRef(0);
@@ -445,6 +446,13 @@ const Messages = () => {
           setPendingAudioBlob(null);
           return;
         }
+        if (autoSendOnStopRef.current) {
+          autoSendOnStopRef.current = false;
+          setIsRecording(false);
+          setIsPaused(false);
+          await sendAudioMessage(audioBlob);
+          return;
+        }
         setPendingAudioBlob(audioBlob);
         setIsRecording(false);
         setIsPaused(false);
@@ -460,6 +468,14 @@ const Messages = () => {
 
   const stopRecordingKeep = () => {
     if (mediaRecorderRef.current && isRecording) {
+      try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const stopRecordingAndSend = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      autoSendOnStopRef.current = true;
       try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
       mediaRecorderRef.current.stop();
     }
@@ -1047,8 +1063,8 @@ const Messages = () => {
                       <source src={URL.createObjectURL(pendingAudioBlob)} />
                     </audio>
                     <div className="flex w-full gap-2">
-                      <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
-                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
+                      <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg inline-flex items-center justify-center"><Send size={18} className="mr-2" />Enviar</button>
+                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg inline-flex items-center justify-center"><X size={18} className="mr-2" />Descartar</button>
                     </div>
                   </>
                 ) : isRecording ? (
@@ -1074,11 +1090,12 @@ const Messages = () => {
                       <X size={18} />
                     </button>
                     <button
-                      onClick={stopRecordingKeep}
-                      className="p-2 rounded-lg bg-vibe-blue text-white hover:bg-vibe-blue-dark"
-                      aria-label="Concluir gravação"
+                      onClick={stopRecordingAndSend}
+                      className="p-2 rounded-full bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md"
+                      aria-label="Enviar áudio"
+                      title="Enviar áudio"
                     >
-                      <Square size={18} />
+                      <Send size={18} />
                     </button>
                   </div>
                 ) : null}
@@ -1119,17 +1136,20 @@ const Messages = () => {
 
                 <button
                   onClick={startRecording}
-                  className="hidden md:inline-flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg flex-shrink-0"
+                  className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md flex-shrink-0"
+                  aria-label="Gravar áudio"
+                  title="Gravar áudio"
                 >
                   <Mic size={20} />
                   <span>Gravar áudio</span>
                 </button>
                 <button
                   onClick={startRecording}
-                  className="md:hidden p-2 rounded-lg flex-shrink-0 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  className="md:hidden p-3 rounded-full flex-shrink-0 bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md"
                   aria-label="Gravar áudio"
+                  title="Gravar áudio"
                 >
-                  <Mic size={20} />
+                  <Mic size={22} />
                 </button>
 
                 <button
