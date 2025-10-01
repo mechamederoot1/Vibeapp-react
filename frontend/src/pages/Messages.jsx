@@ -1039,9 +1039,7 @@ const Messages = () => {
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
                   <>
-                    <audio controls className="w-full">
-                      <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} height={36} color="#2563eb" bg="#e5e7eb" />
-                    </audio>
+                    <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} height={36} color="#2563eb" bg="#e5e7eb" />
                     <div className="flex w-full gap-2">
                       <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
                       <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
