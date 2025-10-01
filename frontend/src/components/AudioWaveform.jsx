@@ -212,6 +212,7 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
   const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0
 
   const iconColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? '#2563eb' : '#ffffff'
+  const timeColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? 'rgba(255,255,255,0.85)' : 'rgba(55,65,81,0.8)'
 
   return (
     <div className="w-full flex items-center gap-3">
@@ -242,24 +243,8 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
       >
         <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px`, display: 'block', borderRadius: 8 }} />
         <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-white/70" style={{ left: `calc(${progress * 100}% - 6px)`, backgroundColor: color }} />
-      </div>
-
-      <div className="flex items-center gap-2 min-w-[88px]">
-        <button
-          onClick={() => {
-            const a = audioRef.current
-            if (!a) return
-            const next = rate >= 2 ? 1 : (rate >= 1.5 ? 2 : 1.5)
-            setRate(next)
-            a.playbackRate = next
-          }}
-          className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
-        >
-          {rate}x
-        </button>
-        <div className="text-xs tabular-nums opacity-70 w-14 text-right">
-          {fmt(currentTime)}
-        </div>
+        <div className="absolute -bottom-4 left-0 text-[10px] tabular-nums" style={{ color: timeColor }}>{fmt(currentTime)}</div>
+        <div className="absolute -bottom-4 right-0 text-[10px] tabular-nums" style={{ color: timeColor }}>{fmt(duration)}</div>
       </div>
     </div>
   )
