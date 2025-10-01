@@ -79,7 +79,7 @@ export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5
   )
 }
 
-export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', bg = '#e5e7eb' }) => {
+export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', bg = '#e5e7eb' }) => {
   const canvasRef = useRef(null)
   const audioRef = useRef(null)
   const rafRef = useRef(null)
@@ -274,7 +274,7 @@ export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', b
   const timeColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? 'rgba(255,255,255,0.85)' : 'rgba(55,65,81,0.8)'
 
   return (
-    <div className="w-full flex items-center gap-3">
+    <div className="w-full flex items-center gap-2">
       <audio ref={audioRef} src={src} preload="metadata" crossOrigin="anonymous" />
       <button
         onClick={() => {
@@ -282,12 +282,14 @@ export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', b
           if (!a) return
           if (a.paused) a.play(); else a.pause()
         }}
-        className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+        className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm"
         style={{ backgroundColor: color, color: iconColor }}
         aria-label="Reproduzir/Pausar áudio"
       >
-        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+        {isPlaying ? <Pause size={14} /> : <Play size={14} />}
       </button>
+
+      <span className="text-[11px] tabular-nums text-center" style={{ color: timeColor, minWidth: 36 }}>{fmt(currentTime)}</span>
 
       <div className="flex-1 relative select-none" style={{ height }}
         onClick={(e) => {
@@ -301,10 +303,10 @@ export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', b
         }}
       >
         <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px`, display: 'block', borderRadius: 8 }} />
-        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-white/70" style={{ left: `calc(${progress * 100}% - 6px)`, backgroundColor: color }} />
-        <div className="absolute -bottom-4 left-0 text-[10px] tabular-nums" style={{ color: timeColor }}>{fmt(currentTime)}</div>
-        <div className="absolute -bottom-4 right-0 text-[10px] tabular-nums" style={{ color: timeColor }}>{fmt(duration)}</div>
+        <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full border border-white/70" style={{ left: `calc(${progress * 100}% - 5px)`, backgroundColor: color }} />
       </div>
+
+      <span className="text-[11px] tabular-nums text-center" style={{ color: timeColor, minWidth: 36 }}>{fmt(duration)}</span>
     </div>
   )
 }
