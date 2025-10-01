@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X, Square } from 'lucide-react';
+import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
@@ -86,6 +86,7 @@ const Messages = () => {
   const typingTimersRef = useRef({});
   const recIntervalRef = useRef(null);
   const ignoreOnStopRef = useRef(false);
+  const sendOnStopRef = useRef(false);
   const mediaStreamRef = useRef(null);
   const elapsedOffsetRef = useRef(0);
   const elapsedStartRef = useRef(0);
@@ -445,6 +446,15 @@ const Messages = () => {
           setPendingAudioBlob(null);
           return;
         }
+        if (sendOnStopRef.current) {
+          sendOnStopRef.current = false;
+          setIsRecording(false);
+          setIsPaused(false);
+          setShowRecorder(false);
+          setPendingAudioBlob(null);
+          await sendAudioMessage(audioBlob);
+          return;
+        }
         setPendingAudioBlob(audioBlob);
         setIsRecording(false);
         setIsPaused(false);
@@ -458,8 +468,9 @@ const Messages = () => {
     }
   };
 
-  const stopRecordingKeep = () => {
+  const stopRecordingAndSend = () => {
     if (mediaRecorderRef.current && isRecording) {
+      sendOnStopRef.current = true;
       try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
       mediaRecorderRef.current.stop();
     }
@@ -1068,11 +1079,11 @@ const Messages = () => {
                       <X size={18} />
                     </button>
                     <button
-                      onClick={stopRecordingKeep}
+                      onClick={stopRecordingAndSend}
                       className="p-2 rounded-lg bg-vibe-blue text-white hover:bg-vibe-blue-dark"
-                      aria-label="Concluir gravação"
+                      aria-label="Enviar áudio"
                     >
-                      <Square size={18} />
+                      <Send size={18} />
                     </button>
                   </div>
                 ) : null}
