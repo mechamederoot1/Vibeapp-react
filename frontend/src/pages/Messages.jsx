@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X, Square } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LiveWaveform } from '../components/AudioWaveform';
+import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
@@ -1006,12 +1006,7 @@ const Messages = () => {
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <div className="flex items-center space-x-2">
-                          <audio controls className="w-full">
-                            <source src={message.mediaUrl} type="audio/ogg" />
-                            Seu navegador não suporta áudio.
-                          </audio>
-                        </div>
+                        <PlaybackWaveform src={message.mediaUrl} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg={message.senderId === user.id ? 'rgba(255,255,255,0.2)' : '#e5e7eb'} />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (
@@ -1045,7 +1040,7 @@ const Messages = () => {
                 {pendingAudioBlob ? (
                   <>
                     <audio controls className="w-full">
-                      <source src={URL.createObjectURL(pendingAudioBlob)} />
+                      <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} height={36} color="#2563eb" bg="#e5e7eb" />
                     </audio>
                     <div className="flex w-full gap-2">
                       <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
