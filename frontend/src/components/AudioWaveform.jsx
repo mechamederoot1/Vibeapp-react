@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { Play, Pause } from 'lucide-react'
 
 export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5e7eb' }) => {
   const canvasRef = useRef(null)
@@ -84,6 +85,17 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
   const analyserRef = useRef(null)
   const sourceRef = useRef(null)
   const dataRef = useRef(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [rate, setRate] = useState(1)
+
+  const fmt = (t) => {
+    const s = Math.max(0, Math.floor(t))
+    const m = String(Math.floor(s / 60)).padStart(1, '0')
+    const r = String(s % 60).padStart(2, '0')
+    return `${m}:${r}`
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -141,6 +153,20 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
       }
       ctx2d.lineTo(canvas.width, canvas.height / 2)
       ctx2d.stroke()
+
+      // progress indicator (vertical line)
+      const a = audioRef.current
+      if (a && a.duration > 0) {
+        const p = Math.min(1, Math.max(0, a.currentTime / a.duration))
+        const xPos = p * canvas.width
+        ctx2d.strokeStyle = color
+        ctx2d.lineWidth = 1 * dpr
+        ctx2d.beginPath()
+        ctx2d.moveTo(xPos, 0)
+        ctx2d.lineTo(xPos, canvas.height)
+        ctx2d.stroke()
+      }
+
       rafRef.current = requestAnimationFrame(draw)
     }
 
@@ -148,27 +174,42 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
       setup()
       try { await audioCtxRef.current.resume() } catch (e) {}
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      setIsPlaying(true)
       draw()
     }
 
     const onPause = () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      setIsPlaying(false)
+    }
+
+    const onTime = () => {
+      setCurrentTime(audio.currentTime || 0)
+    }
+    const onLoaded = () => {
+      setDuration(audio.duration || 0)
     }
 
     audio.addEventListener('play', onPlay)
     audio.addEventListener('pause', onPause)
     audio.addEventListener('ended', onPause)
+    audio.addEventListener('timeupdate', onTime)
+    audio.addEventListener('loadedmetadata', onLoaded)
 
     return () => {
       audio.removeEventListener('play', onPlay)
       audio.removeEventListener('pause', onPause)
       audio.removeEventListener('ended', onPause)
+      audio.removeEventListener('timeupdate', onTime)
+      audio.removeEventListener('loadedmetadata', onLoaded)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       try { sourceRef.current && sourceRef.current.disconnect() } catch (e) {}
       try { analyserRef.current && analyserRef.current.disconnect() } catch (e) {}
       try { audioCtxRef.current && audioCtxRef.current.close() } catch (e) {}
     }
   }, [src, height, color, bg])
+
+  const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0
 
   return (
     <div className="w-full flex items-center gap-3">
@@ -179,13 +220,44 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
           if (!a) return
           if (a.paused) a.play(); else a.pause()
         }}
-        className="px-3 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200"
+        className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm"
+        style={{ backgroundColor: color, color: '#ffffff' }}
         aria-label="Reproduzir/Pausar áudio"
       >
-        ▶︎
+        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
       </button>
-      <div className="flex-1" style={{ height }}>
+
+      <div className="flex-1 relative select-none" style={{ height }}
+        onClick={(e) => {
+          const a = audioRef.current
+          const canvas = canvasRef.current
+          if (!a || !canvas || !duration) return
+          const rect = canvas.getBoundingClientRect()
+          const x = e.clientX - rect.left
+          const p = Math.min(1, Math.max(0, x / rect.width))
+          a.currentTime = p * duration
+        }}
+      >
         <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px`, display: 'block', borderRadius: 8 }} />
+        <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border border-white/70" style={{ left: `calc(${progress * 100}% - 6px)`, backgroundColor: color }} />
+      </div>
+
+      <div className="flex items-center gap-2 min-w-[88px]">
+        <button
+          onClick={() => {
+            const a = audioRef.current
+            if (!a) return
+            const next = rate >= 2 ? 1 : (rate >= 1.5 ? 2 : 1.5)
+            setRate(next)
+            a.playbackRate = next
+          }}
+          className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+        >
+          {rate}x
+        </button>
+        <div className="text-xs tabular-nums opacity-70 w-14 text-right">
+          {fmt(currentTime)}
+        </div>
       </div>
     </div>
   )
