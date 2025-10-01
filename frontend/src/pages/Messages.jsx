@@ -41,6 +41,8 @@ const formatDateLabel = (iso) => {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
+const MOCK_AUDIO_SEND = import.meta.env.VITE_MOCK_AUDIO_SEND === 'true'
+
 const Messages = () => {
   const { user } = useAuth();
   const { lastMessage, sendMessage: sendWebSocketMessage } = useWebSocket();
@@ -479,6 +481,29 @@ const Messages = () => {
   const sendAudioMessage = async (audioBlob) => {
     if (!selectedConversation) return;
 
+    // Mock path only for audio send when enabled
+    if (MOCK_AUDIO_SEND) {
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+      return
+    }
+
     const formData = new FormData();
     formData.append('receiver_id', selectedConversation.otherUser.id);
 
@@ -504,27 +529,26 @@ const Messages = () => {
       }
     } catch (error) {
       console.warn('Sem backend para enviar áudio, usando modo demo', error)
+      // If backend fails unexpectedly and mock is off, still show local preview
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
     }
-
-    // Fallback demo
-    const url = URL.createObjectURL(audioBlob)
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: '',
-      messageType: 'audio',
-      mediaUrl: url,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
-    }
-    setMessages(prev => [...prev, tempMsg])
-    setTimeout(scrollToBottom, 100)
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
   };
 
   // Indicar que está digitando
