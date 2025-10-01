@@ -1091,7 +1091,7 @@ const Messages = () => {
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <PlaybackWaveform src={message.mediaUrl} peaks={message.waveformPeaks} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg={message.senderId === user.id ? 'rgba(255,255,255,0.2)' : '#e5e7eb'} />
+                        <PlaybackWaveform src={message.mediaUrl} peaks={message.waveformPeaks} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg="transparent" />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (
