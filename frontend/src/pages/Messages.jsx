@@ -70,6 +70,7 @@ const Messages = () => {
   const [videoInputKey, setVideoInputKey] = useState(0)
   const [showRecorder, setShowRecorder] = useState(false)
   const [pendingAudioBlob, setPendingAudioBlob] = useState(null)
+  const [pendingPeaks, setPendingPeaks] = useState(null)
   const [elapsedMs, setElapsedMs] = useState(0)
 
   // Pagination state for messages
@@ -91,6 +92,13 @@ const Messages = () => {
   const elapsedOffsetRef = useRef(0);
   const elapsedStartRef = useRef(0);
   const textareaRef = useRef(null);
+  // waveform capture during recording
+  const recAudioCtxRef = useRef(null);
+  const recAnalyserRef = useRef(null);
+  const recSourceRef = useRef(null);
+  const recDataRef = useRef(null);
+  const recWaveTimerRef = useRef(null);
+  const recPeaksRef = useRef([]);
 
   const autoResizeTextarea = () => {
     const ta = textareaRef.current;
@@ -419,9 +427,34 @@ const Messages = () => {
         mediaRecorderRef.current = new MediaRecorder(stream);
       }
 
+      // setup waveform capture
+      try {
+        recAudioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        recAnalyserRef.current = recAudioCtxRef.current.createAnalyser();
+        recAnalyserRef.current.fftSize = 1024;
+        recSourceRef.current = recAudioCtxRef.current.createMediaStreamSource(stream);
+        recSourceRef.current.connect(recAnalyserRef.current);
+        recDataRef.current = new Uint8Array(recAnalyserRef.current.frequencyBinCount);
+        recPeaksRef.current = [];
+        if (recWaveTimerRef.current) clearInterval(recWaveTimerRef.current);
+        recWaveTimerRef.current = setInterval(() => {
+          if (!recAnalyserRef.current || !recDataRef.current) return;
+          recAnalyserRef.current.getByteTimeDomainData(recDataRef.current);
+          let min = 255, max = 0;
+          for (let i = 0; i < recDataRef.current.length; i++) {
+            const v = recDataRef.current[i];
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+          const peak = Math.min(1, Math.max(0, (max - min) / 255));
+          recPeaksRef.current.push(peak);
+        }, 50);
+      } catch(e) { }
+
       audioChunksRef.current = [];
       ignoreOnStopRef.current = false;
       setPendingAudioBlob(null);
+      setPendingPeaks(null);
       setElapsedMs(0);
       if (recIntervalRef.current) clearInterval(recIntervalRef.current);
       elapsedOffsetRef.current = 0;
@@ -436,6 +469,11 @@ const Messages = () => {
         const tracks = mediaStreamRef.current?.getTracks?.() || [];
         tracks.forEach(track => track.stop());
         if (recIntervalRef.current) { clearInterval(recIntervalRef.current); recIntervalRef.current = null; }
+        if (recWaveTimerRef.current) { clearInterval(recWaveTimerRef.current); recWaveTimerRef.current = null; }
+        try { recSourceRef.current && recSourceRef.current.disconnect(); } catch(e) {}
+        try { recAnalyserRef.current && recAnalyserRef.current.disconnect(); } catch(e) {}
+        try { recAudioCtxRef.current && recAudioCtxRef.current.close(); } catch(e) {}
+        const peaksSnapshot = (recPeaksRef.current || []).slice();
         const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current?.mimeType || 'audio/ogg' });
         if (ignoreOnStopRef.current) {
           ignoreOnStopRef.current = false;
@@ -444,6 +482,7 @@ const Messages = () => {
           setIsRecording(false);
           setShowRecorder(false);
           setPendingAudioBlob(null);
+          setPendingPeaks(null);
           return;
         }
         if (sendOnStopRef.current) {
@@ -452,10 +491,12 @@ const Messages = () => {
           setIsPaused(false);
           setShowRecorder(false);
           setPendingAudioBlob(null);
-          await sendAudioMessage(audioBlob);
+          setPendingPeaks(null);
+          await sendAudioMessage(audioBlob, peaksSnapshot);
           return;
         }
         setPendingAudioBlob(audioBlob);
+        setPendingPeaks(peaksSnapshot);
         setIsRecording(false);
         setIsPaused(false);
       };
@@ -484,6 +525,7 @@ const Messages = () => {
         mediaRecorderRef.current.pause();
         setIsPaused(true);
         if (recIntervalRef.current) { clearInterval(recIntervalRef.current); recIntervalRef.current = null; }
+        if (recWaveTimerRef.current) { clearInterval(recWaveTimerRef.current); recWaveTimerRef.current = null; }
         if (elapsedStartRef.current) {
           elapsedOffsetRef.current += (Date.now() - elapsedStartRef.current);
         }
@@ -500,6 +542,19 @@ const Messages = () => {
         elapsedStartRef.current = Date.now();
         if (recIntervalRef.current) clearInterval(recIntervalRef.current);
         recIntervalRef.current = setInterval(() => setElapsedMs(elapsedOffsetRef.current + (Date.now() - elapsedStartRef.current)), 200);
+        if (recWaveTimerRef.current) clearInterval(recWaveTimerRef.current);
+        recWaveTimerRef.current = setInterval(() => {
+          if (!recAnalyserRef.current || !recDataRef.current) return;
+          recAnalyserRef.current.getByteTimeDomainData(recDataRef.current);
+          let min = 255, max = 0;
+          for (let i = 0; i < recDataRef.current.length; i++) {
+            const v = recDataRef.current[i];
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+          const peak = Math.min(1, Math.max(0, (max - min) / 255));
+          recPeaksRef.current.push(peak);
+        }, 50);
       }
     } catch(e) {}
   };
@@ -511,9 +566,14 @@ const Messages = () => {
       mediaRecorderRef.current.stop();
     } else {
       setPendingAudioBlob(null);
+      setPendingPeaks(null);
       setShowRecorder(false);
       setElapsedMs(0);
       setIsPaused(false);
+      if (recWaveTimerRef.current) { clearInterval(recWaveTimerRef.current); recWaveTimerRef.current = null; }
+      try { recSourceRef.current && recSourceRef.current.disconnect(); } catch(e) {}
+      try { recAnalyserRef.current && recAnalyserRef.current.disconnect(); } catch(e) {}
+      try { recAudioCtxRef.current && recAudioCtxRef.current.close(); } catch(e) {}
     }
   };
 
@@ -521,12 +581,14 @@ const Messages = () => {
     const blob = pendingAudioBlob;
     if (!blob) return;
     setPendingAudioBlob(null);
+    const peaks = (pendingPeaks || []).slice();
+    setPendingPeaks(null);
     setShowRecorder(false);
-    await sendAudioMessage(blob);
+    await sendAudioMessage(blob, peaks);
   };
 
   // Enviar mensagem de áudio
-  const sendAudioMessage = async (audioBlob) => {
+  const sendAudioMessage = async (audioBlob, peaks) => {
     if (!selectedConversation) return;
 
     // Mock path only for audio send when enabled
@@ -539,6 +601,7 @@ const Messages = () => {
         content: '',
         messageType: 'audio',
         mediaUrl: url,
+        waveformPeaks: Array.isArray(peaks) ? peaks : undefined,
         isRead: false,
         createdAt: new Date().toISOString(),
         sender: user,
@@ -560,6 +623,7 @@ const Messages = () => {
     const ext = mime.split('/')[1].split(';')[0] || 'ogg';
     const file = new File([audioBlob], `audio.${ext}`, { type: mime });
     formData.append('audio_file', file);
+    try { if (Array.isArray(peaks)) formData.append('waveform', JSON.stringify(peaks)); } catch(e){}
 
     try {
       const res = await api.post('/messages/upload-audio', formData, {
@@ -586,6 +650,7 @@ const Messages = () => {
         content: '',
         messageType: 'audio',
         mediaUrl: url,
+        waveformPeaks: Array.isArray(peaks) ? peaks : undefined,
         isRead: false,
         createdAt: new Date().toISOString(),
         sender: user,
@@ -818,6 +883,10 @@ const Messages = () => {
       Object.values(timers).forEach(t => t && clearTimeout(t));
       typingTimersRef.current = {};
       if (recIntervalRef.current) clearInterval(recIntervalRef.current);
+      if (recWaveTimerRef.current) clearInterval(recWaveTimerRef.current);
+      try { recSourceRef.current && recSourceRef.current.disconnect(); } catch(e) {}
+      try { recAnalyserRef.current && recAnalyserRef.current.disconnect(); } catch(e) {}
+      try { recAudioCtxRef.current && recAudioCtxRef.current.close(); } catch(e) {}
       const tracks = mediaStreamRef.current?.getTracks?.() || [];
       tracks.forEach(t => t.stop());
     };
@@ -1017,7 +1086,7 @@ const Messages = () => {
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <PlaybackWaveform src={message.mediaUrl} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg={message.senderId === user.id ? 'rgba(255,255,255,0.2)' : '#e5e7eb'} />
+                        <PlaybackWaveform src={message.mediaUrl} peaks={message.waveformPeaks} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg={message.senderId === user.id ? 'rgba(255,255,255,0.2)' : '#e5e7eb'} />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (
@@ -1050,37 +1119,45 @@ const Messages = () => {
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
                   <>
-                    <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} height={36} color="#2563eb" bg="#e5e7eb" />
+                    <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} peaks={pendingPeaks} height={36} color="#2563eb" bg="#e5e7eb" />
                     <div className="flex w-full gap-2">
                       <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
                       <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
                     </div>
                   </>
                 ) : isRecording ? (
-                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-3 w-full">
+                    <button
+                      onClick={cancelRecording}
+                      className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      aria-label="Descartar gravação"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+
+                    <div className="relative flex-1 min-w-0 bg-white border border-gray-200 rounded-full px-3 py-2 shadow-sm">
+                      <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+                      <div className="pl-5 pr-16">
+                        {mediaStreamRef.current && (
+                          <LiveWaveform stream={mediaStreamRef.current} height={28} color="#9ca3af" bg="#ffffff" />
+                        )}
+                      </div>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-700 tabular-nums">
+                        {formatElapsed(elapsedMs)}
+                      </div>
+                    </div>
+
                     <button
                       onClick={isPaused ? resumeRecording : pauseRecording}
-                      className="p-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      className={`p-3 rounded-full ${isPaused ? 'bg-green-500 text-white' : 'bg-red-500 text-white'} hover:opacity-90`}
                       aria-label={isPaused ? 'Retomar gravação' : 'Pausar gravação'}
                     >
                       {isPaused ? <Play size={18} /> : <Pause size={18} />}
                     </button>
-                    <div className="flex-1 min-w-0">
-                      {mediaStreamRef.current && (
-                        <LiveWaveform stream={mediaStreamRef.current} height={32} color="#2563eb" bg="#e5e7eb" />
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-600 w-16 text-right tabular-nums">{formatElapsed(elapsedMs)}</div>
-                    <button
-                      onClick={cancelRecording}
-                      className="p-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
-                      aria-label="Cancelar"
-                    >
-                      <X size={18} />
-                    </button>
+
                     <button
                       onClick={stopRecordingAndSend}
-                      className="p-2 rounded-lg bg-vibe-blue text-white hover:bg-vibe-blue-dark"
+                      className="p-3 rounded-full bg-vibe-blue text-white hover:bg-vibe-blue-dark"
                       aria-label="Enviar áudio"
                     >
                       <Send size={18} />

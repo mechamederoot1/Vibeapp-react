@@ -41,21 +41,19 @@ export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5
       ctx2d.fillStyle = bg
       ctx2d.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx2d.lineWidth = 2 * dpr
-      ctx2d.strokeStyle = color
-      ctx2d.beginPath()
-
-      const sliceWidth = canvas.width / bufferLength
+      // bars style to mimic popular chat UIs
+      const barWidth = Math.max(2, Math.floor(canvas.width / 120))
+      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const step = Math.max(1, Math.floor(dataArray.length / Math.floor(canvas.width / (barWidth + gap))))
+      const centerY = Math.floor(canvas.height / 2)
+      ctx2d.fillStyle = color
       let x = 0
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0
-        const y = (v * canvas.height) / 2
-        if (i === 0) ctx2d.moveTo(x, y)
-        else ctx2d.lineTo(x, y)
-        x += sliceWidth
+      for (let i = 0; i < dataArray.length; i += step) {
+        const v = Math.abs(dataArray[i] - 128) / 128
+        const h = Math.max(2, Math.floor(v * canvas.height))
+        ctx2d.fillRect(x, centerY - h / 2, barWidth, h)
+        x += barWidth + gap
       }
-      ctx2d.lineTo(canvas.width, canvas.height / 2)
-      ctx2d.stroke()
 
       rafRef.current = requestAnimationFrame(draw)
     }
@@ -77,7 +75,7 @@ export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5
   )
 }
 
-export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e5e7eb' }) => {
+export const PlaybackWaveform = ({ src, peaks, height = 36, color = '#2563eb', bg = '#e5e7eb' }) => {
   const canvasRef = useRef(null)
   const audioRef = useRef(null)
   const rafRef = useRef(null)
@@ -88,7 +86,6 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
-  const [rate, setRate] = useState(1)
 
   const fmt = (t) => {
     const s = Math.max(0, Math.floor(t))
@@ -117,6 +114,7 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
     let dataArray
 
     const setup = () => {
+      if (peaks && peaks.length) return // no need for analyser when using precomputed peaks
       if (audioCtxRef.current) return
       audioCtx = new (window.AudioContext || window.webkitAudioContext)()
       audioCtxRef.current = audioCtx
@@ -131,30 +129,46 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
       dataRef.current = dataArray
     }
 
-    const draw = () => {
+    const drawBarsFromPeaks = () => {
+      ctx2d.fillStyle = bg
+      ctx2d.fillRect(0, 0, canvas.width, canvas.height)
+      const centerY = Math.floor(canvas.height / 2)
+      const n = Math.max(1, peaks?.length || 0)
+      const barWidth = Math.max(2, Math.floor(canvas.width / Math.min(120, n)))
+      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const totalBars = Math.floor(canvas.width / (barWidth + gap))
+      for (let i = 0; i < totalBars; i++) {
+        const idx = Math.floor((i / totalBars) * n)
+        const v = Math.min(1, Math.max(0, peaks[idx] || 0))
+        const h = Math.max(2, Math.floor(v * canvas.height))
+        ctx2d.fillStyle = color
+        ctx2d.fillRect(i * (barWidth + gap), centerY - h / 2, barWidth, h)
+      }
+    }
+
+    const drawAnalyser = () => {
       if (!analyserRef.current || !dataRef.current) return
       analyserRef.current.getByteTimeDomainData(dataRef.current)
       ctx2d.fillStyle = bg
       ctx2d.fillRect(0, 0, canvas.width, canvas.height)
 
-      ctx2d.lineWidth = 2 * dpr
-      ctx2d.strokeStyle = color
-      ctx2d.beginPath()
-
-      const bufferLength = dataRef.current.length
-      const sliceWidth = canvas.width / bufferLength
+      const barWidth = Math.max(2, Math.floor(canvas.width / 120))
+      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const step = Math.max(1, Math.floor(dataRef.current.length / Math.floor(canvas.width / (barWidth + gap))))
+      const centerY = Math.floor(canvas.height / 2)
+      ctx2d.fillStyle = color
       let x = 0
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataRef.current[i] / 128.0
-        const y = (v * canvas.height) / 2
-        if (i === 0) ctx2d.moveTo(x, y)
-        else ctx2d.lineTo(x, y)
-        x += sliceWidth
+      for (let i = 0; i < dataRef.current.length; i += step) {
+        const v = Math.abs(dataRef.current[i] - 128) / 128
+        const h = Math.max(2, Math.floor(v * canvas.height))
+        ctx2d.fillRect(x, centerY - h / 2, barWidth, h)
+        x += barWidth + gap
       }
-      ctx2d.lineTo(canvas.width, canvas.height / 2)
-      ctx2d.stroke()
+    }
 
-      // progress indicator (vertical line)
+    const draw = () => {
+      if (peaks && peaks.length) drawBarsFromPeaks(); else drawAnalyser()
+
       const a = audioRef.current
       if (a && a.duration > 0) {
         const p = Math.min(1, Math.max(0, a.currentTime / a.duration))
@@ -172,7 +186,7 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
 
     const onPlay = async () => {
       setup()
-      try { await audioCtxRef.current.resume() } catch (e) {}
+      try { await audioCtxRef.current?.resume?.() } catch (e) {}
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       setIsPlaying(true)
       draw()
@@ -181,20 +195,21 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
     const onPause = () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       setIsPlaying(false)
+      // draw once to render final progress position
+      draw()
     }
 
-    const onTime = () => {
-      setCurrentTime(audio.currentTime || 0)
-    }
-    const onLoaded = () => {
-      setDuration(audio.duration || 0)
-    }
+    const onTime = () => setCurrentTime(audio.currentTime || 0)
+    const onLoaded = () => setDuration(audio.duration || 0)
 
     audio.addEventListener('play', onPlay)
     audio.addEventListener('pause', onPause)
     audio.addEventListener('ended', onPause)
     audio.addEventListener('timeupdate', onTime)
     audio.addEventListener('loadedmetadata', onLoaded)
+
+    // initial paint
+    draw()
 
     return () => {
       audio.removeEventListener('play', onPlay)
@@ -207,7 +222,7 @@ export const PlaybackWaveform = ({ src, height = 36, color = '#2563eb', bg = '#e
       try { analyserRef.current && analyserRef.current.disconnect() } catch (e) {}
       try { audioCtxRef.current && audioCtxRef.current.close() } catch (e) {}
     }
-  }, [src, height, color, bg])
+  }, [src, peaks, height, color, bg])
 
   const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 0
 
