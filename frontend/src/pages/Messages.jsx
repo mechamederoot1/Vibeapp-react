@@ -1085,7 +1085,9 @@ const Messages = () => {
                   )}
 
                   <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md ${message.messageType === 'audio' ? 'px-3 py-2 rounded-full' : 'px-3 py-2 rounded-2xl'} overflow-hidden whitespace-pre-wrap break-words ${
+                    <div className={`${message.messageType === 'audio'
+                      ? 'w-[78%] sm:w-[70%] max-w-full px-3 py-2 rounded-full'
+                      : 'max-w-xs lg:max-w-md px-3 py-2 rounded-2xl'} overflow-hidden whitespace-pre-wrap break-words ${
                       message.senderId === user.id
                         ? 'bg-vibe-blue text-white'
                         : 'bg-gray-200 text-gray-900'
