@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X, Square } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LiveWaveform } from '../components/AudioWaveform';
+import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
@@ -86,7 +86,6 @@ const Messages = () => {
   const typingTimersRef = useRef({});
   const recIntervalRef = useRef(null);
   const ignoreOnStopRef = useRef(false);
-  const autoSendOnStopRef = useRef(false);
   const mediaStreamRef = useRef(null);
   const elapsedOffsetRef = useRef(0);
   const elapsedStartRef = useRef(0);
@@ -446,13 +445,6 @@ const Messages = () => {
           setPendingAudioBlob(null);
           return;
         }
-        if (autoSendOnStopRef.current) {
-          autoSendOnStopRef.current = false;
-          setIsRecording(false);
-          setIsPaused(false);
-          await sendAudioMessage(audioBlob);
-          return;
-        }
         setPendingAudioBlob(audioBlob);
         setIsRecording(false);
         setIsPaused(false);
@@ -473,13 +465,6 @@ const Messages = () => {
     }
   };
 
-  const stopRecordingAndSend = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      autoSendOnStopRef.current = true;
-      try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
-      mediaRecorderRef.current.stop();
-    }
-  };
 
   const pauseRecording = () => {
     if (!mediaRecorderRef.current) return;
@@ -1021,12 +1006,7 @@ const Messages = () => {
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <div className="flex items-center space-x-2">
-                          <audio controls className="w-full">
-                            <source src={message.mediaUrl} type="audio/ogg" />
-                            Seu navegador não suporta áudio.
-                          </audio>
-                        </div>
+                        <PlaybackWaveform src={message.mediaUrl} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg={message.senderId === user.id ? 'rgba(255,255,255,0.2)' : '#e5e7eb'} />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (
@@ -1059,12 +1039,10 @@ const Messages = () => {
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
                   <>
-                    <audio controls className="w-full">
-                      <source src={URL.createObjectURL(pendingAudioBlob)} />
-                    </audio>
+                    <PlaybackWaveform src={URL.createObjectURL(pendingAudioBlob)} height={36} color="#2563eb" bg="#e5e7eb" />
                     <div className="flex w-full gap-2">
-                      <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg inline-flex items-center justify-center"><Send size={18} className="mr-2" />Enviar</button>
-                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg inline-flex items-center justify-center"><X size={18} className="mr-2" />Descartar</button>
+                      <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
+                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
                     </div>
                   </>
                 ) : isRecording ? (
@@ -1090,12 +1068,11 @@ const Messages = () => {
                       <X size={18} />
                     </button>
                     <button
-                      onClick={stopRecordingAndSend}
-                      className="p-2 rounded-full bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md"
-                      aria-label="Enviar áudio"
-                      title="Enviar áudio"
+                      onClick={stopRecordingKeep}
+                      className="p-2 rounded-lg bg-vibe-blue text-white hover:bg-vibe-blue-dark"
+                      aria-label="Concluir gravação"
                     >
-                      <Send size={18} />
+                      <Square size={18} />
                     </button>
                   </div>
                 ) : null}
@@ -1136,20 +1113,17 @@ const Messages = () => {
 
                 <button
                   onClick={startRecording}
-                  className="hidden md:inline-flex items-center gap-2 px-3 py-2 rounded-full bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md flex-shrink-0"
-                  aria-label="Gravar áudio"
-                  title="Gravar áudio"
+                  className="hidden md:inline-flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg flex-shrink-0"
                 >
                   <Mic size={20} />
                   <span>Gravar áudio</span>
                 </button>
                 <button
                   onClick={startRecording}
-                  className="md:hidden p-3 rounded-full flex-shrink-0 bg-vibe-blue text-white hover:bg-vibe-blue-dark shadow-md"
+                  className="md:hidden p-2 rounded-lg flex-shrink-0 bg-gray-100 text-gray-700 hover:bg-gray-200"
                   aria-label="Gravar áudio"
-                  title="Gravar áudio"
                 >
-                  <Mic size={22} />
+                  <Mic size={20} />
                 </button>
 
                 <button
