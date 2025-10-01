@@ -79,7 +79,7 @@ export const LiveWaveform = ({ stream, height = 36, color = '#2563eb', bg = '#e5
   )
 }
 
-export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', bg = '#e5e7eb' }) => {
+export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', bg = '#e5e7eb', variant = 'default', playBg }) => {
   const canvasRef = useRef(null)
   const audioRef = useRef(null)
   const rafRef = useRef(null)
@@ -272,6 +272,41 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
 
   const iconColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? '#2563eb' : '#ffffff'
   const timeColor = (typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white' ? 'rgba(255,255,255,0.85)' : 'rgba(55,65,81,0.8)'
+  const playBgColor = playBg || (((typeof color === 'string' && color.toLowerCase() === '#ffffff') || color === 'white') ? '#1d4ed8' : '#2563eb')
+
+  if (variant === 'bubble') {
+    return (
+      <div className="w-full flex items-center gap-3">
+        <audio ref={audioRef} src={src} preload="metadata" crossOrigin="anonymous" />
+        <button
+          onClick={() => {
+            const a = audioRef.current
+            if (!a) return
+            if (a.paused) a.play(); else a.pause()
+          }}
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ backgroundColor: playBgColor, color: '#ffffff' }}
+          aria-label="Reproduzir/Pausar áudio"
+        >
+          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+        </button>
+
+        <div className="flex-1 relative select-none" style={{ height }}
+          onClick={(e) => {
+            const a = audioRef.current
+            const canvas = canvasRef.current
+            if (!a || !canvas || !duration) return
+            const rect = canvas.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const p = Math.min(1, Math.max(0, x / rect.width))
+            a.currentTime = p * duration
+          }}
+        >
+          <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px`, display: 'block' }} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full flex items-center gap-2">
