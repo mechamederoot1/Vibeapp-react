@@ -22,7 +22,7 @@ const statusIcon = (status, isOwn) => {
     case 'delivered':
       return <CheckCheck className="inline-block ml-1 opacity-60" size={14} />
     case 'read':
-      return <CheckCheck className="inline-block ml-1 text-white" size={14} />
+      return <CheckCheck className="inline-block ml-1 text-vibe-blue" size={14} />
     default:
       return null
   }
@@ -239,16 +239,10 @@ const Messages = () => {
   };
 
   const scheduleStatusProgress = (msg, otherId) => {
-    // Progressão de status local: sending -> sent -> delivered -> read
+    // Demo-only progression: sending -> sent (do not auto mark delivered/read)
     setTimeout(() => {
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m))
     }, 300)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m))
-    }, 1000)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read', isRead: true } : m))
-    }, 2500)
 
     // Persistir demo
     setTimeout(() => {
@@ -834,7 +828,7 @@ const Messages = () => {
                           })}
                           {conversation.lastMessage.senderId === (user?.id) && (
                             <span className="ml-1 inline-block">
-                              {statusIcon(deriveStatus(conversation.lastMessage), true)}
+                              {statusIcon(deriveStatus(conversation.lastMessage), conversation.lastMessage?.senderId === user.id)}
                             </span>
                           )}
                         </span>
