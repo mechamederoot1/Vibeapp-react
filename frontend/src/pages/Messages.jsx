@@ -600,16 +600,29 @@ const Messages = () => {
     }
 
     if (lastMessage.type === 'message_delivered') {
-      const { messageId } = lastMessage.data || {}
+      const { messageId, receiverId, deliveredAt } = lastMessage.data || {}
       if (messageId) {
-        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt: lastMessage.data.deliveredAt, status: 'delivered' } : m))
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt, status: 'delivered' } : m))
+        setConversations(prev => prev.map(c => {
+          if (c.otherUser?.id === receiverId && c.lastMessage?.id === messageId) {
+            return { ...c, lastMessage: { ...c.lastMessage, isDelivered: true, deliveredAt, status: 'delivered' } }
+          }
+          return c
+        }))
       }
     }
 
     if (lastMessage.type === 'messages_read') {
       const ids = lastMessage.data?.messageIds || []
+      const readAt = lastMessage.data?.readAt
       if (ids.length) {
-        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt: lastMessage.data.readAt, status: 'read' } : m))
+        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt, status: 'read' } : m))
+        setConversations(prev => prev.map(c => {
+          if (c.lastMessage && ids.includes(c.lastMessage.id)) {
+            return { ...c, lastMessage: { ...c.lastMessage, isRead: true, readAt, status: 'read' } }
+          }
+          return c
+        }))
       }
       // Conversas podem mudar ordenação
       loadConversations();
