@@ -180,13 +180,13 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
       }
       const centerY = Math.floor(canvas.height / 2)
       const n = Math.max(1, usePeaks?.length || 0)
-      const barWidth = Math.max(2, Math.floor(canvas.width / Math.min(120, n)))
-      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const barWidth = Math.max(3, Math.floor(canvas.width / Math.min(100, n)))
+      const gap = Math.max(2, Math.floor(barWidth * 0.6))
       const totalBars = Math.floor(canvas.width / (barWidth + gap))
       for (let i = 0; i < totalBars; i++) {
         const idx = Math.floor((i / totalBars) * n)
         const v = Math.min(1, Math.max(0, usePeaks[idx] || 0))
-        const h = Math.max(2, Math.floor(v * canvas.height))
+        const h = Math.max(6, Math.floor(v * canvas.height))
         ctx2d.fillStyle = color
         ctx2d.fillRect(i * (barWidth + gap), centerY - h / 2, barWidth, h)
       }
