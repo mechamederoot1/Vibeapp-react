@@ -202,15 +202,15 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
         ctx2d.clearRect(0, 0, canvas.width, canvas.height)
       }
 
-      const barWidth = Math.max(2, Math.floor(canvas.width / 120))
-      const gap = Math.max(1, Math.floor(barWidth * 0.6))
+      const barWidth = Math.max(3, Math.floor(canvas.width / 100))
+      const gap = Math.max(2, Math.floor(barWidth * 0.6))
       const step = Math.max(1, Math.floor(dataRef.current.length / Math.floor(canvas.width / (barWidth + gap))))
       const centerY = Math.floor(canvas.height / 2)
       ctx2d.fillStyle = color
       let x = 0
       for (let i = 0; i < dataRef.current.length; i += step) {
         const v = Math.abs(dataRef.current[i] - 128) / 128
-        const h = Math.max(2, Math.floor(v * canvas.height))
+        const h = Math.max(6, Math.floor(v * canvas.height))
         ctx2d.fillRect(x, centerY - h / 2, barWidth, h)
         x += barWidth + gap
       }
