@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X, Square } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { LiveWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
@@ -61,6 +62,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState({});
@@ -85,6 +87,8 @@ const Messages = () => {
   const recIntervalRef = useRef(null);
   const ignoreOnStopRef = useRef(false);
   const mediaStreamRef = useRef(null);
+  const elapsedOffsetRef = useRef(0);
+  const elapsedStartRef = useRef(0);
   const textareaRef = useRef(null);
 
   const autoResizeTextarea = () => {
@@ -398,6 +402,7 @@ const Messages = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
+      setIsPaused(false);
 
       const candidates = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
       let mimeType = '';
@@ -418,8 +423,9 @@ const Messages = () => {
       setPendingAudioBlob(null);
       setElapsedMs(0);
       if (recIntervalRef.current) clearInterval(recIntervalRef.current);
-      const startTs = Date.now();
-      recIntervalRef.current = setInterval(() => setElapsedMs(Date.now() - startTs), 200);
+      elapsedOffsetRef.current = 0;
+      elapsedStartRef.current = Date.now();
+      recIntervalRef.current = setInterval(() => setElapsedMs(elapsedOffsetRef.current + (Date.now() - elapsedStartRef.current)), 200);
 
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
@@ -441,10 +447,10 @@ const Messages = () => {
         }
         setPendingAudioBlob(audioBlob);
         setIsRecording(false);
+        setIsPaused(false);
       };
 
       mediaRecorderRef.current.start();
-      setShowRecorder(true);
       setIsRecording(true);
     } catch (error) {
       console.error('Erro ao iniciar gravação:', error);
@@ -454,18 +460,48 @@ const Messages = () => {
 
   const stopRecordingKeep = () => {
     if (mediaRecorderRef.current && isRecording) {
+      try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
       mediaRecorderRef.current.stop();
     }
+  };
+
+  const pauseRecording = () => {
+    if (!mediaRecorderRef.current) return;
+    try {
+      if (mediaRecorderRef.current.state === 'recording' && mediaRecorderRef.current.pause) {
+        mediaRecorderRef.current.pause();
+        setIsPaused(true);
+        if (recIntervalRef.current) { clearInterval(recIntervalRef.current); recIntervalRef.current = null; }
+        if (elapsedStartRef.current) {
+          elapsedOffsetRef.current += (Date.now() - elapsedStartRef.current);
+        }
+      }
+    } catch(e) {}
+  };
+
+  const resumeRecording = () => {
+    if (!mediaRecorderRef.current) return;
+    try {
+      if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) {
+        mediaRecorderRef.current.resume();
+        setIsPaused(false);
+        elapsedStartRef.current = Date.now();
+        if (recIntervalRef.current) clearInterval(recIntervalRef.current);
+        recIntervalRef.current = setInterval(() => setElapsedMs(elapsedOffsetRef.current + (Date.now() - elapsedStartRef.current)), 200);
+      }
+    } catch(e) {}
   };
 
   const cancelRecording = () => {
     if (isRecording && mediaRecorderRef.current) {
       ignoreOnStopRef.current = true;
+      try { if (mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) mediaRecorderRef.current.resume(); } catch(e){}
       mediaRecorderRef.current.stop();
     } else {
       setPendingAudioBlob(null);
       setShowRecorder(false);
       setElapsedMs(0);
+      setIsPaused(false);
     }
   };
 
@@ -1004,7 +1040,7 @@ const Messages = () => {
           {/* Campo de Entrada */}
           <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-30 pb-safe">
             { (showRecorder || isRecording || pendingAudioBlob) ? (
-              <div className="flex flex-col items-center gap-3">
+              <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
                   <>
                     <audio controls className="w-full">
@@ -1015,26 +1051,37 @@ const Messages = () => {
                       <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
                     </div>
                   </>
-                ) : (
-                  <>
-                    <div className="flex flex-col items-center">
-                      <button
-                        onClick={isRecording ? stopRecordingKeep : startRecording}
-                        className={`w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                        aria-label={isRecording ? 'Parar gravação' : 'Iniciar gravação'}
-                      >
-                        {isRecording ? <MicOff size={36} /> : <Mic size={36} />}
-                      </button>
-                      <div className="mt-2 text-sm text-gray-600">{formatElapsed(elapsedMs)}</div>
-                    </div>
-                    <div className="flex w-full gap-2">
-                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Cancelar</button>
-                      {isRecording && (
-                        <button onClick={stopRecordingKeep} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Parar</button>
+                ) : isRecording ? (
+                  <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+                    <button
+                      onClick={isPaused ? resumeRecording : pauseRecording}
+                      className="p-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      aria-label={isPaused ? 'Retomar gravação' : 'Pausar gravação'}
+                    >
+                      {isPaused ? <Play size={18} /> : <Pause size={18} />}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      {mediaStreamRef.current && (
+                        <LiveWaveform stream={mediaStreamRef.current} height={32} color="#2563eb" bg="#e5e7eb" />
                       )}
                     </div>
-                  </>
-                )}
+                    <div className="text-sm text-gray-600 w-16 text-right tabular-nums">{formatElapsed(elapsedMs)}</div>
+                    <button
+                      onClick={cancelRecording}
+                      className="p-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      aria-label="Cancelar"
+                    >
+                      <X size={18} />
+                    </button>
+                    <button
+                      onClick={stopRecordingKeep}
+                      className="p-2 rounded-lg bg-vibe-blue text-white hover:bg-vibe-blue-dark"
+                      aria-label="Concluir gravação"
+                    >
+                      <Square size={18} />
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="flex items-end space-x-2">
@@ -1071,14 +1118,14 @@ const Messages = () => {
                 />
 
                 <button
-                  onClick={() => setShowRecorder(true)}
+                  onClick={startRecording}
                   className="hidden md:inline-flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg flex-shrink-0"
                 >
                   <Mic size={20} />
                   <span>Gravar áudio</span>
                 </button>
                 <button
-                  onClick={() => setShowRecorder(true)}
+                  onClick={startRecording}
                   className="md:hidden p-2 rounded-lg flex-shrink-0 bg-gray-100 text-gray-700 hover:bg-gray-200"
                   aria-label="Gravar áudio"
                 >
