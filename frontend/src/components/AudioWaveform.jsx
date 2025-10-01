@@ -99,7 +99,7 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
     return `${m}:${r}`
   }
 
-  // Precompute peaks when not provided so waveform is visible before play
+  // Precompute peaks (also for blob:) so waveform is visible before play
   useEffect(() => {
     let cancelled = false
     const doCompute = async () => {
@@ -110,7 +110,7 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
         const ctx = new (window.AudioContext || window.webkitAudioContext)()
         const audioBuf = await ctx.decodeAudioData(buf)
         const channel = audioBuf.getChannelData(0)
-        const bars = 120
+        const bars = 96
         const blockSize = Math.max(1, Math.floor(channel.length / bars))
         const peakArr = new Array(bars).fill(0)
         for (let i = 0; i < bars; i++) {
@@ -119,15 +119,20 @@ export const PlaybackWaveform = ({ src, peaks, height = 28, color = '#2563eb', b
           for (let j = 0; j < blockSize && start + j < channel.length; j++) {
             sum += Math.abs(channel[start + j])
           }
-          peakArr[i] = Math.min(1, sum / blockSize * 2)
+          peakArr[i] = Math.min(1, (sum / blockSize) * 2)
         }
         if (!cancelled) setComputedPeaks(peakArr)
         try { ctx.close() } catch(e){}
       } catch (e) {
-        // ignore; will fallback to analyser when playing
+        // Placeholder bars if CORS or decode fails (visible even before play)
+        if (!cancelled) {
+          const n = 64
+          const arr = Array.from({ length: n }, (_, i) => (Math.sin(i / 4) + 1) / 2)
+          setComputedPeaks(arr)
+        }
       }
     }
-    if (src && typeof src === 'string' && !src.startsWith('blob:')) doCompute()
+    if (src) doCompute()
     return () => { cancelled = true }
   }, [src, peaks])
 
