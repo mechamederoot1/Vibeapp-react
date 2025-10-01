@@ -1085,13 +1085,13 @@ const Messages = () => {
                   )}
 
                   <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-2xl overflow-hidden whitespace-pre-wrap break-words ${
+                    <div className={`max-w-xs lg:max-w-md ${message.messageType === 'audio' ? 'px-3 py-2 rounded-full' : 'px-3 py-2 rounded-2xl'} overflow-hidden whitespace-pre-wrap break-words ${
                       message.senderId === user.id
                         ? 'bg-vibe-blue text-white'
                         : 'bg-gray-200 text-gray-900'
                     }`}>
                       {message.messageType === 'audio' ? (
-                        <PlaybackWaveform src={message.mediaUrl} peaks={message.waveformPeaks} height={32} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} bg="transparent" />
+                        <PlaybackWaveform variant="bubble" src={message.mediaUrl} peaks={message.waveformPeaks} height={28} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} playBg={message.senderId === user.id ? '#1d4ed8' : '#2563eb'} bg="transparent" />
                       ) : message.messageType === 'image' ? (
                         <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
                       ) : message.messageType === 'video' ? (
