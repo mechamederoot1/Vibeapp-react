@@ -85,6 +85,7 @@ app = FastAPI(
 )
 
 # Configure CORS - allow all local network IPs for development
+
 def get_cors_origins():
     origins = [
         "http://localhost:3000",
@@ -93,8 +94,18 @@ def get_cors_origins():
         "http://127.0.0.1:3000",
         "http://127.0.0.1:4001",
         "http://127.0.0.1:5173",
-        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev"
+        "https://4f74aff8a7324cf3a973db464b7838f3-92473844a32c474a83927ab1b.fly.dev",
+        "https://meuvibe.com",
+        "https://www.meuvibe.com"
     ]
+
+    # Extra domains from .env (comma separated)
+    extra = os.getenv('ALLOWED_ORIGINS', '')
+    if extra:
+        for item in extra.split(','):
+            val = item.strip()
+            if val:
+                origins.append(val)
 
     # Add common local network ranges for mobile development
     # This allows access from mobile devices on the same network
@@ -113,10 +124,13 @@ def get_cors_origins():
 
     return origins
 
+allow_origin_regex_env = os.getenv('CORS_ALLOW_ORIGIN_REGEX')
+allow_origin_regex = allow_origin_regex_env or r"https?://([a-zA-Z0-9.-]+\.)?fly\.dev$|https?://(www\.)?meuvibe\.com$"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_cors_origins(),
-    allow_origin_regex=r"https?://[a-zA-Z0-9.-]+\.fly\.dev$",
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

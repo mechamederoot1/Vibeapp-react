@@ -6,9 +6,8 @@ import BottomNavigation from './BottomNavigation'
 const Layout = ({ children, onOpenPostModal }) => {
   const location = useLocation();
   const isMessagesRoute = location.pathname && location.pathname.startsWith('/messages');
-  const isConversationOpened = isMessagesRoute && (
-    (location.search && (location.search.includes('user=') || location.search.includes('userId=')))
-  );
+  const hasQueryConversation = (location.search && (location.search.includes('user=') || location.search.includes('userId=')));
+  const isConversationOpened = isMessagesRoute && (hasQueryConversation || location.pathname.startsWith('/messages/'));
 
   return (
     <div className="flex flex-col h-screen overflow-x-hidden w-screen max-w-screen relative">

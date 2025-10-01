@@ -183,6 +183,16 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/messages/:id"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Messages />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/profile"
           element={
             <ProtectedRoute>

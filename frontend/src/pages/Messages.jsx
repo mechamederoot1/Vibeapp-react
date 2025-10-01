@@ -22,7 +22,7 @@ const statusIcon = (status, isOwn) => {
     case 'delivered':
       return <CheckCheck className="inline-block ml-1 opacity-60" size={14} />
     case 'read':
-      return <CheckCheck className="inline-block ml-1 text-white" size={14} />
+      return <CheckCheck className="inline-block ml-1 text-vibe-blue" size={14} />
     default:
       return null
   }
@@ -40,6 +40,8 @@ const formatDateLabel = (iso) => {
   if (isYesterday) return 'Ontem';
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
+
+const MOCK_AUDIO_SEND = import.meta.env.VITE_MOCK_AUDIO_SEND === 'true'
 
 const Messages = () => {
   const { user } = useAuth();
@@ -64,6 +66,9 @@ const Messages = () => {
   const [typingUsers, setTypingUsers] = useState({});
   const [imageInputKey, setImageInputKey] = useState(0)
   const [videoInputKey, setVideoInputKey] = useState(0)
+  const [showRecorder, setShowRecorder] = useState(false)
+  const [pendingAudioBlob, setPendingAudioBlob] = useState(null)
+  const [elapsedMs, setElapsedMs] = useState(0)
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
@@ -76,6 +81,10 @@ const Messages = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const typingTimeoutRef = useRef(null);
+  const typingTimersRef = useRef({});
+  const recIntervalRef = useRef(null);
+  const ignoreOnStopRef = useRef(false);
+  const mediaStreamRef = useRef(null);
   const textareaRef = useRef(null);
 
   const autoResizeTextarea = () => {
@@ -84,6 +93,13 @@ const Messages = () => {
     ta.style.height = 'auto';
     const maxHeight = 180; // limit to reasonable height
     ta.style.height = Math.min(ta.scrollHeight, maxHeight) + 'px';
+  }
+
+  const formatElapsed = (ms) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const m = String(Math.floor(total / 60)).padStart(2, '0');
+    const s = String(total % 60).padStart(2, '0');
+    return `${m}:${s}`;
   }
 
   // Helpers de demo/localStorage
@@ -225,16 +241,10 @@ const Messages = () => {
   };
 
   const scheduleStatusProgress = (msg, otherId) => {
-    // Progressão de status local: sending -> sent -> delivered -> read
+    // Demo-only progression: sending -> sent (do not auto mark delivered/read)
     setTimeout(() => {
       setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'sent' } : m))
     }, 300)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'delivered' } : m))
-    }, 1000)
-    setTimeout(() => {
-      setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, status: 'read', isRead: true } : m))
-    }, 2500)
 
     // Persistir demo
     setTimeout(() => {
@@ -383,45 +393,58 @@ const Messages = () => {
     setVideoInputKey(k => k + 1)
   }
 
-  // Iniciar gravação de áudio
+  // Iniciar gravação de áudio com UI estilo mobile
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
 
-      // Select supported mimeType for MediaRecorder
       const candidates = ['audio/webm;codecs=opus', 'audio/ogg;codecs=opus', 'audio/webm', 'audio/ogg'];
       let mimeType = '';
       if (window.MediaRecorder && typeof MediaRecorder.isTypeSupported === 'function') {
         for (const c of candidates) {
-          if (MediaRecorder.isTypeSupported(c)) {
-            mimeType = c;
-            break;
-          }
+          if (MediaRecorder.isTypeSupported(c)) { mimeType = c; break; }
         }
       }
 
       try {
         mediaRecorderRef.current = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       } catch (err) {
-        // Fallback without options
         mediaRecorderRef.current = new MediaRecorder(stream);
       }
 
       audioChunksRef.current = [];
+      ignoreOnStopRef.current = false;
+      setPendingAudioBlob(null);
+      setElapsedMs(0);
+      if (recIntervalRef.current) clearInterval(recIntervalRef.current);
+      const startTs = Date.now();
+      recIntervalRef.current = setInterval(() => setElapsedMs(Date.now() - startTs), 200);
 
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) audioChunksRef.current.push(event.data);
       };
 
       mediaRecorderRef.current.onstop = async () => {
+        const tracks = mediaStreamRef.current?.getTracks?.() || [];
+        tracks.forEach(track => track.stop());
+        if (recIntervalRef.current) { clearInterval(recIntervalRef.current); recIntervalRef.current = null; }
         const audioBlob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current?.mimeType || 'audio/ogg' });
-        await sendAudioMessage(audioBlob);
-
-        // Parar stream
-        stream.getTracks().forEach(track => track.stop());
+        if (ignoreOnStopRef.current) {
+          ignoreOnStopRef.current = false;
+          audioChunksRef.current = [];
+          setElapsedMs(0);
+          setIsRecording(false);
+          setShowRecorder(false);
+          setPendingAudioBlob(null);
+          return;
+        }
+        setPendingAudioBlob(audioBlob);
+        setIsRecording(false);
       };
 
       mediaRecorderRef.current.start();
+      setShowRecorder(true);
       setIsRecording(true);
     } catch (error) {
       console.error('Erro ao iniciar gravação:', error);
@@ -429,17 +452,57 @@ const Messages = () => {
     }
   };
 
-  // Parar gravação
-  const stopRecording = () => {
+  const stopRecordingKeep = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setIsRecording(false);
     }
+  };
+
+  const cancelRecording = () => {
+    if (isRecording && mediaRecorderRef.current) {
+      ignoreOnStopRef.current = true;
+      mediaRecorderRef.current.stop();
+    } else {
+      setPendingAudioBlob(null);
+      setShowRecorder(false);
+      setElapsedMs(0);
+    }
+  };
+
+  const sendPendingAudio = async () => {
+    const blob = pendingAudioBlob;
+    if (!blob) return;
+    setPendingAudioBlob(null);
+    setShowRecorder(false);
+    await sendAudioMessage(blob);
   };
 
   // Enviar mensagem de áudio
   const sendAudioMessage = async (audioBlob) => {
     if (!selectedConversation) return;
+
+    // Mock path only for audio send when enabled
+    if (MOCK_AUDIO_SEND) {
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+      return
+    }
 
     const formData = new FormData();
     formData.append('receiver_id', selectedConversation.otherUser.id);
@@ -466,27 +529,26 @@ const Messages = () => {
       }
     } catch (error) {
       console.warn('Sem backend para enviar áudio, usando modo demo', error)
+      // If backend fails unexpectedly and mock is off, still show local preview
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(scrollToBottom, 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
     }
-
-    // Fallback demo
-    const url = URL.createObjectURL(audioBlob)
-    const tempMsg = {
-      id: Date.now(),
-      senderId: user.id,
-      receiverId: selectedConversation.otherUser.id,
-      content: '',
-      messageType: 'audio',
-      mediaUrl: url,
-      isRead: false,
-      createdAt: new Date().toISOString(),
-      sender: user,
-      receiver: selectedConversation.otherUser,
-      status: 'sending'
-    }
-    setMessages(prev => [...prev, tempMsg])
-    setTimeout(scrollToBottom, 100)
-    updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
-    scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
   };
 
   // Indicar que está digitando
@@ -562,16 +624,29 @@ const Messages = () => {
     }
 
     if (lastMessage.type === 'message_delivered') {
-      const { messageId } = lastMessage.data || {}
+      const { messageId, receiverId, deliveredAt } = lastMessage.data || {}
       if (messageId) {
-        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt: lastMessage.data.deliveredAt, status: 'delivered' } : m))
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, isDelivered: true, deliveredAt, status: 'delivered' } : m))
+        setConversations(prev => prev.map(c => {
+          if (c.otherUser?.id === receiverId && c.lastMessage?.id === messageId) {
+            return { ...c, lastMessage: { ...c.lastMessage, isDelivered: true, deliveredAt, status: 'delivered' } }
+          }
+          return c
+        }))
       }
     }
 
     if (lastMessage.type === 'messages_read') {
       const ids = lastMessage.data?.messageIds || []
+      const readAt = lastMessage.data?.readAt
       if (ids.length) {
-        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt: lastMessage.data.readAt, status: 'read' } : m))
+        setMessages(prev => prev.map(m => ids.includes(m.id) ? { ...m, isRead: true, readAt, status: 'read' } : m))
+        setConversations(prev => prev.map(c => {
+          if (c.lastMessage && ids.includes(c.lastMessage.id)) {
+            return { ...c, lastMessage: { ...c.lastMessage, isRead: true, readAt, status: 'read' } }
+          }
+          return c
+        }))
       }
       // Conversas podem mudar ordenação
       loadConversations();
@@ -579,18 +654,24 @@ const Messages = () => {
 
     if (lastMessage.type === 'user_typing') {
       const { senderId, isTyping } = lastMessage.data;
-      setTypingUsers(prev => ({
-        ...prev,
-        [senderId]: isTyping
-      }));
 
-      // Limpar indicação após 5 segundos
-      setTimeout(() => {
-        setTypingUsers(prev => ({
-          ...prev,
-          [senderId]: false
-        }));
-      }, 5000);
+      // Mostrar imediatamente quando receber "true"
+      if (isTyping) {
+        setTypingUsers(prev => ({ ...prev, [senderId]: true }));
+        // Adia ocultar até não receber mais "true" por um período
+        if (typingTimersRef.current[senderId]) clearTimeout(typingTimersRef.current[senderId]);
+        typingTimersRef.current[senderId] = setTimeout(() => {
+          setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+          typingTimersRef.current[senderId] = null;
+        }, 4000);
+      } else {
+        // Suaviza transição para evitar "piscar"
+        if (typingTimersRef.current[senderId]) clearTimeout(typingTimersRef.current[senderId]);
+        typingTimersRef.current[senderId] = setTimeout(() => {
+          setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+          typingTimersRef.current[senderId] = null;
+        }, 700);
+      }
     }
   }, [lastMessage, selectedConversation]);
 
@@ -685,6 +766,12 @@ const Messages = () => {
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
+      const timers = typingTimersRef.current || {};
+      Object.values(timers).forEach(t => t && clearTimeout(t));
+      typingTimersRef.current = {};
+      if (recIntervalRef.current) clearInterval(recIntervalRef.current);
+      const tracks = mediaStreamRef.current?.getTracks?.() || [];
+      tracks.forEach(t => t.stop());
     };
   }, []);
 
@@ -755,16 +842,18 @@ const Messages = () => {
                       <h3 className={`${conversation.unreadCount > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-800'} truncate`}>
                         {conversation.otherUser.firstName} {conversation.otherUser.lastName}
                       </h3>
-                      {typingUsers[conversation.otherUser.id] ? (
-                        <p className="text-sm mt-1 text-vibe-blue"><TypingDots /></p>
-                      ) : conversation.lastMessage ? (
-                        <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate mt-1`}>
-                          {conversation.lastMessage.messageType === 'audio'
-                            ? '🎵 Mensagem de áudio'
-                            : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
-                          }
-                        </p>
-                      ) : null}
+                      <div className="mt-1 min-h-[20px]">
+                        {typingUsers[conversation.otherUser.id] ? (
+                          <p className="text-sm text-vibe-blue"><TypingDots /></p>
+                        ) : conversation.lastMessage ? (
+                          <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
+                            {conversation.lastMessage.messageType === 'audio'
+                              ? '🎵 Mensagem de áudio'
+                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
+                            }
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
 
                     <div className="flex flex-col items-end ml-3 flex-shrink-0">
@@ -776,7 +865,7 @@ const Messages = () => {
                           })}
                           {conversation.lastMessage.senderId === (user?.id) && (
                             <span className="ml-1 inline-block">
-                              {statusIcon(deriveStatus(conversation.lastMessage), true)}
+                              {statusIcon(deriveStatus(conversation.lastMessage), conversation.lastMessage?.senderId === user.id)}
                             </span>
                           )}
                         </span>
@@ -841,9 +930,9 @@ const Messages = () => {
                     {selectedConversation.otherUser.firstName} {selectedConversation.otherUser.lastName}
                   </button>
                 </h3>
-                {typingUsers[selectedConversation.otherUser.id] && (
-                  <p className="text-sm"><TypingDots /></p>
-                )}
+                <div className="h-5 mt-1">
+                  {typingUsers[selectedConversation.otherUser.id] && <TypingDots />}
+                </div>
               </div>
 
               <button className="p-2 hover:bg-gray-100 rounded-lg">
@@ -914,59 +1003,97 @@ const Messages = () => {
 
           {/* Campo de Entrada */}
           <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-30 pb-safe">
-            <div className="flex items-end space-x-2">
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
-                <ImageIcon size={20} />
-                <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
-              </label>
-              <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
-                <VideoIcon size={20} />
-                <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
-              </label>
+            { (showRecorder || isRecording || pendingAudioBlob) ? (
+              <div className="flex flex-col items-center gap-3">
+                {pendingAudioBlob ? (
+                  <>
+                    <audio controls className="w-full">
+                      <source src={URL.createObjectURL(pendingAudioBlob)} />
+                    </audio>
+                    <div className="flex w-full gap-2">
+                      <button onClick={sendPendingAudio} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Enviar</button>
+                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Descartar</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-col items-center">
+                      <button
+                        onClick={isRecording ? stopRecordingKeep : startRecording}
+                        className={`w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                        aria-label={isRecording ? 'Parar gravação' : 'Iniciar gravação'}
+                      >
+                        {isRecording ? <MicOff size={36} /> : <Mic size={36} />}
+                      </button>
+                      <div className="mt-2 text-sm text-gray-600">{formatElapsed(elapsedMs)}</div>
+                    </div>
+                    <div className="flex w-full gap-2">
+                      <button onClick={cancelRecording} className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg">Cancelar</button>
+                      {isRecording && (
+                        <button onClick={stopRecordingKeep} className="flex-1 bg-vibe-blue text-white px-4 py-2 rounded-lg">Parar</button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-end space-x-2">
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
+                  <ImageIcon size={20} />
+                  <input key={imageInputKey} type="file" accept="image/*" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendImage(f)}} />
+                </label>
+                <label className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg cursor-pointer flex-shrink-0">
+                  <VideoIcon size={20} />
+                  <input key={videoInputKey} type="file" accept="video/mp4" className="hidden" onChange={(e)=>{const f=e.target.files?.[0]; if(f) sendVideo(f)}} />
+                </label>
 
-              {/* Typing indicator next to composer (shows name + animation) */}
-              {selectedConversation && typingUsers[selectedConversation.otherUser.id] && (
-                <div className="flex items-center mr-2">
-                  <div className="text-sm text-vibe-blue mr-1">{selectedConversation.otherUser.firstName}</div>
-                  <TypingDots />
-                </div>
-              )}
+                {selectedConversation && typingUsers[selectedConversation.otherUser.id] && (
+                  <div className="flex items-center mr-2">
+                    <div className="text-sm text-vibe-blue mr-1">{selectedConversation.otherUser.firstName}</div>
+                    <TypingDots />
+                  </div>
+                )}
 
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={newMessage}
-                onChange={(e) => { handleTyping(e.target.value); autoResizeTextarea(); }}
-                onInput={autoResizeTextarea}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder="Digite uma mensagem..."
-                className="flex-1 min-w-0 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent h-10"
-              />
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
+                  value={newMessage}
+                  onChange={(e) => { handleTyping(e.target.value); autoResizeTextarea(); }}
+                  onInput={autoResizeTextarea}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Digite uma mensagem..."
+                  className="flex-1 min-w-0 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-vibe-blue focus:border-transparent h-10"
+                />
 
-              <button
-                onClick={isRecording ? stopRecording : startRecording}
-                className={`p-2 rounded-lg flex-shrink-0 ${
-                  isRecording
-                    ? 'bg-red-500 text-white animate-pulse'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-              </button>
+                <button
+                  onClick={() => setShowRecorder(true)}
+                  className="hidden md:inline-flex items-center gap-2 bg-gray-100 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg flex-shrink-0"
+                >
+                  <Mic size={20} />
+                  <span>Gravar áudio</span>
+                </button>
+                <button
+                  onClick={() => setShowRecorder(true)}
+                  className="md:hidden p-2 rounded-lg flex-shrink-0 bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  aria-label="Gravar áudio"
+                >
+                  <Mic size={20} />
+                </button>
 
-              <button
-                onClick={sendMessage}
-                disabled={!newMessage.trim()}
-                className="bg-vibe-blue text-white p-2 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send size={20} />
-              </button>
-            </div>
+                <button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim()}
+                  className="bg-vibe-blue text-white p-2 rounded-lg hover:bg-vibe-blue-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ) : (
