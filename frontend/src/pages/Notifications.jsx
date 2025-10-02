@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, UserPlus, Users, Share2, Bell } from 'lucide-react';
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
