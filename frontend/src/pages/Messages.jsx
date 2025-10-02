@@ -1135,7 +1135,7 @@ const Messages = () => {
 
           {/* Lista de Mensagens */}
           <div
-            className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
+            className={`flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain ${isShaking ? 'call-attention-shake' : ''}`}
             ref={msgListRef}
             onScroll={handleScroll}
           >
