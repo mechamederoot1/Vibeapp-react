@@ -91,7 +91,7 @@ const Header = ({ onOpenPostModal }) => {
           }
         } catch(e){}
 
-        try { if (navigator.vibrate) navigator.vibrate([300,150,300]); } catch(e){}
+        try { if (navigator.vibrate) navigator.vibrate(4000); } catch(e){}
         try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
       })();
       return
