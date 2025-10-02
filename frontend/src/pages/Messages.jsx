@@ -787,6 +787,53 @@ const Messages = () => {
         }, 700);
       }
     }
+
+    // Chamar atenção: abrir conversa e animar/vibrar no dispositivo do destinatário
+    if (lastMessage.type === 'call_attention') {
+      const { senderId, receiverId } = lastMessage.data || {};
+      if (!senderId) return;
+
+      // Se eu sou o destinatário, abrir a conversa com quem chamou
+      if (receiverId === user?.id) {
+        (async () => {
+          try {
+            const res = await api.get(`/users/${senderId}`);
+            const other = res.data;
+            if (other && other.id) {
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && c.otherUser.id === other.id)
+                return exists ? prev : [conv, ...(prev || [])]
+              });
+
+              await loadMessages(other.id, 1);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+              try { navigate(`/messages?user=${encodeURIComponent(other.username||'')}&userId=${other.id}`); } catch(e){}
+            }
+          } catch (e) {
+            console.warn('Erro ao abrir conversa por call_attention', e);
+          }
+
+          // Vibrar e tocar som no dispositivo do destinatário
+          try { if (navigator.vibrate) navigator.vibrate([300,150,300,150,300]); } catch(e){}
+          try {
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            const o = ac.createOscillator();
+            const g = ac.createGain();
+            o.type = 'sine';
+            o.frequency.value = 880;
+            g.gain.value = 0.04;
+            o.connect(g); g.connect(ac.destination);
+            o.start();
+            setTimeout(() => { try { o.stop(); ac.close(); } catch(e){} }, 700);
+          } catch(e){}
+
+          setIsShaking(true);
+          setTimeout(() => setIsShaking(false), 1600);
+        })();
+      }
+    }
   }, [lastMessage, selectedConversation]);
 
   // Carregar conversas ao montar
