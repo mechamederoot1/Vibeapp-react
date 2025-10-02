@@ -8,7 +8,11 @@ const CallAttentionButton = ({ receiverId }) => {
 
   const playLocalFeedback = () => {
     try {
-      if (navigator.vibrate) navigator.vibrate([50,30,50]);
+      if (navigator.vibrate) {
+        // Stronger pattern: repeated strong pulses for 2500ms
+        const pattern = [200,80,200,80,200,80,200,80,200];
+        navigator.vibrate(pattern);
+      }
     } catch(e){}
     try {
       const ac = new (window.AudioContext || window.webkitAudioContext)();
