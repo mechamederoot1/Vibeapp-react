@@ -1236,6 +1236,7 @@ const Messages = () => {
                   value={newMessage}
                   onChange={(e) => { handleTyping(e.target.value); autoResizeTextarea(); }}
                   onInput={autoResizeTextarea}
+                  onFocus={() => setTimeout(scrollToBottom, 30)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
