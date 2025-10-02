@@ -878,6 +878,26 @@ const Messages = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!selectedConversation) return;
+    const handleViewportChange = () => {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 30);
+    };
+
+    handleViewportChange();
+
+    const viewport = typeof window !== 'undefined' ? window.visualViewport : null;
+    viewport?.addEventListener('resize', handleViewportChange);
+    viewport?.addEventListener('scroll', handleViewportChange);
+
+    return () => {
+      viewport?.removeEventListener('resize', handleViewportChange);
+      viewport?.removeEventListener('scroll', handleViewportChange);
+    };
+  }, [selectedConversation]);
+
   // Limpar timeout ao desmontar
   useEffect(() => {
     return () => {
