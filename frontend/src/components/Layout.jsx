@@ -2,6 +2,7 @@ import React from 'react'
 import { useLocation } from 'react-router-dom'
 import Header from './Header'
 import BottomNavigation from './BottomNavigation'
+import useViewportHeight from '../hooks/useViewportHeight'
 
 const Layout = ({ children, onOpenPostModal }) => {
   const location = useLocation();
@@ -9,12 +10,24 @@ const Layout = ({ children, onOpenPostModal }) => {
   const hasQueryConversation = (location.search && (location.search.includes('user=') || location.search.includes('userId=')));
   const hasHistoryOpened = (typeof window !== 'undefined' && window.history && window.history.state && window.history.state.openedConversation);
   const isConversationOpened = isMessagesRoute && (hasQueryConversation || location.pathname.startsWith('/messages/') || !!hasHistoryOpened);
+  const viewportHeight = useViewportHeight();
+  const dynamicHeight = viewportHeight ? `${viewportHeight}px` : undefined;
+  const containerStyle = dynamicHeight
+    ? {
+        minHeight: dynamicHeight,
+        ...(isConversationOpened ? { height: dynamicHeight, maxHeight: dynamicHeight } : {})
+      }
+    : undefined;
+  const mainStyle = {
+    overflowY: isConversationOpened ? 'auto' : 'scroll',
+    ...(isConversationOpened ? { height: '100%' } : {})
+  };
 
   return (
-    <div className="flex flex-col h-screen overflow-x-hidden w-screen max-w-screen relative">
+    <div className="flex flex-col min-h-screen overflow-x-hidden w-screen max-w-screen relative" style={containerStyle}>
       {!isConversationOpened && <Header onOpenPostModal={onOpenPostModal} />}
 
-      <main className={`flex-1 overflow-x-hidden w-full max-w-full relative ${isConversationOpened ? 'h-screen' : ''}`} style={{overflowY: isConversationOpened ? 'hidden' : 'scroll'}}>
+      <main className="flex-1 overflow-x-hidden w-full max-w-full relative min-h-0" style={mainStyle}>
         <div className="w-full max-w-full overflow-x-hidden">
           {children}
         </div>

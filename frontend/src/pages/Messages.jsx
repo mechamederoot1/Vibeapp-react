@@ -878,6 +878,26 @@ const Messages = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (!selectedConversation) return;
+    const handleViewportChange = () => {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 30);
+    };
+
+    handleViewportChange();
+
+    const viewport = typeof window !== 'undefined' ? window.visualViewport : null;
+    viewport?.addEventListener('resize', handleViewportChange);
+    viewport?.addEventListener('scroll', handleViewportChange);
+
+    return () => {
+      viewport?.removeEventListener('resize', handleViewportChange);
+      viewport?.removeEventListener('scroll', handleViewportChange);
+    };
+  }, [selectedConversation]);
+
   // Limpar timeout ao desmontar
   useEffect(() => {
     return () => {
@@ -917,7 +937,7 @@ const Messages = () => {
   }
 
   return (
-    <div className={`flex h-screen bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
+    <div className={`flex flex-1 min-h-0 bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
@@ -1064,60 +1084,80 @@ const Messages = () => {
           </div>
 
           {/* Lista de Mensagens */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 overscroll-contain" ref={msgListRef} onScroll={handleScroll}>
+          <div
+            className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
+            ref={msgListRef}
+            onScroll={handleScroll}
+          >
             {loadingOlder && (
               <div className="flex justify-center py-2">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
               </div>
             )}
 
-            {messages.map((message, idx) => {
-              const prev = messages[idx - 1];
-              const dateKey = message?.createdAt ? new Date(message.createdAt).toDateString() : '';
-              const prevDateKey = prev?.createdAt ? new Date(prev.createdAt).toDateString() : null;
+            <div className="flex flex-col gap-4 min-h-full justify-end">
+              {messages.map((message, idx) => {
+                const prev = messages[idx - 1];
+                const dateKey = message?.createdAt ? new Date(message.createdAt).toDateString() : '';
+                const prevDateKey = prev?.createdAt ? new Date(prev.createdAt).toDateString() : null;
 
-              return (
-                <div key={message.id}>
-                  {(idx === 0 || dateKey !== prevDateKey) && (
-                    <div className="text-center text-xs text-gray-500 my-2">
-                      <span className="bg-gray-100 px-3 py-1 rounded-full">{formatDateLabel(message.createdAt)}</span>
-                    </div>
-                  )}
+                return (
+                  <div key={message.id}>
+                    {(idx === 0 || dateKey !== prevDateKey) && (
+                      <div className="text-center text-xs text-gray-500 my-2">
+                        <span className="bg-gray-100 px-3 py-1 rounded-full">{formatDateLabel(message.createdAt)}</span>
+                      </div>
+                    )}
 
-                  <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`${message.messageType === 'audio'
-                      ? 'w-[78%] sm:w-[70%] max-w-full px-3 py-1 rounded-full'
-                      : 'max-w-xs lg:max-w-md px-3 py-2 rounded-2xl'} overflow-hidden whitespace-pre-wrap break-words ${
-                      message.senderId === user.id
-                        ? 'bg-vibe-blue text-white'
-                        : 'bg-gray-200 text-gray-900'
-                    }`}>
-                      {message.messageType === 'audio' ? (
-                        <PlaybackWaveform variant="bubble" src={message.mediaUrl} peaks={message.waveformPeaks} height={24} color={message.senderId === user.id ? '#ffffff' : '#2563eb'} playBg={message.senderId === user.id ? '#1d4ed8' : '#2563eb'} bg="transparent" />
-                      ) : message.messageType === 'image' ? (
-                        <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
-                      ) : message.messageType === 'video' ? (
-                        <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
-                      ) : (
-                        <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                      )}
+                    <div className={`flex px-3 ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
+                      <div
+                        className={`${
+                          message.messageType === 'audio'
+                            ? 'w-[78%] sm:w-[70%] max-w-full px-3 py-1 rounded-full'
+                            : 'max-w-xs lg:max-w-md px-3 py-2 rounded-2xl'
+                        } overflow-hidden whitespace-pre-wrap break-words ${
+                          message.senderId === user.id
+                            ? 'bg-vibe-blue text-white'
+                            : 'bg-gray-200 text-gray-900'
+                        }`}
+                      >
+                        {message.messageType === 'audio' ? (
+                          <PlaybackWaveform
+                            variant="bubble"
+                            src={message.mediaUrl}
+                            peaks={message.waveformPeaks}
+                            height={24}
+                            color={message.senderId === user.id ? '#ffffff' : '#2563eb'}
+                            playBg={message.senderId === user.id ? '#1d4ed8' : '#2563eb'}
+                            bg="transparent"
+                          />
+                        ) : message.messageType === 'image' ? (
+                          <img src={message.mediaUrl} alt="imagem" className="max-w-[240px] rounded-lg" />
+                        ) : message.messageType === 'video' ? (
+                          <video src={message.mediaUrl} controls className="max-w-[240px] rounded-lg" />
+                        ) : (
+                          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                        )}
 
-                      <div className={`text-xs mt-1 flex items-center ${
-                        message.senderId === user.id ? 'text-white/80' : 'text-gray-500'
-                      }`}>
-                        {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                        {statusIcon(deriveStatus(message), message.senderId === user.id)}
+                        <div
+                          className={`text-xs mt-1 flex items-center ${
+                            message.senderId === user.id ? 'text-white/80' : 'text-gray-500'
+                          }`}
+                        >
+                          {new Date(message.createdAt).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                          {statusIcon(deriveStatus(message), message.senderId === user.id)}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
 
-            <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
           {/* Campo de Entrada */}
@@ -1196,6 +1236,7 @@ const Messages = () => {
                   value={newMessage}
                   onChange={(e) => { handleTyping(e.target.value); autoResizeTextarea(); }}
                   onInput={autoResizeTextarea}
+                  onFocus={() => setTimeout(scrollToBottom, 30)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
