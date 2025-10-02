@@ -3,6 +3,11 @@ import { Bell, Check, X, Trash2, Heart, MessageCircle, Share2, UserPlus } from '
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 import { useNavigate } from 'react-router-dom';
+import {
+  normalizeNotificationPayload,
+  upsertNotifications,
+  shouldRefreshNotifications,
+} from '../utils/notifications';
 
 const NotificationsList = ({ onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -11,20 +16,24 @@ const NotificationsList = ({ onClose }) => {
   const { lastMessage } = useWebSocket();
   const navigate = useNavigate();
 
+  const applyNotificationsState = useCallback((items) => {
+    const normalized = items.map((item) => normalizeNotificationPayload(item));
+    setNotifications(normalized);
+    setUnreadCount(normalized.filter((n) => !n.isRead).length);
+  }, []);
+
   // Carregar notificações
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
-      const response = await api.get('/api/notifications/');
-      setNotifications(response.data);
-      
-      const unread = response.data.filter(n => !n.isRead).length;
-      setUnreadCount(unread);
+      const response = await api.get('/notifications');
+      const data = Array.isArray(response.data) ? response.data : [];
+      applyNotificationsState(data);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [applyNotificationsState]);
 
   // Marcar notificação como lida
   const markAsRead = async (notificationId) => {
@@ -102,31 +111,36 @@ const NotificationsList = ({ onClose }) => {
   useEffect(() => {
     if (!lastMessage) return;
 
-    if (lastMessage.type === 'notification') {
-      const newNotification = lastMessage.data;
-      
-      setNotifications(prev => [newNotification, ...prev]);
-      setUnreadCount(prev => prev + 1);
-      
-      // Mostrar notificação do browser se permitido
+    if (lastMessage.type === 'notification' && lastMessage.data) {
+      const normalized = normalizeNotificationPayload(lastMessage.data);
+      setNotifications((prev) => {
+        const next = upsertNotifications(prev, normalized);
+        setUnreadCount(next.filter((n) => !n.isRead).length);
+        return next;
+      });
+
       if (Notification.permission === 'granted') {
-        new Notification(newNotification.title, {
-          body: newNotification.message,
-          icon: '/favicon.ico'
+        new Notification(normalized.title, {
+          body: normalized.message,
+          icon: '/favicon.ico',
         });
       }
+      return;
     }
-  }, [lastMessage]);
+
+    if (shouldRefreshNotifications(lastMessage.type)) {
+      loadNotifications();
+    }
+  }, [lastMessage, loadNotifications]);
 
   // Carregar notificações ao montar
   useEffect(() => {
     loadNotifications();
-    
-    // Solicitar permissão para notificações
+
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, []);
+  }, [loadNotifications]);
 
   // Formatação de tempo relativo
   const formatTimeAgo = (dateString) => {
