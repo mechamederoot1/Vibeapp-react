@@ -720,7 +720,7 @@ const Messages = () => {
     if (lastMessage.type === 'new_message') {
       const message = lastMessage.data;
 
-      // Se é uma mensagem da conversa atual, adicionar à lista
+      // Se �� uma mensagem da conversa atual, adicionar à lista
       if (selectedConversation &&
           (message.senderId === selectedConversation.otherUser.id ||
            message.receiverId === selectedConversation.otherUser.id)) {
@@ -794,8 +794,8 @@ const Messages = () => {
       const { senderId, receiverId } = lastMessage.data || {};
       if (!senderId) return;
 
-      // Se eu sou o destinatário, abrir a conversa com quem chamou
-      if (receiverId === user?.id) {
+      // Accept event when receiverId absent (server may send only senderId) or explicitly targeted
+      if (!receiverId || receiverId === user?.id) {
         (async () => {
           try {
             const res = await api.get(`/users/${senderId}`);
@@ -816,22 +816,12 @@ const Messages = () => {
             console.warn('Erro ao abrir conversa por call_attention', e);
           }
 
-          // Vibrar e tocar som no dispositivo do destinatário
-          try { if (navigator.vibrate) navigator.vibrate([300,150,300,150,300]); } catch(e){}
-          try {
-            const ac = new (window.AudioContext || window.webkitAudioContext)();
-            const o = ac.createOscillator();
-            const g = ac.createGain();
-            o.type = 'sine';
-            o.frequency.value = 880;
-            g.gain.value = 0.04;
-            o.connect(g); g.connect(ac.destination);
-            o.start();
-            setTimeout(() => { try { o.stop(); ac.close(); } catch(e){} }, 700);
-          } catch(e){}
+          // Vibrar por 4000ms e tocar som
+          try { if (navigator.vibrate) navigator.vibrate(4000); } catch(e){}
+          try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
 
           setIsShaking(true);
-          setTimeout(() => setIsShaking(false), 1600);
+          setTimeout(() => setIsShaking(false), 4000);
         })();
       }
     }
