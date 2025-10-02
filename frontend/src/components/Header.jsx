@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Search, MessageCircle, Bell, Plus, LogOut, User, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -7,6 +7,7 @@ import AvatarDropdown from './AvatarDropdown'
 import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 import { getPublicProfileId } from '../utils/profileId'
+import { shouldRefreshNotifications } from '../utils/notifications'
 
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
@@ -48,7 +49,7 @@ const Header = ({ onOpenPostModal }) => {
   }
 
   // Carregar contadores de mensagens e notificações não lidas
-  const loadUnreadCounts = async () => {
+  const loadUnreadCounts = useCallback(async () => {
     try {
       const [messagesRes, notificationsRes] = await Promise.all([
         api.get('/messages/unread-count'),
@@ -63,7 +64,7 @@ const Header = ({ onOpenPostModal }) => {
       console.error('Erro ao carregar contadores:', error)
       setUnreadCounts({ messages: 0, notifications: 0 })
     }
-  }
+  }, [])
 
   // Atualizar contadores quando receber mensagens WebSocket
   useEffect(() => {
@@ -71,17 +72,23 @@ const Header = ({ onOpenPostModal }) => {
 
     if (lastMessage.type === 'new_message') {
       setUnreadCounts(prev => ({ ...prev, messages: prev.messages + 1 }))
+      return
     }
 
     if (lastMessage.type === 'notification') {
       setUnreadCounts(prev => ({ ...prev, notifications: prev.notifications + 1 }))
+      return
     }
-  }, [lastMessage])
+
+    if (shouldRefreshNotifications(lastMessage.type)) {
+      loadUnreadCounts()
+    }
+  }, [lastMessage, loadUnreadCounts])
 
   // Carregar contadores ao montar
   useEffect(() => {
     loadUnreadCounts()
-  }, [])
+  }, [loadUnreadCounts])
 
   // Handle outside click/touch to close search
   useEffect(() => {
