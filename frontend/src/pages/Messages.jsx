@@ -919,33 +919,33 @@ const Messages = () => {
 
   // Scroll quando mensagens mudarem
   useEffect(() => {
+    if (isShaking) return;
     const c = msgListRef.current;
     if (!c) return;
     const distanceFromBottom = c.scrollHeight - c.scrollTop - c.clientHeight;
     if (distanceFromBottom < 140) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, isShaking]);
 
   useEffect(() => {
     if (!selectedConversation) return;
-    const handleViewportChange = () => {
+    const handleViewportResize = () => {
       setTimeout(() => {
+        if (isShaking) return;
         scrollToBottom();
       }, 30);
     };
 
-    handleViewportChange();
+    handleViewportResize();
 
     const viewport = typeof window !== 'undefined' ? window.visualViewport : null;
-    viewport?.addEventListener('resize', handleViewportChange);
-    viewport?.addEventListener('scroll', handleViewportChange);
+    viewport?.addEventListener('resize', handleViewportResize);
 
     return () => {
-      viewport?.removeEventListener('resize', handleViewportChange);
-      viewport?.removeEventListener('scroll', handleViewportChange);
+      viewport?.removeEventListener('resize', handleViewportResize);
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, isShaking]);
 
   // Limpar timeout ao desmontar
   useEffect(() => {
@@ -1097,7 +1097,7 @@ const Messages = () => {
       {selectedConversation ? (
         <div className="flex-1 flex flex-col min-h-0">
           {/* Header da Conversa */}
-          <div className="p-4 border-b border-gray-200 bg-white">
+          <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-30">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
