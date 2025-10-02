@@ -1077,6 +1077,7 @@ const Messages = () => {
                 </div>
               </div>
 
+              <CallAttentionButton receiverId={selectedConversation?.otherUser?.id} />
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <MoreVertical size={20} />
               </button>
