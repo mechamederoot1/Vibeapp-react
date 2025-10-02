@@ -72,6 +72,7 @@ const Messages = () => {
   const [pendingAudioBlob, setPendingAudioBlob] = useState(null)
   const [pendingPeaks, setPendingPeaks] = useState(null)
   const [elapsedMs, setElapsedMs] = useState(0)
+  const [isShaking, setIsShaking] = useState(false)
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
