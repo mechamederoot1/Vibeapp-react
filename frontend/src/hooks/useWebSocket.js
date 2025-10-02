@@ -1,5 +1,28 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationRelatedEventTypes } from '../utils/notifications';
+
+const normalizeEventType = (type) => {
+  if (!type) {
+    return 'unknown';
+  }
+  if (notificationRelatedEventTypes.has(type)) {
+    return 'notification';
+  }
+  if (type === 'new_message') {
+    return 'message';
+  }
+  if (type === 'message_delivered' || type === 'messages_read') {
+    return 'message_status';
+  }
+  if (type === 'user_typing' || type === 'typing') {
+    return 'typing';
+  }
+  if (type === 'ping') {
+    return 'ping';
+  }
+  return type;
+};
 
 export const useWebSocket = () => {
   const { token } = useAuth();
@@ -54,11 +77,13 @@ export const useWebSocket = () => {
       wsRef.current.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          console.log('📨 Mensagem WebSocket recebida:', message);
-          setLastMessage(message);
+          const normalizedType = normalizeEventType(message.type);
+          const enhancedMessage = { ...message, normalizedType };
+          console.log('📨 Mensagem WebSocket recebida:', enhancedMessage);
+          setLastMessage(enhancedMessage);
 
           // Responder pings automaticamente
-          if (message.type === 'ping') {
+          if (normalizedType === 'ping') {
             wsRef.current.send(JSON.stringify({ type: 'pong', data: {} }));
           }
         } catch (error) {

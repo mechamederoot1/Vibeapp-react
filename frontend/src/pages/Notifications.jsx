@@ -1,8 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Heart, MessageCircle, UserPlus, Users, Share2, Bell } from 'lucide-react';
 import { api } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 import { useNavigate } from 'react-router-dom';
+import {
+  normalizeNotificationPayload,
+  upsertNotifications,
+  shouldRefreshNotifications,
+} from '../utils/notifications';
 
 const Notifications = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -12,17 +18,19 @@ const Notifications = () => {
   const navigate = useNavigate();
 
   // Carregar notificações
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       const response = await api.get('/notifications');
-      setNotifications(response.data);
+      const data = Array.isArray(response.data) ? response.data : [];
+      const normalized = data.map((item) => normalizeNotificationPayload(item));
+      setNotifications(normalized);
     } catch (error) {
       console.error('Erro ao carregar notificações:', error);
-      setNotifications([])
+      setNotifications([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Marcar notificação como lida
   const markAsRead = async (notificationId) => {
@@ -62,29 +70,32 @@ const Notifications = () => {
   useEffect(() => {
     if (!lastMessage) return;
 
-    if (lastMessage.type === 'notification') {
-      const newNotification = lastMessage.data;
-      setNotifications(prev => [newNotification, ...prev]);
-      
-      // Mostrar notificação do browser se permitido
+    if (lastMessage.type === 'notification' && lastMessage.data) {
+      const normalized = normalizeNotificationPayload(lastMessage.data);
+      setNotifications((prev) => upsertNotifications(prev, normalized));
+
       if (Notification.permission === 'granted') {
-        new Notification(newNotification.title, {
-          body: newNotification.message,
-          icon: '/favicon.ico'
+        new Notification(normalized.title, {
+          body: normalized.message,
+          icon: '/favicon.ico',
         });
       }
+      return;
     }
-  }, [lastMessage]);
+
+    if (shouldRefreshNotifications(lastMessage.type)) {
+      loadNotifications();
+    }
+  }, [lastMessage, loadNotifications]);
 
   // Carregar notificações ao montar
   useEffect(() => {
     loadNotifications();
-    
-    // Solicitar permissão para notificações
+
     if (Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, []);
+  }, [loadNotifications]);
 
   const getIcon = (type) => {
     switch (type) {
