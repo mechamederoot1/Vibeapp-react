@@ -82,6 +82,11 @@ const AppContent = () => {
     setPermissionsGranted(true)
   }
 
+  // Unlock audio on first user gesture so notification sounds can play later
+  useEffect(() => {
+    import('./utils/notificationSound').then(mod => mod.unlockAudioOnGesture()).catch(()=>{});
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
       <Routes>
