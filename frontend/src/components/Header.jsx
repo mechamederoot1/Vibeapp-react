@@ -18,6 +18,7 @@ const Header = ({ onOpenPostModal }) => {
     notifications: 0
   })
   const { lastMessage } = useWebSocket()
+  const [attentionAlert, setAttentionAlert] = useState(null)
 
   // Inline search state
   const [showSearch, setShowSearch] = useState(false)
