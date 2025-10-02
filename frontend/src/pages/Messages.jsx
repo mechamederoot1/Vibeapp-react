@@ -5,6 +5,7 @@ import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
+import CallAttentionButton from '../components/CallAttentionButton';
 
 const deriveStatus = (m) => {
   if (m.status) return m.status
