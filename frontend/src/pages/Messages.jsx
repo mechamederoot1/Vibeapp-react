@@ -1202,7 +1202,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-30 pb-safe">
+          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe">
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
