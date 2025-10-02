@@ -986,6 +986,7 @@ const Messages = () => {
 
   return (
     <div className={`flex flex-1 min-h-0 bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
+      <style>{`@keyframes callAttentionShake { 0% { transform: translateX(0); } 10% { transform: translateX(-12px) rotate(-2deg); } 20% { transform: translateX(12px) rotate(2deg); } 30% { transform: translateX(-10px) rotate(-1deg); } 40% { transform: translateX(10px) rotate(1deg); } 50% { transform: translateX(-8px) rotate(-1deg); } 60% { transform: translateX(8px) rotate(1deg); } 70% { transform: translateX(-6px) rotate(-0.5deg); } 80% { transform: translateX(6px) rotate(0.5deg); } 90% { transform: translateX(-3px) rotate(-0.2deg); } 100% { transform: translateX(0); } } .call-attention-shake { animation: callAttentionShake 1600ms cubic-bezier(.36,.07,.19,.97) both; transform-origin: center; }`}</style>
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
