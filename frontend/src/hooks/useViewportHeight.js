@@ -22,10 +22,7 @@ const useViewportHeight = () => {
     }
 
     const update = () => {
-      const next = getViewportHeight()
-      if (next) {
-        setHeight(next)
-      }
+      setHeight(getViewportHeight())
     }
 
     update()
