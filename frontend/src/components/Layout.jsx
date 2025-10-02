@@ -13,7 +13,10 @@ const Layout = ({ children, onOpenPostModal }) => {
   const viewportHeight = useViewportHeight();
   const dynamicHeight = viewportHeight ? `${viewportHeight}px` : undefined;
   const containerStyle = dynamicHeight
-    ? { minHeight: dynamicHeight, height: isConversationOpened ? dynamicHeight : undefined }
+    ? {
+        minHeight: dynamicHeight,
+        ...(isConversationOpened ? { height: dynamicHeight, maxHeight: dynamicHeight } : {})
+      }
     : undefined;
   const mainStyle = {
     overflowY: isConversationOpened ? 'auto' : 'scroll'
