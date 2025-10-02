@@ -39,7 +39,7 @@ const NotificationsList = ({ onClose }) => {
   // Marcar notificação como lida
   const markAsRead = async (notificationId) => {
     try {
-      await api.put(`/api/notifications/${notificationId}/read`);
+      await api.put(`/notifications/${notificationId}/read`);
       
       setNotifications(prev => 
         prev.map(n => 
@@ -58,7 +58,7 @@ const NotificationsList = ({ onClose }) => {
   // Marcar todas como lidas
   const markAllAsRead = async () => {
     try {
-      await api.put('/api/notifications/read-all');
+      await api.put('/notifications/read-all');
       
       setNotifications(prev => 
         prev.map(n => ({ 
@@ -77,7 +77,7 @@ const NotificationsList = ({ onClose }) => {
   // Excluir notificação
   const deleteNotification = async (notificationId) => {
     try {
-      await api.delete(`/api/notifications/${notificationId}`);
+      await api.delete(`/notifications/${notificationId}`);
       
       setNotifications(prev => {
         const filtered = prev.filter(n => n.id !== notificationId);
