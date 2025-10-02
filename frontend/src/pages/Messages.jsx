@@ -1085,9 +1085,9 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Header da Conversa */}
-          <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-30">
+        <div className={`fixed inset-0 z-40 bg-white flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} role="dialog" aria-modal="true">
+          {/* Header da Conversa (modal) */}
+          <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-50">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
@@ -1126,7 +1126,7 @@ const Messages = () => {
 
           {/* Lista de Mensagens */}
           <div
-            className={`flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain ${isShaking ? 'call-attention-shake' : ''}`}
+            className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain pb-36"
             ref={msgListRef}
             onScroll={handleScroll}
           >
