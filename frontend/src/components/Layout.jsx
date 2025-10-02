@@ -19,7 +19,8 @@ const Layout = ({ children, onOpenPostModal }) => {
       }
     : undefined;
   const mainStyle = {
-    overflowY: isConversationOpened ? 'auto' : 'scroll'
+    overflowY: isConversationOpened ? 'auto' : 'scroll',
+    ...(isConversationOpened ? { height: '100%' } : {})
   };
 
   return (
