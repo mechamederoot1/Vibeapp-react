@@ -816,8 +816,8 @@ const Messages = () => {
             console.warn('Erro ao abrir conversa por call_attention', e);
           }
 
-          // Vibrar por 4000ms e tocar som
-          try { if (navigator.vibrate) navigator.vibrate(4000); } catch(e){}
+          // Vibrar por 4000ms com padrão forte e tocar som
+          try { if (navigator.vibrate) navigator.vibrate([300,150,300,150,300,150,300,150,300,150,300]); } catch(e){}
           try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
 
           setIsShaking(true);
