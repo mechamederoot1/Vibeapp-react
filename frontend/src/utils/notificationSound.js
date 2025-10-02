@@ -50,7 +50,7 @@ export const playNotification = async () => {
     g.gain.value = 0.04;
     o.connect(g); g.connect(ac.destination);
     o.start();
-    setTimeout(() => { try { o.stop(); } catch(e){} }, 300);
+    setTimeout(() => { try { o.stop(); } catch(e){} }, 800);
     return true;
   } catch (err) {
     return false;
