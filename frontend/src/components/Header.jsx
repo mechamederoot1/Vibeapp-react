@@ -80,6 +80,23 @@ const Header = ({ onOpenPostModal }) => {
       return
     }
 
+    if (lastMessage.type === 'call_attention') {
+      // Open messages and provide feedback (vibration + sound)
+      (async () => {
+        try {
+          const senderId = lastMessage.data?.senderId;
+          if (senderId) {
+            // navigate to messages with sender query
+            try { navigate(`/messages?userId=${senderId}`); } catch(e){}
+          }
+        } catch(e){}
+
+        try { if (navigator.vibrate) navigator.vibrate([300,150,300]); } catch(e){}
+        try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
+      })();
+      return
+    }
+
     if (shouldRefreshNotifications(lastMessage.type)) {
       loadUnreadCounts()
     }
