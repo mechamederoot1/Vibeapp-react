@@ -82,7 +82,7 @@ const Header = ({ onOpenPostModal }) => {
     }
 
     if (lastMessage.type === 'call_attention') {
-      // Open messages and provide feedback (vibration + sound)
+      // Open messages and provide feedback (vibration + sound) and show centered alert
       (async () => {
         try {
           const senderId = lastMessage.data?.senderId;
@@ -94,6 +94,21 @@ const Header = ({ onOpenPostModal }) => {
 
         try { if (navigator.vibrate) navigator.vibrate([300,150,300,150,300,150,300,150,300,150,300]); } catch(e){}
         try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
+
+        // Try to fetch sender name for alert
+        try {
+          const sid = lastMessage.data?.senderId;
+          if (sid) {
+            const res = await api.get(`/users/${sid}`);
+            const other = res.data;
+            const name = (other && (other.firstName || other.full_name || other.name)) ? (other.firstName || other.full_name || other.name) : 'Fulano';
+            setAttentionAlert(`${name} chamou sua tenção!`);
+            setTimeout(() => setAttentionAlert(null), 2000);
+          }
+        } catch (e) {
+          setAttentionAlert('Fulano chamou sua tenção!');
+          setTimeout(() => setAttentionAlert(null), 2000);
+        }
       })();
       return
     }
