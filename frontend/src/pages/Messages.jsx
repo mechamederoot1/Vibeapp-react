@@ -917,7 +917,7 @@ const Messages = () => {
   }
 
   return (
-    <div className={`flex h-screen bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
+    <div className={`flex flex-1 min-h-0 bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
