@@ -74,10 +74,6 @@ export const notificationRelatedEventTypes = new Set([
   'new_comment',
   'new_reaction',
   'new_share',
-  'friend_request',
-  'friend_accepted',
-  'follow',
-  'follow_update',
 ]);
 
 export const shouldRefreshNotifications = (eventType) =>
