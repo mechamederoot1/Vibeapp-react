@@ -1,19 +1,28 @@
 export const normalizeNotificationPayload = (payload = {}) => {
+  const toCamel = (value) =>
+    value.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+
+  const toSnake = (value) =>
+    value
+      .replace(/([A-Z])/g, '_$1')
+      .toLowerCase()
+      .replace(/^_/, '');
+
   const coalesce = (keys, fallback = null) => {
     for (const key of keys) {
-      if (payload[key] !== undefined && payload[key] !== null) {
-        return payload[key];
+      const variants = new Set([key]);
+      if (typeof key === 'string') {
+        if (key.includes('_')) {
+          variants.add(toCamel(key));
+        } else if (/[A-Z]/.test(key)) {
+          variants.add(toSnake(key));
+        }
       }
-      const camelKey = Array.isArray(key)
-        ? key
-        : typeof key === 'string' && key.includes('_')
-          ? key
-              .split('_')
-              .map((part, index) => (index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
-              .join('')
-          : null;
-      if (camelKey && payload[camelKey] !== undefined && payload[camelKey] !== null) {
-        return payload[camelKey];
+
+      for (const variant of variants) {
+        if (payload[variant] !== undefined && payload[variant] !== null) {
+          return payload[variant];
+        }
       }
     }
     return fallback;
