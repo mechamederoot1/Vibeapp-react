@@ -3,7 +3,7 @@ import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Im
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
-import { api, uploadsAPI } from '../services/api';
+import { api, uploadsAPI, usersAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
 import CallAttentionButton from '../components/CallAttentionButton';
 
