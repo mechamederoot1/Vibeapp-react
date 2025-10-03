@@ -5,6 +5,7 @@ import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI, usersAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
+import useViewportHeight from '../hooks/useViewportHeight';
 import CallAttentionButton from '../components/CallAttentionButton';
 
 const deriveStatus = (m) => {
@@ -956,6 +957,7 @@ const Messages = () => {
   }, []);
 
   const [conversationsFilter, setConversationsFilter] = useState('all'); // 'all' | 'unread'
+  const viewportHeight = useViewportHeight();
 
   let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1084,7 +1086,7 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className={`fixed inset-0 z-40 bg-white flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} role="dialog" aria-modal="true">
+        <div className={`fixed inset-0 z-40 bg-white flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} style={viewportHeight ? { height: `${viewportHeight}px` } : undefined} role="dialog" aria-modal="true">
           {/* Header da Conversa (modal) */}
           <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-50">
             <div className="flex items-center space-x-3">
