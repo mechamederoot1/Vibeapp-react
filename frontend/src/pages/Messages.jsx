@@ -1198,7 +1198,7 @@ const Messages = () => {
                           <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
                             {conversation.lastMessage.messageType === 'audio'
                               ? '🎵 Mensagem de áudio'
-                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '���� Vídeo' : conversation.lastMessage.content
+                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
                             }
                           </p>
                         ) : null}
@@ -1285,6 +1285,7 @@ const Messages = () => {
               </div>
 
               <CallAttentionButton receiverId={selectedConversation?.otherUser?.id} />
+              <ThemePicker conversationId={selectedConversation?.otherUser?.id} onChange={(id)=> setConversationTheme(id)} />
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <MoreVertical size={20} />
               </button>
