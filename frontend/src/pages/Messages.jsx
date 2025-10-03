@@ -896,10 +896,9 @@ const Messages = () => {
     init();
 
     const onPop = (e) => {
-      if (selectedConversation) {
-        setSelectedConversation(null);
-        try { window.history.pushState({}, ''); } catch(err){}
-      }
+      // Always close any opened conversation on popstate to avoid re-triggering init
+      setSelectedConversation(null);
+      try { window.history.pushState({}, ''); } catch(err){}
     }
 
     window.addEventListener('popstate', onPop);
