@@ -168,6 +168,10 @@ def _ensure_work_education_tables():
 
 
 def _migrate_public_profile_id(db):
+    # Ensure last_seen exists (some environments may call this migration path)
+    if not _has_col(db, 'users', 'last_seen'):
+        db.execute(text("ALTER TABLE users ADD COLUMN last_seen DATETIME"))
+        db.commit()
     # add column
     if not _has_col(db, 'users', 'public_profile_id'):
         db.execute(text("ALTER TABLE users ADD COLUMN public_profile_id TEXT"))
