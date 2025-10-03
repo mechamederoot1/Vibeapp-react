@@ -973,6 +973,13 @@ const Messages = () => {
 
   useEffect(() => {
     if (!selectedConversation) return;
+
+    // Load theme for this conversation
+    try {
+      const t = localStorage.getItem(`theme:conv:${selectedConversation.otherUser.id}`)
+      setConversationTheme(t || null)
+    } catch(e) {}
+
     const handleViewportResize = () => {
       setTimeout(() => {
         if (isShaking) return;
