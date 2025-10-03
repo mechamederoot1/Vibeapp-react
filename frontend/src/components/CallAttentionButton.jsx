@@ -79,28 +79,27 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
       {/* Inline SVG icon: blue circle with white phone and vibration marks; larger when active, desaturated when disabled */}
       <svg
         viewBox="0 0 64 64"
-        className={disabled ? 'w-10 h-10 opacity-40 text-gray-300' : 'w-11 h-11 text-vibe-blue'}
+        className={disabled ? 'w-12 h-12 opacity-40 filter grayscale' : 'w-12 h-12'}
         aria-hidden="false"
         role="img"
       >
-        {/* Outer circle uses exact vibe blue hex to guarantee color matches buttons */}
+        {/* Flat blue circle matching app primary color */}
         <circle cx="32" cy="32" r="30" fill="#2563eb" />
 
-        {/* Phone: white rounded rectangle rotated */}
-        <g transform="translate(32,32) rotate(-18)">
-          <rect x="-6.5" y="-11" width="13" height="22" rx="2" fill="#ffffff" />
-          {/* small home button */}
-          <rect x="0.9" y="9" width="1.8" height="1.8" rx="0.4" fill="#e6e6e6" />
-          {/* screen inner (subtle) */}
-          <rect x="-4" y="-8" width="8" height="14" rx="1" fill="#ffffff" opacity="0.95" />
-        </g>
+        {/* Center phone (white) - rounded rectangle */}
+        <rect x="26" y="16" width="12" height="32" rx="3" ry="3" fill="#ffffff" />
+        {/* speaker slot */}
+        <rect x="30" y="18.5" width="4" height="1.6" rx="0.8" fill="#e6e6e6" />
+        {/* home dot */}
+        <circle cx="32" cy="43" r="1.2" fill="#e6e6e6" />
 
-        {/* Vibration waves - white strokes on left and right */}
-        <path d="M10 18c-2 1.5-2 5 0 6.5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M7 14c-3 2-3 8 0 11" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Left vibration waves (two) */}
+        <path d="M18 22c-2.6 1.9-2.6 6.3 0 8.2" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M14.5 19.5c-3.8 2.8-3.8 9.2 0 12" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
 
-        <path d="M54 18c2 1.5 2 5 0 6.5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M57 14c3 2 3 8 0 11" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Right vibration waves (two) */}
+        <path d="M46 22c2.6 1.9 2.6 6.3 0 8.2" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path d="M49.5 19.5c3.8 2.8 3.8 9.2 0 12" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>
     </button>
   );

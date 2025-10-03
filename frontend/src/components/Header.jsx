@@ -3,7 +3,6 @@ import { Search, MessageCircle, Bell, Plus, LogOut, User, X } from 'lucide-react
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { VibeArc } from './VibeLogoSimple'
-import AvatarDropdown from './AvatarDropdown'
 import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 import { getPublicProfileId } from '../utils/profileId'
@@ -12,7 +11,6 @@ import { shouldRefreshNotifications } from '../utils/notifications'
 const Header = ({ onOpenPostModal }) => {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
-  const [showAvatarDropdown, setShowAvatarDropdown] = useState(false)
   const [unreadCounts, setUnreadCounts] = useState({
     messages: 0,
     notifications: 0
@@ -27,27 +25,6 @@ const Header = ({ onOpenPostModal }) => {
   const [searchLoading, setSearchLoading] = useState(false)
   const searchRef = useRef(null)
 
-  const handleEditPhoto = () => {
-    try {
-      const pubId = getPublicProfileId(user)
-      navigate(`/profile/id/${pubId}`)
-    } catch (e) {
-      const fallback = user?.publicProfileId || user?.public_profile_id || user?.id
-      if (fallback) navigate(`/profile/id/${fallback}`)
-      else navigate('/profile')
-    }
-    setShowAvatarDropdown(false)
-  }
-
-  const handleViewPhoto = () => {
-    console.log('Visualizar foto do perfil')
-    setShowAvatarDropdown(false)
-  }
-
-  const handleViewStory = () => {
-    console.log('Visualizar story')
-    setShowAvatarDropdown(false)
-  }
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = useCallback(async () => {
@@ -226,37 +203,6 @@ const Header = ({ onOpenPostModal }) => {
 
           </div>
 
-          {/* User Avatar with Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowAvatarDropdown(!showAvatarDropdown)}
-              className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent hover:ring-blue-200 transition-all"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-vibe-blue to-vibe-blue-dark flex items-center justify-center ring-2 ring-transparent hover:ring-blue-200 transition-all">
-                  <span className="text-white text-sm font-bold">
-                    {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-              )}
-            </button>
-
-            <AvatarDropdown
-              isOpen={showAvatarDropdown}
-              onClose={() => setShowAvatarDropdown(false)}
-              user={user}
-              hasRecentStory={false}
-              onEditPhoto={handleEditPhoto}
-              onViewStory={handleViewStory}
-              onViewPhoto={handleViewPhoto}
-            />
-          </div>
         </div>
       </div>
 
