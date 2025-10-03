@@ -21,6 +21,8 @@ import Register from './pages/Register'
 import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
 import PermissionsHandler from './components/PermissionsHandler'
+import useWebSocket from './hooks/useWebSocket'
+import { api, usersAPI } from './services/api'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
@@ -73,6 +75,8 @@ const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
   const [permissionsGranted, setPermissionsGranted] = useState(false)
   const { user } = useAuth()
+  const { lastMessage } = useWebSocket()
+  const [attentionAlert, setAttentionAlert] = useState(null)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
@@ -82,8 +86,41 @@ const AppContent = () => {
     setPermissionsGranted(true)
   }
 
+  // Unlock audio on first user gesture so notification sounds can play later
+  useEffect(() => {
+    import('./utils/notificationSound').then(mod => mod.unlockAudioOnGesture()).catch(()=>{});
+  }, []);
+
+  // Show centered attention alert globally for 2 seconds
+  useEffect(() => {
+    if (!lastMessage || lastMessage.type !== 'call_attention') return;
+    (async () => {
+      try {
+        const sid = lastMessage.data?.senderId;
+        let name = 'Fulano';
+        if (sid) {
+          const res = await usersAPI.getUserById(sid);
+          const other = res.data;
+          name = (other && (other.firstName || other.full_name || other.name || other.first_name)) ? (other.firstName || other.full_name || other.name || other.first_name) : name;
+        }
+        setAttentionAlert(`${name} chamou sua tenção!`);
+        setTimeout(() => setAttentionAlert(null), 2000);
+      } catch (e) {
+        setAttentionAlert('Fulano chamou sua tenção!');
+        setTimeout(() => setAttentionAlert(null), 2000);
+      }
+    })();
+  }, [lastMessage]);
+
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
+      {attentionAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/95 text-gray-900 px-6 py-3 rounded-lg shadow-lg text-lg font-semibold">
+            {attentionAlert}
+          </div>
+        </div>
+      )}
       <Routes>
         {/* Public Routes */}
         <Route 

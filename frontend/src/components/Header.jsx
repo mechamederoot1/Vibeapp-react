@@ -18,6 +18,7 @@ const Header = ({ onOpenPostModal }) => {
     notifications: 0
   })
   const { lastMessage } = useWebSocket()
+  const [attentionAlert, setAttentionAlert] = useState(null)
 
   // Inline search state
   const [showSearch, setShowSearch] = useState(false)
@@ -77,6 +78,38 @@ const Header = ({ onOpenPostModal }) => {
 
     if (lastMessage.type === 'notification') {
       setUnreadCounts(prev => ({ ...prev, notifications: prev.notifications + 1 }))
+      return
+    }
+
+    if (lastMessage.type === 'call_attention') {
+      // Open messages and provide feedback (vibration + sound) and show centered alert
+      (async () => {
+        try {
+          const senderId = lastMessage.data?.senderId;
+          if (senderId) {
+            // navigate to messages with sender query
+            try { navigate(`/messages?userId=${senderId}`); } catch(e){}
+          }
+        } catch(e){}
+
+        try { if (navigator.vibrate) navigator.vibrate([400,120,400,120,400,120,400]); } catch(e){}
+        try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
+
+        // Try to fetch sender name for alert
+        try {
+          const sid = lastMessage.data?.senderId;
+          if (sid) {
+            const res = await usersAPI.getUserById(sid);
+            const other = res.data;
+            const name = (other && (other.firstName || other.full_name || other.name || other.first_name)) ? (other.firstName || other.full_name || other.name || other.first_name) : 'Fulano';
+            setAttentionAlert(`${name} chamou sua tenção!`);
+            setTimeout(() => setAttentionAlert(null), 2000);
+          }
+        } catch (e) {
+          setAttentionAlert('Fulano chamou sua tenção!');
+          setTimeout(() => setAttentionAlert(null), 2000);
+        }
+      })();
       return
     }
 

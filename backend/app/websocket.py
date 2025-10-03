@@ -237,6 +237,25 @@ async def handle_websocket_message(websocket: WebSocket, user_id: int, message: 
                 db.close()
             except Exception:
                 pass
+    elif message_type == 'call_attention':
+        # Um usuário está chamando a atenção de outro via WS
+        try:
+            data = message.get('data', {}) or {}
+            receiver_id = data.get('receiverId')
+            # Use o user_id autenticado como senderId para segurança
+            sender_id = user_id
+            if receiver_id:
+                payload = {
+                    'type': 'call_attention',
+                    'data': {
+                        'senderId': sender_id,
+                        'receiverId': receiver_id,
+                        'timestamp': datetime.utcnow().isoformat()
+                    }
+                }
+                await manager.send_personal_message(payload, receiver_id)
+        except Exception as e:
+            print(f"Error handling call_attention: {e}")
     else:
         # Mensagem não reconhecida
         await websocket.send_text(json.dumps({

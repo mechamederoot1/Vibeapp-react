@@ -33,14 +33,12 @@ const useViewportHeight = () => {
 
     const { visualViewport } = window
     visualViewport?.addEventListener('resize', update)
-    visualViewport?.addEventListener('scroll', update)
 
     return () => {
       window.removeEventListener('resize', update)
       window.removeEventListener('focus', update)
       window.removeEventListener('orientationchange', update)
       visualViewport?.removeEventListener('resize', update)
-      visualViewport?.removeEventListener('scroll', update)
     }
   }, [])
 

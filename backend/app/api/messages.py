@@ -148,6 +148,50 @@ async def send_message(
         "data": message_dict
     }
 
+class CallAttentionCreate(BaseModel):
+    receiverId: int
+
+@router.post("/call-attention")
+async def call_attention(
+    payload: CallAttentionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Endpoint para chamar atenção de outro usuário. Envia evento via WebSocket se online."""
+    receiver = db.query(User).filter(User.id == payload.receiverId).first()
+    if not receiver:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receiver not found")
+    if receiver.id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot call attention to yourself")
+
+    # Persistir notificação leve (opcional)
+    try:
+        notification = Notification(
+            user_id=receiver.id,
+            type="call_attention",
+            title=f"{current_user.full_name} chamou sua atenção",
+            message=f"{current_user.full_name} quer chamar sua atenção",
+            related_user_id=current_user.id,
+            action_url=f"/messages/{current_user.id}"
+        )
+        db.add(notification)
+        db.commit()
+    except Exception:
+        db.rollback()
+
+    # Enviar via WebSocket se disponível
+    try:
+        from ..websocket import manager
+        payload_msg = {
+            "type": "call_attention",
+            "data": {"senderId": current_user.id, "receiverId": receiver.id}
+        }
+        await manager.send_personal_message(payload_msg, receiver.id)
+    except Exception:
+        pass
+
+    return {"message": "Call attention sent"}
+
 @router.get("/conversations", response_model=List[ConversationResponse])
 async def get_conversations(
     db: Session = Depends(get_db),

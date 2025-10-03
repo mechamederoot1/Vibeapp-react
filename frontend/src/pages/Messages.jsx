@@ -3,8 +3,10 @@ import { ArrowLeft, Search, Send, Mic, MicOff, MoreVertical, Trash2, Archive, Im
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
-import { api, uploadsAPI } from '../services/api';
+import { api, uploadsAPI, usersAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
+import useViewportHeight from '../hooks/useViewportHeight';
+import CallAttentionButton from '../components/CallAttentionButton';
 
 const deriveStatus = (m) => {
   if (m.status) return m.status
@@ -72,6 +74,7 @@ const Messages = () => {
   const [pendingAudioBlob, setPendingAudioBlob] = useState(null)
   const [pendingPeaks, setPendingPeaks] = useState(null)
   const [elapsedMs, setElapsedMs] = useState(0)
+  const [isShaking, setIsShaking] = useState(false)
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
@@ -718,7 +721,7 @@ const Messages = () => {
     if (lastMessage.type === 'new_message') {
       const message = lastMessage.data;
 
-      // Se é uma mensagem da conversa atual, adicionar à lista
+      // Se �� uma mensagem da conversa atual, adicionar à lista
       if (selectedConversation &&
           (message.senderId === selectedConversation.otherUser.id ||
            message.receiverId === selectedConversation.otherUser.id)) {
@@ -784,6 +787,43 @@ const Messages = () => {
           setTypingUsers(prev => ({ ...prev, [senderId]: false }));
           typingTimersRef.current[senderId] = null;
         }, 700);
+      }
+    }
+
+    // Chamar atenção: abrir conversa e animar/vibrar no dispositivo do destinatário
+    if (lastMessage.type === 'call_attention') {
+      const { senderId, receiverId } = lastMessage.data || {};
+      if (!senderId) return;
+
+      // Accept event when receiverId absent (server may send only senderId) or explicitly targeted
+      if (!receiverId || receiverId === user?.id) {
+        (async () => {
+          try {
+            const res = await usersAPI.getUserById(senderId);
+            const other = res.data;
+            if (other && other.id) {
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && c.otherUser.id === other.id)
+                return exists ? prev : [conv, ...(prev || [])]
+              });
+
+              await loadMessages(other.id, 1);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+              try { navigate(`/messages?user=${encodeURIComponent(other.username||'')}&userId=${other.id}`); } catch(e){}
+            }
+          } catch (e) {
+            console.warn('Erro ao abrir conversa por call_attention', e);
+          }
+
+          // Vibrar por no máximo 2000ms com padrão forte e tocar som
+          try { if (navigator.vibrate) navigator.vibrate([400,120,400,120,400,120,400]); } catch(e){}
+          try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
+
+          setIsShaking(true);
+          setTimeout(() => setIsShaking(false), 2000);
+        })();
       }
     }
   }, [lastMessage, selectedConversation]);
@@ -857,46 +897,45 @@ const Messages = () => {
     init();
 
     const onPop = (e) => {
-      if (selectedConversation) {
-        setSelectedConversation(null);
-        try { window.history.pushState({}, ''); } catch(err){}
-      }
+      // Always close any opened conversation on popstate to avoid re-triggering init
+      setSelectedConversation(null);
+      try { window.history.pushState({}, ''); } catch(err){}
     }
 
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [location, selectedConversation]);
+  }, [location, authUser, authLoading]);
 
 
   // Scroll quando mensagens mudarem
   useEffect(() => {
+    if (isShaking) return;
     const c = msgListRef.current;
     if (!c) return;
     const distanceFromBottom = c.scrollHeight - c.scrollTop - c.clientHeight;
     if (distanceFromBottom < 140) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, isShaking]);
 
   useEffect(() => {
     if (!selectedConversation) return;
-    const handleViewportChange = () => {
+    const handleViewportResize = () => {
       setTimeout(() => {
+        if (isShaking) return;
         scrollToBottom();
       }, 30);
     };
 
-    handleViewportChange();
+    handleViewportResize();
 
     const viewport = typeof window !== 'undefined' ? window.visualViewport : null;
-    viewport?.addEventListener('resize', handleViewportChange);
-    viewport?.addEventListener('scroll', handleViewportChange);
+    viewport?.addEventListener('resize', handleViewportResize);
 
     return () => {
-      viewport?.removeEventListener('resize', handleViewportChange);
-      viewport?.removeEventListener('scroll', handleViewportChange);
+      viewport?.removeEventListener('resize', handleViewportResize);
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, isShaking]);
 
   // Limpar timeout ao desmontar
   useEffect(() => {
@@ -918,6 +957,68 @@ const Messages = () => {
   }, []);
 
   const [conversationsFilter, setConversationsFilter] = useState('all'); // 'all' | 'unread'
+  const viewportHeight = useViewportHeight();
+  const [keyboardInset, setKeyboardInset] = useState(0);
+  const inputRef = useRef(null);
+  const [inputHeight, setInputHeight] = useState(0);
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const updateInset = () => {
+      const { visualViewport } = window;
+      if (visualViewport && typeof visualViewport.height === 'number') {
+        const offsetTop = visualViewport.offsetTop || 0;
+        const inset = Math.max(0, window.innerHeight - (visualViewport.height + offsetTop));
+        setKeyboardInset(inset);
+      } else {
+        setKeyboardInset(0);
+      }
+    };
+
+    updateInset();
+    window.addEventListener('resize', updateInset);
+    window.addEventListener('orientationchange', updateInset);
+    const { visualViewport } = window;
+    visualViewport?.addEventListener('resize', updateInset);
+    visualViewport?.addEventListener('scroll', updateInset);
+
+    return () => {
+      window.removeEventListener('resize', updateInset);
+      window.removeEventListener('orientationchange', updateInset);
+      visualViewport?.removeEventListener('resize', updateInset);
+      visualViewport?.removeEventListener('scroll', updateInset);
+    };
+  }, []);
+
+  // measure input bar height and react to changes
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const update = () => setInputHeight(el.offsetHeight || el.clientHeight || 0);
+    update();
+    let ro;
+    try {
+      ro = new ResizeObserver(update);
+      ro.observe(el);
+    } catch (e) {}
+    return () => { try { ro && ro.disconnect(); } catch(e) {} };
+  }, [showRecorder, isRecording]);
+
+  // measure header height so message list can be padded and header stays fixed
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => setHeaderHeight(el.offsetHeight || el.clientHeight || 0);
+    update();
+    let ro;
+    try {
+      ro = new ResizeObserver(update);
+      ro.observe(el);
+    } catch(e) {}
+    return () => { try { ro && ro.disconnect(); } catch(e) {} };
+  }, [selectedConversation]);
 
   let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -938,6 +1039,7 @@ const Messages = () => {
 
   return (
     <div className={`flex flex-1 min-h-0 bg-white ${selectedConversation ? 'pb-0' : 'pb-20 md:pb-0'}`}>
+      <style>{`@keyframes callAttentionShake { 0% { transform: translate(0,0) rotate(0deg); } 10% { transform: translate(-24px,-6px) rotate(-18deg); } 20% { transform: translate(24px,6px) rotate(18deg); } 30% { transform: translate(-20px,-4px) rotate(-12deg); } 40% { transform: translate(20px,4px) rotate(12deg); } 50% { transform: translate(-16px,-3px) rotate(-8deg); } 60% { transform: translate(16px,3px) rotate(8deg); } 70% { transform: translate(-8px,-2px) rotate(-4deg); } 80% { transform: translate(8px,2px) rotate(4deg); } 90% { transform: translate(-4px,0px) rotate(-2deg); } 100% { transform: translate(0,0) rotate(0deg); } } .call-attention-shake { animation: callAttentionShake 200ms linear infinite; transform-origin: center; will-change: transform; }`}</style>
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
@@ -1045,9 +1147,9 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Header da Conversa */}
-          <div className="p-4 border-b border-gray-200 bg-white">
+        <div className={`flex-1 flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} role="region">
+          {/* Header da Conversa (modal) */}
+          <div ref={headerRef} className="p-4 border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
@@ -1077,6 +1179,7 @@ const Messages = () => {
                 </div>
               </div>
 
+              <CallAttentionButton receiverId={selectedConversation?.otherUser?.id} />
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <MoreVertical size={20} />
               </button>
@@ -1088,6 +1191,7 @@ const Messages = () => {
             className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
             ref={msgListRef}
             onScroll={handleScroll}
+            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`, paddingTop: headerHeight ? `${headerHeight + 8}px` : undefined }}
           >
             {loadingOlder && (
               <div className="flex justify-center py-2">
@@ -1161,7 +1265,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-30 pb-safe">
+          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe shadow-sm" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
