@@ -1001,8 +1001,17 @@ const Messages = () => {
         const offsetTop = visualViewport.offsetTop || 0;
         const inset = Math.max(0, window.innerHeight - (visualViewport.height + offsetTop));
         setKeyboardInset(inset);
+
+        // Keep header fixed inside the visual viewport when keyboard opens
+        try {
+          if (headerRef && headerRef.current) {
+            headerRef.current.style.top = `${offsetTop}px`;
+          }
+        } catch(e) {}
+
       } else {
         setKeyboardInset(0);
+        try { if (headerRef && headerRef.current) headerRef.current.style.top = '0px' } catch(e) {}
       }
     };
 
