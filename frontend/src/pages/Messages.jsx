@@ -1044,6 +1044,42 @@ const Messages = () => {
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <img src={user?.avatar_url || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.firstName||user?.displayName||user?.username||'U'))}&background=2563eb&color=fff`} alt={user?.firstName || user?.username} className="w-12 h-12 rounded-full object-cover" />
+              <div>
+                <div className="text-sm font-semibold text-gray-900">{user?.firstName} {user?.lastName}</div>
+                <div className="text-xs text-gray-500">Online</div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Novo">
+                <PlusCircle size={18} />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Configurações">
+                <MoreVertical size={18} />
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <button onClick={() => setConversationsFilter('all')} className={`px-3 py-1 rounded ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Todas</button>
+              <button onClick={() => setConversationsFilter('unread')} className={`px-3 py-1 rounded ${conversationsFilter === 'unread' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Não lidas</button>
+            </div>
+
+            <div className="relative w-1/2">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Buscar conversas..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Mensagens</h1>
             <div className="flex items-center space-x-2">
               <button onClick={() => setConversationsFilter('all')} className={`px-3 py-1 rounded ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Todas</button>
