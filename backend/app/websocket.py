@@ -59,6 +59,31 @@ class ConnectionManager:
                     print(f"Error sending message to user {user_id}: {e}")
                     self.disconnect(ws, user_id)
             await asyncio.gather(*[_send(ws) for ws in connections], return_exceptions=True)
+
+    async def broadcast(self, message: dict):
+        """Enviar mensagem para todos os usuários conectados"""
+        # Collect a snapshot of all connections
+        all_connections = []
+        for conns in self.active_connections.values():
+            all_connections.extend(conns.copy())
+
+        async def _send(ws: WebSocket):
+            try:
+                await ws.send_text(json.dumps(message))
+            except Exception as e:
+                print(f"Error broadcasting message: {e}")
+                # best effort: try to remove broken connection
+                try:
+                    # find user id for this ws and disconnect
+                    for uid, wslist in list(self.active_connections.items()):
+                        if ws in wslist:
+                            self.disconnect(ws, uid)
+                            break
+                except Exception:
+                    pass
+
+        if all_connections:
+            await asyncio.gather(*[_send(ws) for ws in all_connections], return_exceptions=True)
                     
     async def send_notification(self, notification_data: dict, user_id: int):
         """Enviar notificação para um usuário"""
