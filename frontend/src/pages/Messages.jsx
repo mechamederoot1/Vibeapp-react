@@ -316,7 +316,246 @@ const Messages = () => {
     stopTyping();
   };
 
-  // ... rest of the functions unchanged (sendImage, sendVideo, recording, typing handlers, websocket handlers) ...
+  // Enviar mídia
+  const sendImage = async (file) => {
+    if (!selectedConversation) return
+    try {
+      const formData = new FormData()
+      formData.append('receiver_id', selectedConversation.otherUser.id)
+      formData.append('file', file)
+
+      const res = await api.post('/messages/upload-media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      const msg = res.data?.data
+      if (msg) {
+        setMessages(prev => [...prev, msg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
+        setTimeout(() => scrollToBottom(), 100)
+      } else {
+        const url = URL.createObjectURL(file)
+        const tempMsg = {
+          id: Date.now(),
+          senderId: user.id,
+          receiverId: selectedConversation.otherUser.id,
+          content: '',
+          messageType: 'image',
+          mediaUrl: url,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          sender: user,
+          receiver: selectedConversation.otherUser,
+          status: 'sending'
+        }
+        setMessages(prev => [...prev, tempMsg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+        setTimeout(() => scrollToBottom(), 100)
+      }
+    } catch (err) {
+      console.error('Erro ao enviar imagem:', err)
+    }
+
+    setImageInputKey(k => k + 1)
+  }
+
+  const sendVideo = async (file) => {
+    if (!selectedConversation) return
+    if (!file.type.startsWith('video/')) {
+      alert('Apenas arquivos de vídeo são suportados.');
+      return
+    }
+
+    try {
+      const formData = new FormData()
+      formData.append('receiver_id', selectedConversation.otherUser.id)
+      formData.append('file', file)
+
+      const res = await api.post('/messages/upload-media', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+
+      const msg = res.data?.data
+      if (msg) {
+        setMessages(prev => [...prev, msg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, msg])
+        setTimeout(() => scrollToBottom(), 100)
+      } else {
+        const url = URL.createObjectURL(file)
+        const tempMsg = {
+          id: Date.now(),
+          senderId: user.id,
+          receiverId: selectedConversation.otherUser.id,
+          content: '',
+          messageType: 'video',
+          mediaUrl: url,
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          sender: user,
+          receiver: selectedConversation.otherUser,
+          status: 'sending'
+        }
+        setMessages(prev => [...prev, tempMsg])
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+        setTimeout(() => scrollToBottom(), 100)
+      }
+    } catch (err) {
+      console.error('Erro ao enviar vídeo:', err)
+    }
+
+    setVideoInputKey(k => k + 1)
+  }
+
+  // Recording helpers (simplified)
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      audioChunksRef.current = [];
+      try {
+        mediaRecorderRef.current = new MediaRecorder(stream);
+      } catch (e) {
+        mediaRecorderRef.current = null;
+        alert('Não foi possível iniciar o gravador neste navegador.');
+        return;
+      }
+
+      mediaRecorderRef.current.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+      }
+
+      mediaRecorderRef.current.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/ogg' });
+        audioChunksRef.current = [];
+        await sendAudioMessage(blob, null);
+      }
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setIsPaused(false);
+    } catch (error) {
+      console.error('Erro ao iniciar gravação:', error);
+      alert('Não foi possível acessar o microfone.');
+    }
+  }
+
+  const stopRecordingAndSend = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      try { mediaRecorderRef.current.stop(); } catch(e) {}
+      setIsRecording(false);
+      setIsPaused(false);
+    }
+  }
+
+  const pauseRecording = () => {
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording' && mediaRecorderRef.current.pause) {
+        mediaRecorderRef.current.pause();
+        setIsPaused(true);
+      }
+    } catch (e) {}
+  }
+
+  const resumeRecording = () => {
+    try {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused' && mediaRecorderRef.current.resume) {
+        mediaRecorderRef.current.resume();
+        setIsPaused(false);
+      }
+    } catch (e) {}
+  }
+
+  const cancelRecording = () => {
+    try {
+      if (mediaRecorderRef.current) {
+        try { mediaRecorderRef.current.stop(); } catch(e){}
+      }
+    } catch (e) {}
+    audioChunksRef.current = [];
+    setPendingAudioBlob(null);
+    setPendingPeaks(null);
+    setShowRecorder(false);
+    setIsRecording(false);
+    setIsPaused(false);
+    try { mediaStreamRef.current && mediaStreamRef.current.getTracks().forEach(t => t.stop()); } catch(e){}
+  }
+
+  const sendPendingAudio = async () => {
+    const blob = pendingAudioBlob;
+    if (!blob) return;
+    setPendingAudioBlob(null);
+    const peaks = (pendingPeaks || []).slice();
+    setPendingPeaks(null);
+    setShowRecorder(false);
+    await sendAudioMessage(blob, peaks);
+  }
+
+  const sendAudioMessage = async (audioBlob, peaks) => {
+    if (!selectedConversation) return;
+
+    if (MOCK_AUDIO_SEND) {
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        waveformPeaks: Array.isArray(peaks) ? peaks : undefined,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(() => scrollToBottom(), 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+      return
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('receiver_id', selectedConversation.otherUser.id);
+      const mime = audioBlob.type || 'audio/ogg';
+      const ext = mime.split('/')[1]?.split(';')[0] || 'ogg';
+      const file = new File([audioBlob], `audio.${ext}`, { type: mime });
+      formData.append('audio_file', file);
+      if (Array.isArray(peaks)) formData.append('waveform', JSON.stringify(peaks));
+
+      const res = await api.post('/messages/upload-audio', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const data = res.data?.data || res.data;
+      if (data) {
+        setMessages(prev => [...prev, data]);
+        updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, data])
+        setTimeout(() => scrollToBottom(), 100)
+        return
+      }
+    } catch (error) {
+      console.warn('Erro ao enviar áudio, usando fallback local', error)
+      const url = URL.createObjectURL(audioBlob)
+      const tempMsg = {
+        id: Date.now(),
+        senderId: user.id,
+        receiverId: selectedConversation.otherUser.id,
+        content: '',
+        messageType: 'audio',
+        mediaUrl: url,
+        waveformPeaks: Array.isArray(peaks) ? peaks : undefined,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        sender: user,
+        receiver: selectedConversation.otherUser,
+        status: 'sending'
+      }
+      setMessages(prev => [...prev, tempMsg])
+      setTimeout(() => scrollToBottom(), 100)
+      updateConversationsFromMessages(selectedConversation.otherUser.id, [...messages, tempMsg])
+      scheduleStatusProgress(tempMsg, selectedConversation.otherUser.id)
+    }
+  };
 
   // Indicar que está digitando
   const handleTyping = (text) => {
