@@ -92,7 +92,7 @@ const Header = ({ onOpenPostModal }) => {
           }
         } catch(e){}
 
-        try { if (navigator.vibrate) navigator.vibrate([300,150,300,150,300,150,300,150,300,150,300]); } catch(e){}
+        try { if (navigator.vibrate) navigator.vibrate([400,120,400,120,400,120,400]); } catch(e){}
         try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
 
         // Try to fetch sender name for alert
