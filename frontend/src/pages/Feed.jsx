@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext'
 import useWebSocket from '../hooks/useWebSocket'
 import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
+import { isDemoMode } from '../utils/backendStatus'
+import { generateDemoPosts, generateDemoStories } from '../mocks/demoData'
 import PostModal from '../components/PostModal'
 import SimpleStoryCreator from '../components/SimpleStoryCreator'
 import StoryViewer from '../components/StoryViewer'
@@ -565,11 +567,11 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
   const [highlights, setHighlights] = useState([])
 
   const loadFeed = async () => {
-    if (import.meta.env.VITE_DEMO === 'true') {
-      console.log('🔧 Modo demo - usando feed vazio')
-      setPosts([])
+    if (import.meta.env.VITE_DEMO === 'true' || isDemoMode()) {
+      const demo = generateDemoPosts(page, FEED_PAGE_SIZE)
+      setPosts(prev => page === 1 ? demo : [...prev, ...demo])
       setLoading(false)
-      setHasMore(false)
+      setHasMore(demo.length === FEED_PAGE_SIZE)
       return
     }
 
@@ -614,8 +616,17 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
       }
     } catch (error) {
       console.error('Error loading feed:', error)
-      setError('Erro ao carregar feed')
-      if (page === 1) setPosts([])
+      // Fallback to demo if network/backend issue
+      const networkFail = !error.response
+      if (networkFail) {
+        const demo = generateDemoPosts(page, FEED_PAGE_SIZE)
+        setPosts(prev => page === 1 ? demo : [...prev, ...demo])
+        setError('')
+        setHasMore(demo.length === FEED_PAGE_SIZE)
+      } else {
+        setError('Erro ao carregar feed')
+        if (page === 1) setPosts([])
+      }
     } finally {
       if (page === 1) setLoading(false)
       setIsFetchingMore(false)
@@ -624,6 +635,10 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
 
   const loadStories = async () => {
     try {
+      if (isDemoMode()) {
+        setStories(generateDemoStories())
+        return
+      }
       const response = await storiesAPI.getStories()
       let groups = response.data.storiesByAuthor || []
 
