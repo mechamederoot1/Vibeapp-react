@@ -99,9 +99,9 @@ const Header = ({ onOpenPostModal }) => {
         try {
           const sid = lastMessage.data?.senderId;
           if (sid) {
-            const res = await api.get(`/users/${sid}`);
+            const res = await usersAPI.getUserById(sid);
             const other = res.data;
-            const name = (other && (other.firstName || other.full_name || other.name)) ? (other.firstName || other.full_name || other.name) : 'Fulano';
+            const name = (other && (other.firstName || other.full_name || other.name || other.first_name)) ? (other.firstName || other.full_name || other.name || other.first_name) : 'Fulano';
             setAttentionAlert(`${name} chamou sua tenção!`);
             setTimeout(() => setAttentionAlert(null), 2000);
           }
