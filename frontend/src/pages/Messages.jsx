@@ -821,7 +821,7 @@ const Messages = () => {
           try { const mod = await import('../utils/notificationSound'); mod.playNotification(); } catch(e){}
 
           setIsShaking(true);
-          setTimeout(() => setIsShaking(false), 4000);
+          setTimeout(() => setIsShaking(false), 2000);
         })();
       }
     }
