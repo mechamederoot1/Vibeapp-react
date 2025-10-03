@@ -195,9 +195,33 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 }))
                 
     except WebSocketDisconnect:
+        # Persist last_seen as now when user disconnects
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e:
+            print(f"Error updating last_seen on disconnect for user {user_id}: {e}")
+        finally:
+            try: db.close()
+            except: pass
         manager.disconnect(websocket, user_id)
     except Exception as e:
         print(f"WebSocket error for user {user_id}: {e}")
+        # also persist last_seen
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e2:
+            print(f"Error updating last_seen on error for user {user_id}: {e2}")
+        finally:
+            try: db.close()
+            except: pass
         manager.disconnect(websocket, user_id)
         
 async def handle_websocket_message(websocket: WebSocket, user_id: int, message: dict):
