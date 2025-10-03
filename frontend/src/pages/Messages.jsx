@@ -1198,7 +1198,7 @@ const Messages = () => {
                           <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
                             {conversation.lastMessage.messageType === 'audio'
                               ? '🎵 Mensagem de áudio'
-                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
+                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '���� Vídeo' : conversation.lastMessage.content
                             }
                           </p>
                         ) : null}
@@ -1296,7 +1296,19 @@ const Messages = () => {
             className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
             ref={msgListRef}
             onScroll={handleScroll}
-            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`, paddingTop: headerHeight ? `${headerHeight + 12}px` : undefined }}
+            style={{
+              paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`,
+              paddingTop: headerHeight ? `${headerHeight + 12}px` : undefined,
+              ...(conversationTheme ? (() => {
+                switch(conversationTheme) {
+                  case 'midnight': return { background: 'linear-gradient(180deg,#0f172a,#0b1220)', color: '#fff' }
+                  case 'ocean': return { background: 'linear-gradient(180deg,#e0f2fe,#bae6fd)' }
+                  case 'sunset': return { background: 'linear-gradient(180deg,#ffecd2,#fcb69f)' }
+                  case 'mint': return { background: 'linear-gradient(180deg,#ecfeff,#bbf7d0)' }
+                  default: return { background: 'linear-gradient(180deg,#fff,#f7f7fb)' }
+                }
+              })() : {})
+            }}
           >
             {loadingOlder && (
               <div className="flex justify-center py-2">
