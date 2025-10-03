@@ -35,7 +35,7 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
       if (!isSupportedOrigin()) {
         console.warn('Insecure origin for getUserMedia:', window.location.href)
         setPermissions(prev => ({ ...prev, [type]: false }))
-        alert('Seu navegador está usando uma origem insegura (HTTP em IP). Para acessar microfone/câmera use localhost ou HTTPS. Para testar localmente, abra o app em http://localhost:3000 ou use ngrok/https.')
+        // Don't force or alert the user; permissions are optional and can be granted when requested.
         return false
       }
 
