@@ -11,16 +11,8 @@ const PermissionsHandler = ({ onPermissionsGranted }) => {
   const [currentStep, setCurrentStep] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    // Check if we should show permissions modal
-    const hasAskedBefore = localStorage.getItem('permissions_asked')
-    if (!hasAskedBefore) {
-      // Delay to show after app loads
-      setTimeout(() => {
-        setShowModal(true)
-      }, 2000)
-    }
-  }, [])
+  // Permissions modal is not shown automatically to avoid forcing permissions on users.
+  // Users can grant permissions when they explicitly use camera/microphone functions.
 
   const isSupportedOrigin = () => {
     try {
