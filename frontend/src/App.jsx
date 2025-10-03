@@ -115,6 +115,13 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
+      {attentionAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/95 text-gray-900 px-6 py-3 rounded-lg shadow-lg text-lg font-semibold">
+            {attentionAlert}
+          </div>
+        </div>
+      )}
       <Routes>
         {/* Public Routes */}
         <Route 
