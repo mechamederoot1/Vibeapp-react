@@ -23,7 +23,6 @@ import VibeLogoSimple from './components/VibeLogoSimple'
 import PermissionsHandler from './components/PermissionsHandler'
 import useWebSocket from './hooks/useWebSocket'
 import { api } from './services/api'
-import { useState, useEffect } from 'react'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
