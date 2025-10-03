@@ -28,7 +28,7 @@ const Layout = ({ children, onOpenPostModal }) => {
     <div className="flex flex-col min-h-screen overflow-x-hidden w-screen max-w-screen relative" style={containerStyle}>
       {showHeader && <Header onOpenPostModal={onOpenPostModal} />}
 
-      <main className="flex-1 overflow-x-hidden w-full max-w-full relative min-h-0" style={mainStyle}>
+      <main className={`flex-1 overflow-x-hidden w-full max-w-full relative min-h-0 ${showBottomNav ? 'pb-24' : ''}`} style={mainStyle}>
         <div className="w-full max-w-full overflow-x-hidden">
           {children}
         </div>
