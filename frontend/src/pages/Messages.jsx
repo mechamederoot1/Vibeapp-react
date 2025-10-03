@@ -1232,7 +1232,7 @@ const Messages = () => {
             className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
             ref={msgListRef}
             onScroll={handleScroll}
-            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`, paddingTop: headerHeight ? `${headerHeight + 8}px` : undefined }}
+            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`, paddingTop: headerHeight ? `${headerHeight + 12}px` : undefined }}
           >
             {loadingOlder && (
               <div className="flex justify-center py-2">
