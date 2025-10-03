@@ -137,6 +137,43 @@ const Messages = () => {
     const iv = setInterval(() => fetchPresence(selectedConversation.otherUser.id), 60000);
     return () => clearInterval(iv);
   }, [selectedConversation]);
+
+  // Listen to websocket messages and update presence/typing in real-time
+  useEffect(() => {
+    if (!lastMessage) return;
+    const type = lastMessage.type || lastMessage.normalizedType;
+
+    if (type === 'presence_update') {
+      const d = lastMessage.data || {};
+      const userId = d.userId || d.user_id || d.userID;
+      if (!userId) return;
+      setPresenceMap(prev => ({
+        ...prev,
+        [userId]: {
+          isOnline: !!d.isOnline,
+          lastSeen: d.lastSeen ?? prev[userId]?.lastSeen ?? null
+        }
+      }));
+      return;
+    }
+
+    if (type === 'user_typing') {
+      const data = lastMessage.data || {};
+      const senderId = data.senderId || data.sender_id;
+      const isTyping = !!data.isTyping;
+      if (senderId) {
+        setTypingUsers(prev => ({ ...prev, [senderId]: isTyping }));
+        if (isTyping) {
+          if (typingTimersRef.current[senderId]) clearTimeout(typingTimersRef.current[senderId]);
+          typingTimersRef.current[senderId] = setTimeout(() => {
+            setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+            delete typingTimersRef.current[senderId];
+          }, 3000);
+        }
+      }
+    }
+  }, [lastMessage]);
+
   const [loading, setLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
