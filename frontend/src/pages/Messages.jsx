@@ -958,14 +958,22 @@ const Messages = () => {
                       <div className="mt-1 min-h-[20px]">
                         {typingUsers[conversation.otherUser.id] ? (
                           <p className="text-sm text-vibe-blue"><TypingDots /></p>
-                        ) : conversation.lastMessage ? (
-                          <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
-                            {conversation.lastMessage.messageType === 'audio'
-                              ? '🎵 Mensagem de áudio'
-                              : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
-                            }
-                          </p>
-                        ) : null}
+                        ) : (
+                          <>
+                            {presenceMap[conversation.otherUser.id] && (
+                              <p className="text-xs text-vibe-blue truncate">{formatPresenceText(presenceMap[conversation.otherUser.id])}</p>
+                            )}
+
+                            {conversation.lastMessage && (
+                              <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
+                                {conversation.lastMessage.messageType === 'audio'
+                                  ? '🎵 Mensagem de áudio'
+                                  : conversation.lastMessage.messageType === 'image' ? '🖼️ Foto' : conversation.lastMessage.messageType === 'video' ? '🎬 Vídeo' : conversation.lastMessage.content
+                                }
+                              </p>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
 
