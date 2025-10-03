@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import api, { authAPI } from '../services/api'
+import { detectBackend } from '../utils/backendStatus'
+import { demoCurrentUser, seedDemoConversations } from '../mocks/demoData'
 
 const AuthContext = createContext()
 
