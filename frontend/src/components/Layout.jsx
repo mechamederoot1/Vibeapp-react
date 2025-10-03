@@ -8,8 +8,7 @@ const Layout = ({ children, onOpenPostModal }) => {
   const location = useLocation();
   const isMessagesRoute = location.pathname && location.pathname.startsWith('/messages');
   const hasQueryConversation = (location.search && (location.search.includes('user=') || location.search.includes('userId=')));
-  const hasHistoryOpened = (typeof window !== 'undefined' && window.history && window.history.state && window.history.state.openedConversation);
-  const isConversationOpened = isMessagesRoute && (hasQueryConversation || location.pathname.startsWith('/messages/') || !!hasHistoryOpened);
+  const isConversationOpened = isMessagesRoute && (hasQueryConversation || location.pathname.startsWith('/messages/'));
   const viewportHeight = useViewportHeight();
   const dynamicHeight = viewportHeight ? `${viewportHeight}px` : undefined;
   const containerStyle = dynamicHeight
