@@ -175,7 +175,12 @@ const Messages = () => {
       setConversationsPage(page);
     } catch (error) {
       console.error('Erro ao carregar conversas (usando modo demo):', error);
-      const convs = loadDemoConvs();
+      // Seed once if empty
+      try {
+        const existing = loadDemoConvs();
+        if (!existing || existing.length === 0) seedDemoConversations();
+      } catch(e) {}
+      const convs = getDemoConversations();
       if (page === 1) setConversations(convs);
       setHasMoreConversations(false);
     }
