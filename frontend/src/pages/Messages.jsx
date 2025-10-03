@@ -62,6 +62,81 @@ const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+
+  // Presence map: { [userId]: { isOnline: boolean, lastSeen: isoString } }
+  const [presenceMap, setPresenceMap] = useState({});
+
+  const fetchPresence = async (userId) => {
+    try {
+      const res = await usersAPI.getUserById(userId).catch(() => null);
+      // usersAPI.getUserById returns full user when using numeric id; prefer dedicated presence endpoint
+      const p = await api.get(`/users/${userId}/presence`).then(r => r.data).catch(() => null);
+      if (p) {
+        setPresenceMap(prev => ({ ...prev, [userId]: p }));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  const fetchPresenceForList = (list) => {
+    const ids = Array.from(new Set((list || []).map(c => c.otherUser && c.otherUser.id).filter(Boolean)));
+    ids.forEach(id => fetchPresence(id));
+  }
+
+  // Format presence text in Portuguese
+  const formatPresenceText = (p) => {
+    if (!p) return '';
+    const { isOnline, lastSeen } = p;
+    const now = Date.now();
+    const last = lastSeen ? new Date(lastSeen).getTime() : null;
+
+    const diffSec = last ? Math.max(0, Math.floor((now - last) / 1000)) : null;
+
+    const plural = (n, singular, plural) => n === 1 ? singular : plural;
+
+    if (isOnline) {
+      if (!diffSec) return 'Online';
+      if (diffSec < 60) return `Online há ${diffSec} ${plural(diffSec,'segundo','segundos')}`;
+      const mins = Math.floor(diffSec / 60);
+      if (mins < 60) return `Online há ${mins} ${plural(mins,'minuto','minutos')}`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `Online há ${hours} ${plural(hours,'hora','horas')}`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `Online há ${days} ${plural(days,'dia','dias')}`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `Online há ${months} ${plural(months,'mês','meses')}`;
+      const years = Math.floor(months / 12);
+      return `Online há ${years} ${plural(years,'ano','anos')}`;
+    } else {
+      if (!diffSec) return 'Offline';
+      const mins = Math.floor(diffSec / 60);
+      if (mins < 60) return `Visto há ${mins} ${plural(mins,'minuto','minutos')}`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `Visto há ${hours} ${plural(hours,'hora','horas')}`;
+      const days = Math.floor(hours / 24);
+      if (days < 30) return `Visto há ${days} ${plural(days,'dia','dias')}`;
+      const months = Math.floor(days / 30);
+      if (months < 12) return `Visto há ${months} ${plural(months,'mês','meses')}`;
+      const years = Math.floor(months / 12);
+      return `Visto há ${years} ${plural(years,'ano','anos')}`;
+    }
+  }
+
+  // Refresh presence every 60s for visible conversations
+  useEffect(() => {
+    fetchPresenceForList(conversations);
+    const iv = setInterval(() => fetchPresenceForList(conversations), 60000);
+    return () => clearInterval(iv);
+  }, [conversations]);
+
+  // Also refresh selected conversation presence periodically
+  useEffect(() => {
+    if (!selectedConversation) return;
+    fetchPresence(selectedConversation.otherUser.id);
+    const iv = setInterval(() => fetchPresence(selectedConversation.otherUser.id), 60000);
+    return () => clearInterval(iv);
+  }, [selectedConversation]);
   const [loading, setLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
