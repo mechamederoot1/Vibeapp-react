@@ -68,9 +68,8 @@ const Messages = () => {
 
   const fetchPresence = async (userId) => {
     try {
-      const res = await usersAPI.getUserById(userId).catch(() => null);
-      // usersAPI.getUserById returns full user when using numeric id; prefer dedicated presence endpoint
-      const p = await api.get(`/users/${userId}/presence`).then(r => r.data).catch(() => null);
+      const res = await usersAPI.getUserPresence(userId).catch(() => null);
+      const p = res?.data || null;
       if (p) {
         setPresenceMap(prev => ({ ...prev, [userId]: p }));
       }
