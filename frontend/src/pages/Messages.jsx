@@ -514,7 +514,8 @@ const Messages = () => {
       setIsRecording(true);
     } catch (error) {
       console.error('Erro ao iniciar gravação:', error);
-      alert('Não foi poss��vel acessar o microfone. Verifique as permissões do navegador.');
+      // Do not force permission; simply stop recorder UI and allow user to retry later.
+      setShowRecorder(false);
     }
   };
 
