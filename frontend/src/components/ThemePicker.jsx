@@ -45,7 +45,7 @@ const ThemePicker = ({ conversationId, onChange }) => {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-lg p-3 w-52 z-50">
+        <div className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-lg p-3 w-52 z-60">
           <div className="grid grid-cols-5 gap-2">
             {THEMES.map(t => (
               <button key={t.id} onClick={() => select(t.id)} title={t.name} className={`w-10 h-10 rounded-md border ${current === t.id ? 'ring-2 ring-vibe-blue' : 'border-gray-200'}`} style={t.style} />
