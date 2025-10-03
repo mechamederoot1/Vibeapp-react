@@ -160,6 +160,32 @@ const Messages = () => {
       return;
     }
 
+    if (type === 'call_attention') {
+      // If this client is the target receiver, trigger shake + vibration + sound
+      try {
+        const data = lastMessage.data || {};
+        const receiverId = data.receiverId || data.receiver_id;
+        const senderId = data.senderId || data.sender_id;
+        if (receiverId && user && receiverId === user.id) {
+          // Trigger shake effect if not already shaking
+          if (!isShaking) {
+            try { navigator.vibrate && navigator.vibrate([150,50,150]); } catch(e){}
+            try { playNotification(); } catch(e){}
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 1400);
+          }
+
+          // Optionally, update presence map for sender to ensure UI highlights
+          if (senderId) {
+            fetchPresence(senderId);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+      return;
+    }
+
     if (type === 'user_typing') {
       const data = lastMessage.data || {};
       const senderId = data.senderId || data.sender_id;
