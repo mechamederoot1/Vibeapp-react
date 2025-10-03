@@ -76,12 +76,12 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
       title="Chamar atenção"
       aria-label="Chamar atenção"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block">
-        <path d="M12 2C9.243 2 7 4.243 7 7v3.586l-1.707 1.707A1 1 0 006 13h12a1 1 0 00.707-1.707L17 10.586V7c0-2.757-2.243-5-5-5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 18a3 3 0 006 0" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M2 9c1.5 2 1.5 6 0 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M22 9c-1.5 2-1.5 6 0 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      {/* Icon image (uses provided uploaded asset) */}
+      <img
+        src="https://cdn.builder.io/api/v1/image/assets%2F47ac529da69a42f49d7025c85e541079%2Fc220f9c60ae545b79807e93921b5c74c?format=webp&width=800"
+        alt="Chamar atenção"
+        className={disabled ? 'w-5 h-5 filter grayscale opacity-60' : 'w-5 h-5 object-contain'}
+      />
     </button>
   );
 };
