@@ -1147,7 +1147,7 @@ const Messages = () => {
 
       {/* Área de Mensagens */}
       {selectedConversation ? (
-        <div className={`fixed inset-0 z-40 bg-white flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} style={viewportHeight ? { height: `${viewportHeight}px` } : undefined} role="dialog" aria-modal="true">
+        <div className={`flex-1 flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} role="region">
           {/* Header da Conversa (modal) */}
           <div ref={headerRef} className="p-4 border-b border-gray-200 bg-white" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50 }}>
             <div className="flex items-center space-x-3">
