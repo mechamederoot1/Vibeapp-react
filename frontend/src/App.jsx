@@ -76,6 +76,8 @@ const AppContent = () => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false)
   const [permissionsGranted, setPermissionsGranted] = useState(false)
   const { user } = useAuth()
+  const { lastMessage } = useWebSocket()
+  const [attentionAlert, setAttentionAlert] = useState(null)
 
   const handleOpenPostModal = () => setIsPostModalOpen(true)
   const handleClosePostModal = () => setIsPostModalOpen(false)
@@ -89,6 +91,27 @@ const AppContent = () => {
   useEffect(() => {
     import('./utils/notificationSound').then(mod => mod.unlockAudioOnGesture()).catch(()=>{});
   }, []);
+
+  // Show centered attention alert globally for 2 seconds
+  useEffect(() => {
+    if (!lastMessage || lastMessage.type !== 'call_attention') return;
+    (async () => {
+      try {
+        const sid = lastMessage.data?.senderId;
+        let name = 'Fulano';
+        if (sid) {
+          const res = await api.get(`/users/${sid}`);
+          const other = res.data;
+          name = (other && (other.firstName || other.full_name || other.name)) ? (other.firstName || other.full_name || other.name) : name;
+        }
+        setAttentionAlert(`${name} chamou sua tenção!`);
+        setTimeout(() => setAttentionAlert(null), 2000);
+      } catch (e) {
+        setAttentionAlert('Fulano chamou sua tenção!');
+        setTimeout(() => setAttentionAlert(null), 2000);
+      }
+    })();
+  }, [lastMessage]);
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden w-screen max-w-screen relative">
