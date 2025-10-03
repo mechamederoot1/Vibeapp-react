@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI, usersAPI } from '../services/api';
+import { seedDemoConversations, getDemoConversations } from '../mocks/demoData';
 import useWebSocket from '../hooks/useWebSocket';
 import useViewportHeight from '../hooks/useViewportHeight';
 import CallAttentionButton from '../components/CallAttentionButton';
