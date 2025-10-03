@@ -79,32 +79,28 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
       {/* Inline SVG icon: blue circle with white phone and vibration marks; larger when active, desaturated when disabled */}
       <svg
         viewBox="0 0 64 64"
-        className={disabled ? 'w-10 h-10 filter grayscale opacity-40' : 'w-11 h-11'}
+        className={disabled ? 'w-10 h-10 opacity-40' : 'w-11 h-11'}
         aria-hidden="false"
         role="img"
       >
-        {/* Outer circle (like photo: warm yellow) */}
-        <circle cx="32" cy="32" r="30" fill="#f3cf6e" />
+        {/* Outer circle uses currentColor so parent text color controls it (text-vibe-blue when active) */}
+        <circle cx="32" cy="32" r="30" fill="currentColor" />
 
-        {/* Phone: purple rotated rounded rectangle */}
-        <g transform="translate(32,32) rotate(-20)">
-          <rect x="-8" y="-12" width="16" height="24" rx="3" ry="3" fill="#7b5cff" />
-          {/* screen highlight */}
-          <rect x="-6.2" y="-9" width="12.4" height="16" rx="1.5" fill="#a992ff" opacity="0.12" />
+        {/* Phone: white rounded rectangle rotated */}
+        <g transform="translate(32,32) rotate(-18)">
+          <rect x="-6.5" y="-11" width="13" height="22" rx="2" fill="#ffffff" />
           {/* small home button */}
-          <rect x="-1" y="10" width="2" height="2" rx="0.4" fill="#ffffff" opacity="0.9" />
+          <rect x="0.9" y="9" width="1.8" height="1.8" rx="0.4" fill="#e6e6e6" />
+          {/* screen inner (subtle) */}
+          <rect x="-4" y="-8" width="8" height="14" rx="1" fill="#ffffff" opacity="0.95" />
         </g>
 
-        {/* Vibration marks - left */}
-        <path d="M12 18c-1.6 1.2-1.6 4.6 0 6" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
-        <path d="M9 14c-2.6 2-2.6 7.8 0 10" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
+        {/* Vibration waves - white strokes on left and right */}
+        <path d="M10 18c-2 1.5-2 5 0 6.5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M7 14c-3 2-3 8 0 11" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
 
-        {/* Vibration marks - right */}
-        <path d="M52 18c1.6 1.2 1.6 4.6 0 6" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" />
-        <path d="M55 14c2.6 2 2.6 7.8 0 10" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" opacity="0.85" />
-
-        {/* subtle inner shadow for depth */}
-        <ellipse cx="32" cy="38" rx="20" ry="6" fill="#000" opacity="0.03" />
+        <path d="M54 18c2 1.5 2 5 0 6.5" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M57 14c3 2 3 8 0 11" stroke="#ffffff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
