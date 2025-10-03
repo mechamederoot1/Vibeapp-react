@@ -76,12 +76,25 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
       title="Chamar atenção"
       aria-label="Chamar atenção"
     >
-      {/* Icon image (uses provided uploaded asset) */}
-      <img
-        src="https://cdn.builder.io/api/v1/image/assets%2F47ac529da69a42f49d7025c85e541079%2Fc220f9c60ae545b79807e93921b5c74c?format=webp&width=800"
-        alt="Chamar atenção"
-        className={disabled ? 'w-5 h-5 filter grayscale opacity-60' : 'w-5 h-5 object-contain'}
-      />
+      {/* Inline SVG icon: blue circle with white phone and vibration marks; larger when active, desaturated when disabled */}
+      <svg
+        viewBox="0 0 24 24"
+        className={disabled ? 'w-7 h-7 opacity-40 text-gray-300' : 'w-8 h-8 text-vibe-blue'}
+        aria-hidden="false"
+        role="img"
+      >
+        {/* Background circle uses currentColor so we can control it via text color classes */}
+        <circle cx="12" cy="12" r="11" fill="currentColor" />
+        {/* Phone body (white) */}
+        <rect x="10.2" y="6.2" width="3.6" height="8.6" rx="0.6" ry="0.6" fill="#ffffff" transform="rotate(-18 12 10)" />
+        {/* Small square/home button */}
+        <rect x="11.35" y="14.95" width="1.3" height="1.3" rx="0.2" fill="#ffffff" transform="rotate(-18 12 10)" />
+        {/* Vibration marks (white strokes) */}
+        <path d="M4.5 8c0-.8.6-1.5 1.4-1.5" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
+        <path d="M19 8c0-.8-.6-1.5-1.4-1.5" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
+        <path d="M4.5 16c0 .8.6 1.5 1.4 1.5" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
+        <path d="M19 16c0 .8-.6 1.5-1.4 1.5" stroke="#ffffff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.9" />
+      </svg>
     </button>
   );
 };
