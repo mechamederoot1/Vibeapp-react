@@ -83,8 +83,8 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
         aria-hidden="false"
         role="img"
       >
-        {/* Outer circle uses currentColor so text-vibe-blue controls the fill when active */}
-        <circle cx="32" cy="32" r="30" fill="currentColor" />
+        {/* Outer circle uses exact vibe blue hex to guarantee color matches buttons */}
+        <circle cx="32" cy="32" r="30" fill="#2563eb" />
 
         {/* Phone: white rounded rectangle rotated */}
         <g transform="translate(32,32) rotate(-18)">
