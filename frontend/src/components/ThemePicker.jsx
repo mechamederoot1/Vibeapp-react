@@ -24,10 +24,13 @@ const ThemePicker = ({ conversationId, onChange }) => {
 
   useEffect(() => {
     const onDoc = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+      try {
+        if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+      } catch(e) {}
     }
-    document.addEventListener('click', onDoc)
-    return () => document.removeEventListener('click', onDoc)
+    // Use pointerdown to handle touch/mouse consistently
+    document.addEventListener('pointerdown', onDoc)
+    return () => document.removeEventListener('pointerdown', onDoc)
   }, [])
 
   const select = (id) => {
