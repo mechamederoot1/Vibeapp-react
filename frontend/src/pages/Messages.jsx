@@ -1149,7 +1149,7 @@ const Messages = () => {
       {selectedConversation ? (
         <div className={`flex-1 flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} role="region">
           {/* Header da Conversa (modal) */}
-          <div ref={headerRef} className="p-4 border-b border-gray-200 bg-white" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50 }}>
+          <div ref={headerRef} className="p-4 border-b border-gray-200 bg-white sticky top-0 z-50 shadow-sm">
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
