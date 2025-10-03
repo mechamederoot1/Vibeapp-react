@@ -79,11 +79,11 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
       {/* Inline SVG icon: blue circle with white phone and vibration marks; larger when active, desaturated when disabled */}
       <svg
         viewBox="0 0 64 64"
-        className={disabled ? 'w-10 h-10 opacity-40' : 'w-11 h-11'}
+        className={disabled ? 'w-10 h-10 opacity-40 text-gray-300' : 'w-11 h-11 text-vibe-blue'}
         aria-hidden="false"
         role="img"
       >
-        {/* Outer circle uses currentColor so parent text color controls it (text-vibe-blue when active) */}
+        {/* Outer circle uses currentColor so text-vibe-blue controls the fill when active */}
         <circle cx="32" cy="32" r="30" fill="currentColor" />
 
         {/* Phone: white rounded rectangle rotated */}
