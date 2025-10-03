@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI } from '../services/api'
+import { isDemoMode } from '../utils/backendStatus'
 import { getPublicProfileId } from '../utils/profileId'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
