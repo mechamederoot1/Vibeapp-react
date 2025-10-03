@@ -6,7 +6,6 @@ import { VibeArc } from './VibeLogoSimple'
 import AvatarDropdown from './AvatarDropdown'
 import { api, usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
-import { api, usersAPI } from '../services/api'
 import { getPublicProfileId } from '../utils/profileId'
 import { shouldRefreshNotifications } from '../utils/notifications'
 
