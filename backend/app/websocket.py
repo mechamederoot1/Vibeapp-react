@@ -61,6 +61,23 @@ class ConnectionManager:
                 del self.active_connections[user_id]
                 
         print(f"User {user_id} disconnected")
+        # If user has no more connections, broadcast offline presence
+        try:
+            if user_id not in self.active_connections:
+                payload = {
+                    "type": "presence_update",
+                    "data": {
+                        "userId": user_id,
+                        "isOnline": False,
+                        "lastSeen": datetime.utcnow().isoformat()
+                    }
+                }
+                try:
+                    asyncio.create_task(self.broadcast(payload))
+                except Exception as e:
+                    print(f"Error scheduling presence broadcast on disconnect: {e}")
+        except Exception:
+            pass
         
     async def send_personal_message(self, message: dict, user_id: int):
         """Enviar mensagem para um usuário específico"""
@@ -271,7 +288,7 @@ async def handle_websocket_message(websocket: WebSocket, user_id: int, message: 
         # Resposta ao ping - não fazer nada
         pass
     elif message_type in ("typing", "user_typing"):
-        # Notificar usuário que está recebendo que alguém está digitando
+        # Notificar usuário que está recebendo que alguém est�� digitando
         data = message.get("data", {})
         receiver_id = data.get("receiverId")
         if receiver_id:
