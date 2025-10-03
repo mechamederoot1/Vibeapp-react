@@ -798,7 +798,7 @@ const Messages = () => {
       if (!receiverId || receiverId === user?.id) {
         (async () => {
           try {
-            const res = await api.get(`/users/${senderId}`);
+            const res = await usersAPI.getUserById(senderId);
             const other = res.data;
             if (other && other.id) {
               const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
