@@ -1301,6 +1301,11 @@ const Messages = () => {
               paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`,
               paddingTop: headerHeight ? `${headerHeight + 12}px` : undefined,
               ...(conversationTheme ? (() => {
+                // If theme is a data URL (custom image) apply as background image
+                if (typeof conversationTheme === 'string' && (conversationTheme.startsWith('data:') || conversationTheme.startsWith('blob:') || conversationTheme.startsWith('http')) ) {
+                  return { backgroundImage: `url(${conversationTheme})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                }
+
                 switch(conversationTheme) {
                   case 'midnight': return { background: 'linear-gradient(180deg,#0f172a,#0b1220)', color: '#fff' }
                   case 'ocean': return { background: 'linear-gradient(180deg,#e0f2fe,#bae6fd)' }
