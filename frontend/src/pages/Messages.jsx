@@ -1270,7 +1270,7 @@ const Messages = () => {
               </div>
             )}
 
-            <div className="flex flex-col gap-4 min-h-full justify-end">
+            <div className="flex flex-col gap-2 min-h-full justify-end">
               {messages.map((message, idx) => {
                 const prev = messages[idx - 1];
                 const dateKey = message?.createdAt ? new Date(message.createdAt).toDateString() : '';
