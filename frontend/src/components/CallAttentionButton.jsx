@@ -64,19 +64,23 @@ const CallAttentionButton = ({ receiverId, isOnline = true }) => {
     }
   };
 
+  const disabled = loading || !isOnline || !receiverId || !user;
+
+  const btnClass = disabled ? 'p-2 rounded-lg opacity-40 cursor-not-allowed text-gray-400' : 'p-2 hover:bg-gray-100 rounded-lg text-vibe-blue';
+
   return (
     <button
       onClick={handleClick}
-      disabled={loading}
-      className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-60"
+      disabled={disabled}
+      className={btnClass}
       title="Chamar atenção"
       aria-label="Chamar atenção"
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C9.243 2 7 4.243 7 7v3.586l-1.707 1.707A1 1 0 006 13h12a1 1 0 00.707-1.707L17 10.586V7c0-2.757-2.243-5-5-5z" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 18a3 3 0 006 0" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M2 9c1.5 2 1.5 6 0 8" stroke="#60a5fa" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M22 9c-1.5 2-1.5 6 0 8" stroke="#60a5fa" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block">
+        <path d="M12 2C9.243 2 7 4.243 7 7v3.586l-1.707 1.707A1 1 0 006 13h12a1 1 0 00.707-1.707L17 10.586V7c0-2.757-2.243-5-5-5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 18a3 3 0 006 0" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2 9c1.5 2 1.5 6 0 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M22 9c-1.5 2-1.5 6 0 8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
