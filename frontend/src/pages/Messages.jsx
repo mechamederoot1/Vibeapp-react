@@ -244,10 +244,31 @@ const Messages = () => {
       setMessagesPage(page);
     } catch (error) {
       console.error('Erro ao carregar mensagens (usando modo demo):', error);
-      const msgs = loadDemo(userId)
-      msgs.sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
-      setMessages(msgs)
-      setTimeout(() => scrollToBottom(), 120);
+      try {
+        const msgsAll = loadDemo(userId)
+        msgsAll.sort((a,b)=> new Date(a.createdAt) - new Date(b.createdAt));
+        const total = msgsAll.length
+        const start = Math.max(0, total - (page * limit))
+        const pageMsgs = msgsAll.slice(start, total)
+        if (page === 1) {
+          setMessages(pageMsgs)
+          setTimeout(() => scrollToBottom(), 120);
+        } else {
+          // Prepend older
+          const container = msgListRef.current;
+          const prevScrollHeight = container?.scrollHeight || 0;
+          setMessages(prev => [...pageMsgs, ...prev])
+          setTimeout(() => {
+            if (container) {
+              const newScrollHeight = container.scrollHeight || 0;
+              container.scrollTop = newScrollHeight - prevScrollHeight + (container.scrollTop || 0);
+            }
+          }, 60)
+        }
+        setHasMoreMessages(start > 0)
+      } catch(e) {
+        console.error('Erro ao carregar demo messages:', e)
+      }
     }
   };
 
