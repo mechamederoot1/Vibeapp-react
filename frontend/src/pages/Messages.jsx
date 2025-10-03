@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Search, Send, PlusCircle, Mic, MicOff, MoreVertical, Trash2, Archive, Image as ImageIcon, Video as VideoIcon, Check, CheckCheck, Loader2, Pause, Play, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
+import { playNotification } from '../utils/notificationSound';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI, usersAPI } from '../services/api';
 import useWebSocket from '../hooks/useWebSocket';
