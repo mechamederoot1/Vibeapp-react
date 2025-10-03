@@ -1052,7 +1052,7 @@ const Messages = () => {
                   </button>
                 </h3>
                 <div className="h-5 mt-1">
-                  {typingUsers[selectedConversation.otherUser.id] && <TypingDots />}
+                  {typingUsers[selectedConversation.otherUser.id] ? <TypingDots /> : (presenceMap[selectedConversation.otherUser.id] ? <span className="text-sm text-gray-500">{formatPresenceText(presenceMap[selectedConversation.otherUser.id])}</span> : null)}
                 </div>
               </div>
 
