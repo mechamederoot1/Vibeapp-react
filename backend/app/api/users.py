@@ -347,6 +347,27 @@ async def get_user_by_id(
     user_data = user.to_public_dict()
     return filter_user_data(db, current_user.id, user_data)
 
+@router.get("/{user_id}/presence")
+async def get_user_presence(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return presence info (isOnline and lastSeen) for a user"""
+    # Import manager lazily to avoid circular import during startup
+    try:
+        from ..websocket import manager
+    except Exception:
+        manager = None
+
+    is_online = False
+    try:
+        if manager:
+            is_online = manager.is_user_online(user_id)
+    except Exception:
+        is_online = False
+
+    user = db.query(User).filter(User.id == user_id).first()
+    last_seen = user.last_seen.isoformat() if user and user.last_seen else None
+
+    return {"userId": user_id, "isOnline": is_online, "lastSeen": last_seen}
+
 @router.get("/{user_id}/stats")
 async def get_user_stats(
     user_id: int,

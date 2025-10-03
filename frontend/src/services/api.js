@@ -145,6 +145,7 @@ export const usersAPI = {
     throw err
   },
   getUserStats: (userId) => api.get(`/users/${userId}/stats`),
+  getUserPresence: (userId) => api.get(`/users/${userId}/presence`),
   getProfileVisitors: (userId, limit = 10) => api.get(`/users/${userId}/visitors?limit=${limit}`),
   searchUsers: (query, limit = 20) => api.get(`/users/search/users?q=${encodeURIComponent(query)}&limit=${limit}`)
 }

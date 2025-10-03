@@ -47,6 +47,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
+    last_seen = Column(DateTime, nullable=True)  # timestamp of last activity / offline time
     
     # Relationships
     posts = relationship("Post", back_populates="author")
@@ -125,7 +126,8 @@ class User(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
-            "lastLogin": self.last_login.isoformat() if self.last_login else None
+            "lastLogin": self.last_login.isoformat() if self.last_login else None,
+            "lastSeen": self.last_seen.isoformat() if self.last_seen else None
         }
 
     def to_public_dict(self):
@@ -151,5 +153,6 @@ class User(Base):
             "location": self.location,
             "website": self.website,
             "isVerified": self.is_verified,
-            "createdAt": self.created_at.isoformat()
+            "createdAt": self.created_at.isoformat(),
+            "lastSeen": self.last_seen.isoformat() if self.last_seen else None
         }

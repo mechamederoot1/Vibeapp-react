@@ -22,7 +22,33 @@ class ConnectionManager:
 
         self.active_connections[user_id].append(websocket)
         self.last_seen[user_id] = asyncio.get_event_loop().time()
+        # Persist last_seen in DB as connected timestamp
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e:
+            print(f"Error updating last_seen on connect for user {user_id}: {e}")
+        finally:
+            try: db.close()
+            except: pass
         print(f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}")
+
+        # Notify other clients about this user's online status
+        try:
+            payload = {
+                "type": "presence_update",
+                "data": {
+                    "userId": user_id,
+                    "isOnline": True,
+                    "lastSeen": datetime.utcnow().isoformat()
+                }
+            }
+            await self.broadcast(payload)
+        except Exception as e:
+            print(f"Error broadcasting presence on connect: {e}")
 
     def disconnect(self, websocket: WebSocket, user_id: int):
         """Desconectar um usuário"""
@@ -35,6 +61,23 @@ class ConnectionManager:
                 del self.active_connections[user_id]
                 
         print(f"User {user_id} disconnected")
+        # If user has no more connections, broadcast offline presence
+        try:
+            if user_id not in self.active_connections:
+                payload = {
+                    "type": "presence_update",
+                    "data": {
+                        "userId": user_id,
+                        "isOnline": False,
+                        "lastSeen": datetime.utcnow().isoformat()
+                    }
+                }
+                try:
+                    asyncio.create_task(self.broadcast(payload))
+                except Exception as e:
+                    print(f"Error scheduling presence broadcast on disconnect: {e}")
+        except Exception:
+            pass
         
     async def send_personal_message(self, message: dict, user_id: int):
         """Enviar mensagem para um usuário específico"""
@@ -47,6 +90,31 @@ class ConnectionManager:
                     print(f"Error sending message to user {user_id}: {e}")
                     self.disconnect(ws, user_id)
             await asyncio.gather(*[_send(ws) for ws in connections], return_exceptions=True)
+
+    async def broadcast(self, message: dict):
+        """Enviar mensagem para todos os usuários conectados"""
+        # Collect a snapshot of all connections
+        all_connections = []
+        for conns in self.active_connections.values():
+            all_connections.extend(conns.copy())
+
+        async def _send(ws: WebSocket):
+            try:
+                await ws.send_text(json.dumps(message))
+            except Exception as e:
+                print(f"Error broadcasting message: {e}")
+                # best effort: try to remove broken connection
+                try:
+                    # find user id for this ws and disconnect
+                    for uid, wslist in list(self.active_connections.items()):
+                        if ws in wslist:
+                            self.disconnect(ws, uid)
+                            break
+                except Exception:
+                    pass
+
+        if all_connections:
+            await asyncio.gather(*[_send(ws) for ws in all_connections], return_exceptions=True)
                     
     async def send_notification(self, notification_data: dict, user_id: int):
         """Enviar notificação para um usuário"""
@@ -183,9 +251,33 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                 }))
                 
     except WebSocketDisconnect:
+        # Persist last_seen as now when user disconnects
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e:
+            print(f"Error updating last_seen on disconnect for user {user_id}: {e}")
+        finally:
+            try: db.close()
+            except: pass
         manager.disconnect(websocket, user_id)
     except Exception as e:
         print(f"WebSocket error for user {user_id}: {e}")
+        # also persist last_seen
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e2:
+            print(f"Error updating last_seen on error for user {user_id}: {e2}")
+        finally:
+            try: db.close()
+            except: pass
         manager.disconnect(websocket, user_id)
         
 async def handle_websocket_message(websocket: WebSocket, user_id: int, message: dict):
@@ -196,7 +288,7 @@ async def handle_websocket_message(websocket: WebSocket, user_id: int, message: 
         # Resposta ao ping - não fazer nada
         pass
     elif message_type in ("typing", "user_typing"):
-        # Notificar usuário que está recebendo que alguém está digitando
+        # Notificar usuário que está recebendo que alguém est�� digitando
         data = message.get("data", {})
         receiver_id = data.get("receiverId")
         if receiver_id:

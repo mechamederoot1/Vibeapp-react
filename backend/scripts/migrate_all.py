@@ -64,6 +64,9 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
         if not _has_col(conn, 'messages', 'read_at'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN read_at DATETIME"))
+        # last_seen for users (track online/offline timestamp)
+        if not _has_col(conn, 'users', 'last_seen'):
+            conn.execute(text("ALTER TABLE users ADD COLUMN last_seen DATETIME"))
 
         # user sessions table (tracks tokens per device/browser)
         conn.execute(text(
@@ -165,6 +168,10 @@ def _ensure_work_education_tables():
 
 
 def _migrate_public_profile_id(db):
+    # Ensure last_seen exists (some environments may call this migration path)
+    if not _has_col(db, 'users', 'last_seen'):
+        db.execute(text("ALTER TABLE users ADD COLUMN last_seen DATETIME"))
+        db.commit()
     # add column
     if not _has_col(db, 'users', 'public_profile_id'):
         db.execute(text("ALTER TABLE users ADD COLUMN public_profile_id TEXT"))
