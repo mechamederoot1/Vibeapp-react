@@ -875,6 +875,17 @@ const Messages = () => {
               try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
             } catch (e) {
               console.warn('Usuário não encontrado por id:', uid, e);
+              const other = demoUsers.find(u => u.id === uid)
+              if (other) {
+                const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+                setSelectedConversation(conv);
+                setConversations(prev => {
+                  const exists = (prev || []).some(c => c.otherUser && c.otherUser.id === other.id)
+                  return exists ? prev : [conv, ...(prev || [])]
+                })
+                await loadMessages(other.id, 1);
+                try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+              }
             }
           }
         } else if (username) {
@@ -893,6 +904,17 @@ const Messages = () => {
             }
           } catch (e) {
             console.warn('Usuário não encontrado por username:', username, e);
+            const other = demoUsers.find(u => (u.username || '').toLowerCase() === (username||'').toLowerCase())
+            if (other) {
+              const conv = { id: other.id, otherUser: other, lastMessage: null, unreadCount: 0 };
+              setSelectedConversation(conv);
+              setConversations(prev => {
+                const exists = (prev || []).some(c => c.otherUser && (c.otherUser.id === other.id || c.otherUser.username === other.username))
+                return exists ? prev : [conv, ...(prev || [])]
+              })
+              await loadMessages(other.id, 1);
+              try { window.history.pushState({ openedConversation: other.id }, ''); } catch(e){}
+            }
           }
         }
       } catch (err) {
