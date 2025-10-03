@@ -961,6 +961,8 @@ const Messages = () => {
   const [keyboardInset, setKeyboardInset] = useState(0);
   const inputRef = useRef(null);
   const [inputHeight, setInputHeight] = useState(0);
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -1003,6 +1005,20 @@ const Messages = () => {
     } catch (e) {}
     return () => { try { ro && ro.disconnect(); } catch(e) {} };
   }, [showRecorder, isRecording]);
+
+  // measure header height so message list can be padded and header stays fixed
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => setHeaderHeight(el.offsetHeight || el.clientHeight || 0);
+    update();
+    let ro;
+    try {
+      ro = new ResizeObserver(update);
+      ro.observe(el);
+    } catch(e) {}
+    return () => { try { ro && ro.disconnect(); } catch(e) {} };
+  }, [selectedConversation]);
 
   let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1133,7 +1149,7 @@ const Messages = () => {
       {selectedConversation ? (
         <div className={`fixed inset-0 z-40 bg-white flex flex-col ${isShaking ? 'call-attention-shake' : ''}`} style={viewportHeight ? { height: `${viewportHeight}px` } : undefined} role="dialog" aria-modal="true">
           {/* Header da Conversa (modal) */}
-          <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-50">
+          <div ref={headerRef} className="p-4 border-b border-gray-200 bg-white" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 50 }}>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
@@ -1175,7 +1191,7 @@ const Messages = () => {
             className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
             ref={msgListRef}
             onScroll={handleScroll}
-            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px` }}
+            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px`, paddingTop: headerHeight ? `${headerHeight + 8}px` : undefined }}
           >
             {loadingOlder && (
               <div className="flex justify-center py-2">
@@ -1249,7 +1265,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
+          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white w-full pb-safe" style={{ position: 'absolute', left: 0, right: 0, bottom: keyboardInset ? `${keyboardInset}px` : 0, zIndex: 50 }}>
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
