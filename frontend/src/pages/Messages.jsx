@@ -79,7 +79,7 @@ const Messages = () => {
 
   // Pagination state for messages
   const [messagesPage, setMessagesPage] = useState(1);
-  const [messagesLimit] = useState(5);
+  const [messagesLimit] = useState(25); // load more messages per page for better density
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingOlder, setLoadingOlder] = useState(false);
 
