@@ -1071,23 +1071,35 @@ const Messages = () => {
       <style>{`@keyframes callAttentionShake { 0% { transform: translate(0,0) rotate(0deg); } 10% { transform: translate(-24px,-6px) rotate(-18deg); } 20% { transform: translate(24px,6px) rotate(18deg); } 30% { transform: translate(-20px,-4px) rotate(-12deg); } 40% { transform: translate(20px,4px) rotate(12deg); } 50% { transform: translate(-16px,-3px) rotate(-8deg); } 60% { transform: translate(16px,3px) rotate(8deg); } 70% { transform: translate(-8px,-2px) rotate(-4deg); } 80% { transform: translate(8px,2px) rotate(4deg); } 90% { transform: translate(-4px,0px) rotate(-2deg); } 100% { transform: translate(0,0) rotate(0deg); } } .call-attention-shake { animation: callAttentionShake 200ms linear infinite; transform-origin: center; will-change: transform; }`}</style>
       {/* Lista de Conversas */}
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden' : ''} flex flex-col min-h-0`}>
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 mb-2">Mensagens</h1>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                <img src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.firstName||'U')}&background=2563eb&color=fff`} alt="Você" className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Mensagens</h1>
+                <p className="text-sm text-gray-500">Converse com seus amigos e mantenha o fluxo</p>
+              </div>
+            </div>
+
             <div className="flex items-center space-x-2">
-              <button onClick={() => setConversationsFilter('all')} className={`px-3 py-1 rounded ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Todas</button>
-              <button onClick={() => setConversationsFilter('unread')} className={`px-3 py-1 rounded ${conversationsFilter === 'unread' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Não lidas</button>
+              <button onClick={() => setConversationsFilter('all')} className={`px-3 py-2 rounded-lg ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-white text-gray-700 border border-gray-200'}`}>Todas</button>
+              <button onClick={() => setConversationsFilter('unread')} className={`px-3 py-2 rounded-lg ${conversationsFilter === 'unread' ? 'bg-vibe-blue text-white' : 'bg-white text-gray-700 border border-gray-200'}`}>Não lidas</button>
+              <button onClick={() => { /* TODO: open new message composer */ }} className="ml-2 bg-vibe-blue text-white rounded-lg p-2 hover:bg-vibe-blue-dark">
+                <Send size={18} />
+              </button>
             </div>
           </div>
 
-          <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <div className="relative mt-4">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
               placeholder="Buscar conversas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-vibe-blue focus:border-transparent bg-white"
             />
           </div>
         </div>
