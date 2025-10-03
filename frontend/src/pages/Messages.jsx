@@ -1070,7 +1070,7 @@ const Messages = () => {
     <div className={`flex flex-1 min-h-0 bg-white ${selectedConversation ? 'pb-0 fixed inset-0 z-40 bg-white' : 'pb-20 md:pb-0'}`}>
       <style>{`@keyframes callAttentionShake { 0% { transform: translate(0,0) rotate(0deg); } 10% { transform: translate(-24px,-6px) rotate(-18deg); } 20% { transform: translate(24px,6px) rotate(18deg); } 30% { transform: translate(-20px,-4px) rotate(-12deg); } 40% { transform: translate(20px,4px) rotate(12deg); } 50% { transform: translate(-16px,-3px) rotate(-8deg); } 60% { transform: translate(16px,3px) rotate(8deg); } 70% { transform: translate(-8px,-2px) rotate(-4deg); } 80% { transform: translate(8px,2px) rotate(4deg); } 90% { transform: translate(-4px,0px) rotate(-2deg); } 100% { transform: translate(0,0) rotate(0deg); } } .call-attention-shake { animation: callAttentionShake 200ms linear infinite; transform-origin: center; will-change: transform; }`}</style>
       {/* Lista de Conversas */}
-      <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
+      <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900 mb-2">Mensagens</h1>
