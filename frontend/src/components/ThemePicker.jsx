@@ -37,6 +37,27 @@ const ThemePicker = ({ conversationId, onChange }) => {
     if (onChange) onChange(id)
   }
 
+  const fileInputRef = React.useRef(null)
+
+  const openGallery = (e) => {
+    e.stopPropagation()
+    try {
+      fileInputRef.current && fileInputRef.current.click()
+    } catch(e) {}
+  }
+
+  const onFileChange = (e) => {
+    const f = e.target.files && e.target.files[0]
+    if (!f) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const data = reader.result
+      // store data URL as theme value
+      select(data)
+    }
+    reader.readAsDataURL(f)
+  }
+
   return (
     <div className="relative" ref={ref}>
       <button onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }} className="p-2 hover:bg-gray-100 rounded-lg">
@@ -44,13 +65,22 @@ const ThemePicker = ({ conversationId, onChange }) => {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-lg p-3 w-52 z-70">
+        <div className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-lg p-3 w-56 z-70">
           <div className="grid grid-cols-5 gap-2">
             {THEMES.map(t => (
-              <button key={t.id} onClick={() => select(t.id)} title={t.name} className={`w-10 h-10 rounded-md border ${current === t.id ? 'ring-2 ring-vibe-blue' : 'border-gray-200'}`} style={t.style} />
+              <button key={t.id} onClick={(ev) => { ev.stopPropagation(); select(t.id) }} title={t.name} className={`w-10 h-10 rounded-md border ${current === t.id ? 'ring-2 ring-vibe-blue' : 'border-gray-200'}`} style={t.style} />
             ))}
           </div>
-          <div className="mt-3 text-xs text-gray-500">Escolha um tema para essa conversa</div>
+
+          <div className="mt-3 border-t pt-2">
+            <button onClick={openGallery} className="w-full text-sm text-left px-2 py-2 rounded-md hover:bg-gray-50 flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 3v4M8 3v4m-6 4h20" /></svg>
+              <span>Galeria</span>
+            </button>
+            <div className="mt-2 text-xs text-gray-500">Escolha um tema ou use uma foto da galeria</div>
+          </div>
+
+          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onFileChange} />
         </div>
       )}
     </div>
