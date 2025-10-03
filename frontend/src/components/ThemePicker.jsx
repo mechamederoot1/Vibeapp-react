@@ -63,7 +63,7 @@ const ThemePicker = ({ conversationId, onChange }) => {
 
   return (
     <div className="relative" ref={ref}>
-      <button onClick={(e) => { e.stopPropagation(); setOpen(o => !o) }} className="p-2 hover:bg-gray-100 rounded-lg">
+      <button onPointerDown={(e) => { e.stopPropagation(); setOpen(o => !o) }} onClick={(e)=>e.stopPropagation()} className="p-2 hover:bg-gray-100 rounded-lg">
         <Palette size={18} />
       </button>
 
