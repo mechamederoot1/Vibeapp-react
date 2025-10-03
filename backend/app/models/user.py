@@ -153,5 +153,6 @@ class User(Base):
             "location": self.location,
             "website": self.website,
             "isVerified": self.is_verified,
-            "createdAt": self.created_at.isoformat()
+            "createdAt": self.created_at.isoformat(),
+            "lastSeen": self.last_seen.isoformat() if self.last_seen else None
         }
