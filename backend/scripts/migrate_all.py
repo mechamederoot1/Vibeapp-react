@@ -64,6 +64,9 @@ def _ensure_optional_columns():
             conn.execute(text("ALTER TABLE messages ADD COLUMN is_read BOOLEAN DEFAULT 0"))
         if not _has_col(conn, 'messages', 'read_at'):
             conn.execute(text("ALTER TABLE messages ADD COLUMN read_at DATETIME"))
+        # last_seen for users (track online/offline timestamp)
+        if not _has_col(conn, 'users', 'last_seen'):
+            conn.execute(text("ALTER TABLE users ADD COLUMN last_seen DATETIME"))
 
         # user sessions table (tracks tokens per device/browser)
         conn.execute(text(
