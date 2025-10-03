@@ -47,6 +47,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     last_login = Column(DateTime, nullable=True)
+    last_seen = Column(DateTime, nullable=True)  # timestamp of last activity / offline time
     
     # Relationships
     posts = relationship("Post", back_populates="author")
