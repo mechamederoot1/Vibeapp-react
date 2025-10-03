@@ -205,7 +205,7 @@ const Profile = () => {
       }
 
       // Modo offline/demo - não fazer chamadas de API
-      if (false) {
+      if (isDemoMode()) {
         console.log('🔧 Modo demo - usando dados mock para visualização do perfil')
 
         // Mock user stats
