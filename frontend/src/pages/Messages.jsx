@@ -1265,7 +1265,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white w-full pb-safe" style={{ position: 'absolute', left: 0, right: 0, bottom: keyboardInset ? `${keyboardInset}px` : 0, zIndex: 50 }}>
+          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe shadow-sm" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
