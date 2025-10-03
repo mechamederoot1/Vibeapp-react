@@ -795,7 +795,7 @@ const Messages = () => {
           return c
         }))
       }
-      // Conversas podem mudar ordenação
+      // Conversas podem mudar ordenaç��o
       loadConversations();
     }
 
@@ -1312,8 +1312,9 @@ const Messages = () => {
             }}
           >
             {loadingOlder && (
-              <div className="flex justify-center py-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue"></div>
+              <div className="flex flex-col items-center py-2">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-vibe-blue mb-2"></div>
+                <div className="text-xs text-gray-500">Carregando mensagens anteriores...</div>
               </div>
             )}
 
