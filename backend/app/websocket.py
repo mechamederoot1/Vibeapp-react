@@ -36,6 +36,20 @@ class ConnectionManager:
             except: pass
         print(f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}")
 
+        # Notify other clients about this user's online status
+        try:
+            payload = {
+                "type": "presence_update",
+                "data": {
+                    "userId": user_id,
+                    "isOnline": True,
+                    "lastSeen": datetime.utcnow().isoformat()
+                }
+            }
+            await self.broadcast(payload)
+        except Exception as e:
+            print(f"Error broadcasting presence on connect: {e}")
+
     def disconnect(self, websocket: WebSocket, user_id: int):
         """Desconectar um usuário"""
         if user_id in self.active_connections:
