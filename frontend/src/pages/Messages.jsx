@@ -255,7 +255,7 @@ const Messages = () => {
     const c = msgListRef.current;
     if (!c || loadingOlder || !hasMoreMessages || !selectedConversation) return;
     // If near top, load older messages
-    if (c.scrollTop < 120) {
+    if (c.scrollTop < 240) {
       const nextPage = messagesPage + 1;
       setLoadingOlder(true);
       loadMessages(selectedConversation.otherUser.id, nextPage).finally(() => setLoadingOlder(false));
