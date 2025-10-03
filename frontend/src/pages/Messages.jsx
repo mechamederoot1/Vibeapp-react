@@ -904,7 +904,7 @@ const Messages = () => {
 
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [location, selectedConversation]);
+  }, [location, authUser, authLoading]);
 
 
   // Scroll quando mensagens mudarem
