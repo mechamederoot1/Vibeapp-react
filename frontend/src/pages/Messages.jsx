@@ -959,6 +959,8 @@ const Messages = () => {
   const [conversationsFilter, setConversationsFilter] = useState('all'); // 'all' | 'unread'
   const viewportHeight = useViewportHeight();
   const [keyboardInset, setKeyboardInset] = useState(0);
+  const inputRef = useRef(null);
+  const [inputHeight, setInputHeight] = useState(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -987,6 +989,20 @@ const Messages = () => {
       visualViewport?.removeEventListener('scroll', updateInset);
     };
   }, []);
+
+  // measure input bar height and react to changes
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const update = () => setInputHeight(el.offsetHeight || el.clientHeight || 0);
+    update();
+    let ro;
+    try {
+      ro = new ResizeObserver(update);
+      ro.observe(el);
+    } catch (e) {}
+    return () => { try { ro && ro.disconnect(); } catch(e) {} };
+  }, [showRecorder, isRecording]);
 
   let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1156,9 +1172,10 @@ const Messages = () => {
 
           {/* Lista de Mensagens */}
           <div
-            className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain pb-36"
+            className="flex-1 overflow-y-auto p-4 min-h-0 overscroll-contain"
             ref={msgListRef}
             onScroll={handleScroll}
+            style={{ paddingBottom: `${(keyboardInset || 0) + (inputHeight || 0) + 12}px` }}
           >
             {loadingOlder && (
               <div className="flex justify-center py-2">
@@ -1232,7 +1249,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
+          <div ref={inputRef} className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
