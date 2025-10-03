@@ -22,6 +22,18 @@ class ConnectionManager:
 
         self.active_connections[user_id].append(websocket)
         self.last_seen[user_id] = asyncio.get_event_loop().time()
+        # Persist last_seen in DB as connected timestamp
+        try:
+            db = SessionLocal()
+            u = db.query(User).filter(User.id == user_id).first()
+            if u:
+                u.last_seen = datetime.utcnow()
+                db.commit()
+        except Exception as e:
+            print(f"Error updating last_seen on connect for user {user_id}: {e}")
+        finally:
+            try: db.close()
+            except: pass
         print(f"User {user_id} connected. Total connections: {len(self.active_connections[user_id])}")
 
     def disconnect(self, websocket: WebSocket, user_id: int):
