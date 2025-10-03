@@ -22,7 +22,7 @@ const Layout = ({ children, onOpenPostModal }) => {
   };
 
   const showHeader = !isMessagesRoute
-  const showBottomNav = isMessagesRoute && !isConversationOpened
+  const showBottomNav = !isConversationOpened
 
   return (
     <div className="flex flex-col min-h-screen overflow-x-hidden w-screen max-w-screen relative" style={containerStyle}>
