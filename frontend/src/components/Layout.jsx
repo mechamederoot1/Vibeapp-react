@@ -17,7 +17,7 @@ const Layout = ({ children, onOpenPostModal }) => {
       }
     : undefined;
   const mainStyle = {
-    overflowY: isConversationOpened ? 'auto' : 'scroll'
+    overflowY: 'auto'
   };
 
   const isFeedRoute = location.pathname === '/' || location.pathname.startsWith('/feed');
