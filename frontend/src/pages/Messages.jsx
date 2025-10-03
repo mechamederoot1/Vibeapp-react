@@ -958,6 +958,35 @@ const Messages = () => {
 
   const [conversationsFilter, setConversationsFilter] = useState('all'); // 'all' | 'unread'
   const viewportHeight = useViewportHeight();
+  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const updateInset = () => {
+      const { visualViewport } = window;
+      if (visualViewport && typeof visualViewport.height === 'number') {
+        const offsetTop = visualViewport.offsetTop || 0;
+        const inset = Math.max(0, window.innerHeight - (visualViewport.height + offsetTop));
+        setKeyboardInset(inset);
+      } else {
+        setKeyboardInset(0);
+      }
+    };
+
+    updateInset();
+    window.addEventListener('resize', updateInset);
+    window.addEventListener('orientationchange', updateInset);
+    const { visualViewport } = window;
+    visualViewport?.addEventListener('resize', updateInset);
+    visualViewport?.addEventListener('scroll', updateInset);
+
+    return () => {
+      window.removeEventListener('resize', updateInset);
+      window.removeEventListener('orientationchange', updateInset);
+      visualViewport?.removeEventListener('resize', updateInset);
+      visualViewport?.removeEventListener('scroll', updateInset);
+    };
+  }, []);
 
   let filteredConversations = conversations.filter(conv =>
     conv.otherUser.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1203,7 +1232,7 @@ const Messages = () => {
           </div>
 
           {/* Campo de Entrada */}
-          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe">
+          <div className="p-4 border-t border-gray-200 bg-white sticky bottom-0 z-50 w-full pb-safe" style={keyboardInset ? { bottom: `${keyboardInset}px` } : undefined}>
             { (showRecorder || isRecording || pendingAudioBlob) ? (
               <div className="flex flex-col gap-3">
                 {pendingAudioBlob ? (
