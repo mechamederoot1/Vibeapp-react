@@ -8,6 +8,7 @@ import { seedDemoConversations, getDemoConversations, demoUsers } from '../mocks
 import useWebSocket from '../hooks/useWebSocket';
 import useViewportHeight from '../hooks/useViewportHeight';
 import CallAttentionButton from '../components/CallAttentionButton';
+import ThemePicker from '../components/ThemePicker'
 
 const deriveStatus = (m) => {
   if (m.status) return m.status
