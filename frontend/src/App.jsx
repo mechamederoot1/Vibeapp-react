@@ -99,9 +99,9 @@ const AppContent = () => {
         const sid = lastMessage.data?.senderId;
         let name = 'Fulano';
         if (sid) {
-          const res = await api.get(`/users/${sid}`);
+          const res = await usersAPI.getUserById(sid);
           const other = res.data;
-          name = (other && (other.firstName || other.full_name || other.name)) ? (other.firstName || other.full_name || other.name) : name;
+          name = (other && (other.firstName || other.full_name || other.name || other.first_name)) ? (other.firstName || other.full_name || other.name || other.first_name) : name;
         }
         setAttentionAlert(`${name} chamou sua tenção!`);
         setTimeout(() => setAttentionAlert(null), 2000);
