@@ -22,7 +22,7 @@ import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
 import PermissionsHandler from './components/PermissionsHandler'
 import useWebSocket from './hooks/useWebSocket'
-import { api } from './services/api'
+import { api, usersAPI } from './services/api'
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth()
