@@ -126,7 +126,8 @@ class User(Base):
             "isActive": self.is_active,
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
-            "lastLogin": self.last_login.isoformat() if self.last_login else None
+            "lastLogin": self.last_login.isoformat() if self.last_login else None,
+            "lastSeen": self.last_seen.isoformat() if self.last_seen else None
         }
 
     def to_public_dict(self):
