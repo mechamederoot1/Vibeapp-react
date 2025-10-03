@@ -110,6 +110,8 @@ const Messages = () => {
       return { text: `Online há ${years} ${plural(years,'ano','anos')}`, isOnline: true };
     } else {
       if (diffSec === null) return { text: 'Offline', isOnline: false };
+      // If less than a minute, show "Visto agora" instead of "0 minutos"
+      if (diffSec < 60) return { text: 'Visto agora', isOnline: false };
       const mins = Math.floor(diffSec / 60);
       if (mins < 60) return { text: `Visto há ${mins} ${plural(mins,'minuto','minutos')}`, isOnline: false };
       const hours = Math.floor(mins / 60);
@@ -1099,7 +1101,7 @@ const Messages = () => {
                 </div>
               </div>
 
-              <CallAttentionButton receiverId={selectedConversation?.otherUser?.id} />
+              <CallAttentionButton receiverId={selectedConversation?.otherUser?.id} isOnline={!!presenceMap[selectedConversation.otherUser.id]?.isOnline} />
               <button className="p-2 hover:bg-gray-100 rounded-lg">
                 <MoreVertical size={20} />
               </button>
