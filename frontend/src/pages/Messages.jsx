@@ -1104,32 +1104,56 @@ const Messages = () => {
         <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-white to-gray-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                 <img src={user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.firstName||'U')}&background=2563eb&color=fff`} alt="Você" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Mensagens</h1>
-                <p className="text-sm text-gray-500">Converse com seus amigos e mantenha o fluxo</p>
+                <h1 className="text-xl font-bold text-gray-900">Mensagens</h1>
+                <p className="text-xs text-gray-500">Conversas recentes</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <button onClick={() => setConversationsFilter('all')} className={`px-3 py-2 rounded-lg ${conversationsFilter === 'all' ? 'bg-vibe-blue text-white' : 'bg-white text-gray-700 border border-gray-200'}`}>Todas</button>
-              <button onClick={() => setConversationsFilter('unread')} className={`px-3 py-2 rounded-lg ${conversationsFilter === 'unread' ? 'bg-vibe-blue text-white' : 'bg-white text-gray-700 border border-gray-200'}`}>Não lidas</button>
-              <button onClick={() => { /* TODO: open new message composer */ }} className="ml-2 bg-vibe-blue text-white rounded-lg p-2 hover:bg-vibe-blue-dark">
-                <Send size={18} />
+              {/* Compact controls: filters dropdown + create group + new message */}
+              <div className="relative">
+                <button onClick={() => setShowFilterMenu(s => !s)} className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-sm">Filtros ▾</button>
+                {showFilterMenu && (
+                  <div className="absolute right-0 mt-2 bg-white border border-gray-200 shadow-lg rounded-md w-40 z-40">
+                    <button onClick={() => { setConversationsFilter('all'); setShowFilterMenu(false) }} className="block w-full text-left px-3 py-2 hover:bg-gray-50">Todas</button>
+                    <button onClick={() => { setConversationsFilter('unread'); setShowFilterMenu(false) }} className="block w-full text-left px-3 py-2 hover:bg-gray-50">Não lidas</button>
+                    <button onClick={() => { setConversationsFilter('unread'); setShowFilterMenu(false) }} className="block w-full text-left px-3 py-2 hover:bg-gray-50">Marcadas</button>
+                  </div>
+                )}
+              </div>
+
+              <button onClick={async () => {
+                const name = window.prompt('Nome do grupo')
+                if (!name) return
+                // simple demo group creation using demo users
+                try {
+                  const other = demoUsers.slice(0,2)
+                  const gid = Date.now()
+                  const conv = { id: gid, otherUser: { id: gid, firstName: name, lastName: '', username: name, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563eb&color=fff` }, lastMessage: null, unreadCount: 0, isGroup: true, members: other }
+                  setConversations(prev => [conv, ...(prev || [])])
+                  setSelectedConversation(conv)
+                  await loadMessages(conv.otherUser.id, 1)
+                } catch(e) { console.error(e) }
+              }} className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50" title="Criar Grupo">+</button>
+
+              <button onClick={() => { /* open composer */ }} className="ml-1 bg-vibe-blue text-white rounded-lg p-2 hover:bg-vibe-blue-dark" title="Nova mensagem">
+                <Send size={16} />
               </button>
             </div>
           </div>
 
-          <div className="relative mt-4">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <div className="relative mt-3">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Buscar conversas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-vibe-blue focus:border-transparent bg-white"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-vibe-blue focus:border-transparent bg-white text-sm"
             />
           </div>
         </div>
