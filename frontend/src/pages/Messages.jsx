@@ -83,42 +83,43 @@ const Messages = () => {
     ids.forEach(id => fetchPresence(id));
   }
 
-  // Format presence text in Portuguese
+  // Format presence text in Portuguese. Returns an object { text, isOnline }
   const formatPresenceText = (p) => {
-    if (!p) return '';
+    if (!p) return { text: '', isOnline: false };
     const { isOnline, lastSeen } = p;
     const now = Date.now();
     const last = lastSeen ? new Date(lastSeen).getTime() : null;
 
-    const diffSec = last ? Math.max(0, Math.floor((now - last) / 1000)) : null;
+    const diffSec = last !== null ? Math.max(0, Math.floor((now - last) / 1000)) : null;
 
     const plural = (n, singular, plural) => n === 1 ? singular : plural;
 
     if (isOnline) {
-      if (!diffSec) return 'Online';
-      if (diffSec < 60) return `Online há ${diffSec} ${plural(diffSec,'segundo','segundos')}`;
+      // If we don't have a lastSeen or it's very recent, show simple 'Online'
+      if (diffSec === null || diffSec < 5) return { text: 'Online', isOnline: true };
+      if (diffSec < 60) return { text: `Online há ${diffSec} ${plural(diffSec,'segundo','segundos')}`, isOnline: true };
       const mins = Math.floor(diffSec / 60);
-      if (mins < 60) return `Online há ${mins} ${plural(mins,'minuto','minutos')}`;
+      if (mins < 60) return { text: `Online há ${mins} ${plural(mins,'minuto','minutos')}`, isOnline: true };
       const hours = Math.floor(mins / 60);
-      if (hours < 24) return `Online há ${hours} ${plural(hours,'hora','horas')}`;
+      if (hours < 24) return { text: `Online há ${hours} ${plural(hours,'hora','horas')}`, isOnline: true };
       const days = Math.floor(hours / 24);
-      if (days < 30) return `Online há ${days} ${plural(days,'dia','dias')}`;
+      if (days < 30) return { text: `Online há ${days} ${plural(days,'dia','dias')}`, isOnline: true };
       const months = Math.floor(days / 30);
-      if (months < 12) return `Online há ${months} ${plural(months,'mês','meses')}`;
+      if (months < 12) return { text: `Online há ${months} ${plural(months,'mês','meses')}`, isOnline: true };
       const years = Math.floor(months / 12);
-      return `Online há ${years} ${plural(years,'ano','anos')}`;
+      return { text: `Online há ${years} ${plural(years,'ano','anos')}`, isOnline: true };
     } else {
-      if (!diffSec) return 'Offline';
+      if (diffSec === null) return { text: 'Offline', isOnline: false };
       const mins = Math.floor(diffSec / 60);
-      if (mins < 60) return `Visto há ${mins} ${plural(mins,'minuto','minutos')}`;
+      if (mins < 60) return { text: `Visto há ${mins} ${plural(mins,'minuto','minutos')}`, isOnline: false };
       const hours = Math.floor(mins / 60);
-      if (hours < 24) return `Visto há ${hours} ${plural(hours,'hora','horas')}`;
+      if (hours < 24) return { text: `Visto há ${hours} ${plural(hours,'hora','horas')}`, isOnline: false };
       const days = Math.floor(hours / 24);
-      if (days < 30) return `Visto há ${days} ${plural(days,'dia','dias')}`;
+      if (days < 30) return { text: `Visto há ${days} ${plural(days,'dia','dias')}`, isOnline: false };
       const months = Math.floor(days / 30);
-      if (months < 12) return `Visto há ${months} ${plural(months,'mês','meses')}`;
+      if (months < 12) return { text: `Visto há ${months} ${plural(months,'mês','meses')}`, isOnline: false };
       const years = Math.floor(months / 12);
-      return `Visto há ${years} ${plural(years,'ano','anos')}`;
+      return { text: `Visto há ${years} ${plural(years,'ano','anos')}`, isOnline: false };
     }
   }
 
@@ -959,9 +960,11 @@ const Messages = () => {
                           <p className="text-sm text-vibe-blue"><TypingDots /></p>
                         ) : (
                           <>
-                            {presenceMap[conversation.otherUser.id] && (
-                              <p className="text-xs text-vibe-blue truncate">{formatPresenceText(presenceMap[conversation.otherUser.id])}</p>
-                            )}
+                            {presenceMap[conversation.otherUser.id] && (() => {
+                              const presObj = formatPresenceText(presenceMap[conversation.otherUser.id]);
+                              const cls = `text-xs truncate ${presObj.isOnline ? 'text-green-500' : 'text-gray-600'}`;
+                              return <p className={cls}>{presObj.text}</p>;
+                            })()}
 
                             {conversation.lastMessage && (
                               <p className={`${conversation.unreadCount > 0 ? 'text-gray-800' : 'text-gray-500'} text-sm truncate`}>
@@ -1051,7 +1054,11 @@ const Messages = () => {
                   </button>
                 </h3>
                 <div className="h-5 mt-1">
-                  {typingUsers[selectedConversation.otherUser.id] ? <TypingDots /> : (presenceMap[selectedConversation.otherUser.id] ? <span className="text-sm text-gray-500">{formatPresenceText(presenceMap[selectedConversation.otherUser.id])}</span> : null)}
+                  {typingUsers[selectedConversation.otherUser.id] ? <TypingDots /> : (presenceMap[selectedConversation.otherUser.id] ? (() => {
+                    const presObj = formatPresenceText(presenceMap[selectedConversation.otherUser.id]);
+                    const cls = `text-sm ${presObj.isOnline ? 'text-green-500' : 'text-gray-500'}`;
+                    return <span className={cls}>{presObj.text}</span>;
+                  })() : null)}
                 </div>
               </div>
 
