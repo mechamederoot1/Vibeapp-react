@@ -70,6 +70,8 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [typingUsers, setTypingUsers] = useState({});
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [conversationTheme, setConversationTheme] = useState(null);
   const [imageInputKey, setImageInputKey] = useState(0)
   const [videoInputKey, setVideoInputKey] = useState(0)
   const [showRecorder, setShowRecorder] = useState(false)
