@@ -21,7 +21,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true
     const initAuth = async () => {
-      if (token) {
+      // Detect backend first
+      let backendOk = false
+      try { backendOk = await detectBackend() } catch(e) { backendOk = false }
+
+      if (token && backendOk) {
         try {
           if (api) {
             api.defaults.headers.Authorization = `Bearer ${token}`
@@ -37,6 +41,16 @@ export const AuthProvider = ({ children }) => {
             setUser(null)
             setToken(null)
           }
+        }
+      } else if (!backendOk) {
+        // Demo mode without backend: set a local demo user
+        if (mounted) {
+          setUser(demoCurrentUser)
+          setToken(null)
+          try { localStorage.removeItem('token') } catch(e){}
+          try { delete api.defaults.headers.Authorization } catch(e){}
+          // Seed some demo conversations
+          try { seedDemoConversations() } catch(e) {}
         }
       }
       if (mounted) setLoading(false)
