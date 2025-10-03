@@ -41,7 +41,7 @@ const ThemePicker = ({ conversationId, onChange }) => {
     if (onChange) onChange(id)
   }
 
-  const fileInputRef = React.useRef(null)
+  const fileInputRef = useRef(null)
 
   const openGallery = (e) => {
     e.stopPropagation()
