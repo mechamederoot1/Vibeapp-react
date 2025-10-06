@@ -107,7 +107,7 @@ const AppContent = () => {
         setAttentionAlert(`${name} chamou sua tenção!`);
         setTimeout(() => setAttentionAlert(null), 2000);
       } catch (e) {
-        setAttentionAlert('Fulano chamou sua tenção!');
+        setAttentionAlert('Fulano chamou sua tenç��o!');
         setTimeout(() => setAttentionAlert(null), 2000);
       }
     })();
@@ -186,6 +186,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Explore />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/feed/suggestions"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Suggestions />
               </Layout>
             </ProtectedRoute>
           }
