@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { X, Send, Type, Palette } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { uploadsAPI, storiesAPI } from '../services/api'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
   const { user } = useAuth()
@@ -20,28 +21,29 @@ const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
     '#ffff00', '#ff00ff', '#00ffff', '#ffa500', '#800080'
   ]
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validar arquivo
     const isImage = file.type.startsWith('image/')
     const isVideo = file.type.startsWith('video/')
-    
+
     if (!isImage && !isVideo) {
       alert('Selecione apenas imagens ou vídeos.')
       return
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Arquivo muito grande. Máximo 10MB.')
+    if (isImage) {
+      const v = await validateImageDimensions(file, { ...presetOptions('story'), maxBytes: 10 * 1024 * 1024 })
+      if (!v.ok) { alert(v.error || 'Imagem inválida'); return }
+    } else if (file.size > 50 * 1024 * 1024) {
+      alert('Vídeo muito grande. Máximo 50MB.')
       return
     }
 
     setMediaFile(file)
     setMediaType(isImage ? 'image' : 'video')
-    
-    // Criar preview
+
     const reader = new FileReader()
     reader.onload = (event) => {
       setMediaPreview(event.target.result)
