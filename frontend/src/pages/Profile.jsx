@@ -1877,12 +1877,13 @@ const Profile = () => {
           <Grid size={20} />
         </button>
         <button
-          onClick={() => setActiveTab('saved')}
+          onClick={() => setShowTestimonialsModal(true)}
           className={`flex-1 p-3 flex items-center justify-center ${
             activeTab === 'saved'
               ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
+          title="Depoimentos"
         >
           <Heart size={20} />
         </button>
