@@ -22,6 +22,15 @@ const Friends = () => {
     }
   }, [currentUser?.id, activeTab])
 
+  // Listen for global friend changes and refresh when needed
+  useEffect(() => {
+    const onFriendsChanged = () => {
+      if (activeTab === 'friends' && currentUser?.id) loadFriends()
+    }
+    window.addEventListener('vibe:friends:changed', onFriendsChanged)
+    return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
+  }, [activeTab, currentUser?.id])
+
   const loadData = async () => {
     setLoading(true)
     setError('')
