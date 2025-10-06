@@ -25,7 +25,13 @@ const Friends = () => {
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
     const onFriendsChanged = () => {
-      if (activeTab === 'friends' && currentUser?.id) loadFriends()
+      // Re-load all relevant data so tabs and counts stay in sync
+      if (currentUser?.id) {
+        loadData()
+        // Also refresh friends list explicitly in case UI relies on it
+        loadFriends()
+        loadRequests()
+      }
     }
     window.addEventListener('vibe:friends:changed', onFriendsChanged)
     return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
