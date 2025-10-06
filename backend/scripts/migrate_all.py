@@ -419,6 +419,7 @@ def migrate_all() -> bool:
             _migrate_post_public_id(db)
             _backfill_profile_photos(db)
             _backfill_profile_covers_and_update_posts(db)
+            _ensure_testimonials_table(db)
         finally:
             db.close()
         # 4) Additional data migrations
