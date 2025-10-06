@@ -1,12 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI } from '../services/api'
+import { postsAPI, testimonialsAPI, usersAPI, friendshipsAPI } from '../services/api'
 
 const PostModal = ({ isOpen, onClose, onPost }) => {
   const { user } = useAuth()
   const [postType, setPostType] = useState('text')
   const [content, setContent] = useState('')
+  // Testimonial-specific state
+  const [testimonialTitle, setTestimonialTitle] = useState('')
+  const [testimonialRecipientQuery, setTestimonialRecipientQuery] = useState('')
+  const [testimonialRecipient, setTestimonialRecipient] = useState(null)
+  const [testimonialContentHtml, setTestimonialContentHtml] = useState('')
+  const [testimonialFont, setTestimonialFont] = useState('Montserrat')
+  const [testimonialBgColor, setTestimonialBgColor] = useState(null)
+  const [testimonialTextColor, setTestimonialTextColor] = useState('#000000')
+  const [testimonialSearchResults, setTestimonialSearchResults] = useState([])
+  const testimonialEditorRef = useRef(null)
+  const searchTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
+    }
+  }, [])
+
+  // Shadow controls
+  const [testimonialShadowEnabled, setTestimonialShadowEnabled] = useState(false)
+  const [testimonialShadowColor, setTestimonialShadowColor] = useState('#000000')
+  const [testimonialShadowOffset, setTestimonialShadowOffset] = useState(2)
+  const [testimonialShadowBlur, setTestimonialShadowBlur] = useState(4)
+
+  useEffect(() => {
+    if (testimonialEditorRef.current && testimonialEditorRef.current.innerHTML !== testimonialContentHtml) {
+      testimonialEditorRef.current.innerHTML = testimonialContentHtml
+    }
+  }, [testimonialContentHtml])
   const [imageFile, setImageFile] = useState(null)
   const [videoFile, setVideoFile] = useState(null)
   const [audioFile, setAudioFile] = useState(null)
@@ -193,10 +222,73 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     })
   }
 
+  // Helpers for recipient search fallback when backend is offline
+  const searchUsersLocalFallback = (q) => {
+    const demoFriends = JSON.parse(localStorage.getItem('demo:friends') || '[]')
+    if (demoFriends.length > 0) {
+      const ql = q.toLowerCase()
+      return demoFriends.filter(u => (u.firstName + ' ' + (u.lastName||'') + ' ' + (u.username||'')).toLowerCase().includes(ql)).slice(0,6)
+    }
+    const fallback = []
+    if (user) {
+      fallback.push({ id: `f_${user.id}_1`, firstName: 'Amigo', lastName: 'Demo', username: 'amigo_demo' })
+      fallback.push({ id: `f_${user.id}_2`, firstName: 'Colega', lastName: 'Teste', username: 'colega_teste' })
+    } else {
+      fallback.push({ id: 'f_demo_1', firstName: 'Amigo', lastName: 'Demo', username: 'amigo_demo' })
+    }
+    return fallback.filter(u => (u.firstName + ' ' + (u.lastName||'') + ' ' + (u.username||'')).toLowerCase().includes(q.toLowerCase()))
+  }
+
+  const handleRecipientQueryChange = (q) => {
+    setTestimonialRecipientQuery(q)
+    setTestimonialRecipient(null)
+    setTestimonialSearchResults([])
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    if (!q || q.length < 2) return
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const [usersRes, friendsRes] = await Promise.allSettled([
+          usersAPI.searchUsers(q, 10),
+          friendshipsAPI.getUserFriends(user?.id, 50)
+        ])
+
+        let users = []
+        if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value.data)) {
+          users = usersRes.value.data
+        } else {
+          users = searchUsersLocalFallback(q)
+        }
+
+        let friends = []
+        if (friendsRes.status === 'fulfilled' && Array.isArray(friendsRes.value.data)) {
+          friends = friendsRes.value.data.map(item => item.user_info).filter(Boolean)
+        }
+
+        const ql = q.toLowerCase()
+        const matchingFriends = friends.filter(f => ((f.firstName||'') + ' ' + (f.lastName||'') + ' ' + (f.username||'')).toLowerCase().includes(ql))
+
+        const combined = [
+          ...matchingFriends,
+          ...users.filter(u => !matchingFriends.some(f => f.id === u.id))
+        ].slice(0,6)
+
+        setTestimonialSearchResults(combined)
+      } catch (err) {
+        const local = searchUsersLocalFallback(q)
+        setTestimonialSearchResults(local)
+      }
+    }, 250)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!content.trim() && !imageFile && !videoFile && !audioFile) {
+    if (postType !== 'testimonial' && !content.trim() && !imageFile && !videoFile && !audioFile) {
       setError('Por favor, adicione conteúdo ao seu post')
       return
     }
@@ -205,6 +297,39 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setError('')
 
     try {
+      if (postType === 'testimonial') {
+        // Ensure recipient
+        if (!testimonialRecipient) {
+          setError('Por favor selecione o amigo para quem enviar o depoimento')
+          setLoading(false)
+          return
+        }
+        const payload = {
+          recipientId: testimonialRecipient.id,
+          title: testimonialTitle,
+          content: testimonialContentHtml || '',
+          backgroundColor: testimonialBgColor,
+          font: testimonialFont
+        }
+        try {
+          const res = await testimonialsAPI.create(payload)
+          const created = res.data
+          onPost?.(created)
+          resetAndClose()
+          return
+        } catch (err) {
+          console.warn('Testimonials API failed, falling back to local storage', err)
+          const demo = JSON.parse(localStorage.getItem('demo:testimonials') || '[]')
+          const id = `demo_${Date.now()}`
+          const created = { id, ...payload, authorId: user?.id || null, createdAt: new Date().toISOString(), isActive: true }
+          demo.unshift(created)
+          localStorage.setItem('demo:testimonials', JSON.stringify(demo))
+          onPost?.(created)
+          resetAndClose()
+          return
+        }
+      }
+
       let postData = {
         content: content.trim(),
         type: postType,
@@ -255,6 +380,16 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setPrivacy('public')
     setShowOptions(false)
     setShowMediaFullscreen(false)
+    // Reset testimonial state
+    setTestimonialTitle('')
+    setTestimonialRecipientQuery('')
+    setTestimonialRecipient(null)
+    setTestimonialContentHtml('')
+    setTestimonialFont('Montserrat')
+    setTestimonialBgColor(null)
+    setTestimonialTextColor('#000000')
+    setTestimonialSearchResults([])
+    if (testimonialEditorRef.current) testimonialEditorRef.current.innerHTML = ''
     onClose()
   }
 
@@ -311,6 +446,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               </div>
             </div>
           </div>
+
+          {/* Top tabs for Normal / Depoimento */}
+          <div className="mt-4 flex items-center space-x-2">
+            <button onClick={() => setPostType('text')} className={`px-3 py-1 rounded ${postType === 'text' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Normal</button>
+            <button onClick={() => setPostType('testimonial')} className={`px-3 py-1 rounded ${postType === 'testimonial' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Depoimento</button>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -360,6 +501,86 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               <p className="text-sm text-gray-600 mb-2">Preview:</p>
               <div className={`p-6 rounded-lg ${colorOptions.find(c => c.value === backgroundColor)?.gradient} min-h-[120px] flex items-center justify-center`}>
                 <p className="text-white text-center font-medium text-lg leading-relaxed">{content}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Testimonial editor */}
+          {postType === 'testimonial' && (
+            <div className="mb-4">
+              <div className="mb-2">
+                <input value={testimonialTitle} onChange={(e) => setTestimonialTitle(e.target.value)} placeholder="Título do depoimento" className="w-full p-2 border rounded" />
+              </div>
+              <div className="mb-2 relative">
+                <input value={testimonialRecipientQuery} onChange={(e) => handleRecipientQueryChange(e.target.value)} placeholder="Marcar amigo (digite nome ou @usuario)" className="w-full p-2 border rounded" />
+                {testimonialSearchResults.length > 0 && (
+                  <div className="absolute z-50 bg-white border rounded mt-1 w-full max-h-40 overflow-auto">
+                    {testimonialSearchResults.map(u => (
+                      <div key={u.id} className="p-2 hover:bg-gray-50 cursor-pointer" onClick={() => { setTestimonialRecipient(u); setTestimonialRecipientQuery(u.username || u.firstName); setTestimonialSearchResults([]) }}>{u.firstName} {u.lastName} @{u.username}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Toolbar */}
+              <div className="flex items-center space-x-2 mb-2 overflow-x-auto whitespace-nowrap px-2 py-1">
+                <button type="button" onClick={() => document.execCommand('bold')} className="px-2 py-1 border rounded">B</button>
+                <button type="button" onClick={() => document.execCommand('italic')} className="px-2 py-1 border rounded">I</button>
+                <button type="button" onClick={() => document.execCommand('underline')} className="px-2 py-1 border rounded">U</button>
+
+                <select value={testimonialFont} onChange={(e) => { setTestimonialFont(e.target.value); try { document.execCommand('fontName', false, e.target.value) } catch(e){} }} className="p-1 border rounded">
+                  <option>Montserrat</option>
+                  <option>Tahoma</option>
+                  <option>Comic Neue</option>
+                  <option>Impact</option>
+                  <option>Sans-Serif</option>
+                  <option>Verdana</option>
+                  <option>Mathematical Sans-Serif Bold</option>
+                  <option>Mathematical Bold</option>
+                </select>
+
+                <input title="Cor do texto" type="color" value={testimonialTextColor} onChange={(e) => { setTestimonialTextColor(e.target.value); try { document.execCommand('foreColor', false, e.target.value) } catch(e){} }} className="w-8 h-8 p-0 border rounded" />
+
+                {/* Shadow controls */}
+                <input title="Cor da sombra" type="color" value={testimonialShadowColor} onChange={(e)=>setTestimonialShadowColor(e.target.value)} className="w-8 h-8 p-0 border rounded" />
+                <div className="flex items-center space-x-1">
+                  <input title="Deslocamento" type="range" min="0" max="12" value={testimonialShadowOffset} onChange={(e)=>setTestimonialShadowOffset(Number(e.target.value))} className="w-20" />
+                  <input title="Blur" type="range" min="0" max="24" value={testimonialShadowBlur} onChange={(e)=>setTestimonialShadowBlur(Number(e.target.value))} className="w-20" />
+                </div>
+                <button type="button" onClick={() => {
+                  try {
+                    const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) return
+                    const range = sel.getRangeAt(0)
+                    const span = document.createElement('span')
+                    span.style.textShadow = `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}`
+                    range.surroundContents(span)
+                  } catch (e) { console.warn('shadow failed', e) }
+                }} className="px-2 py-1 border rounded">Aplicar sombra</button>
+
+                <label className="flex items-center space-x-2 px-2 py-1 border rounded">
+                  <input type="checkbox" checked={testimonialShadowEnabled} onChange={(e)=>setTestimonialShadowEnabled(e.target.checked)} />
+                  <span className="text-sm">Sombra no título</span>
+                </label>
+
+                {/* Background color picker + palette */}
+                <input title="Cor de fundo" type="color" value={testimonialBgColor || '#ffffff'} onChange={(e)=>setTestimonialBgColor(e.target.value)} className="w-8 h-8 p-0 border rounded" />
+                <div className="flex items-center space-x-1">
+                  {['#ffffff','#fef3c7','#dbeafe','#ecfccb','#fee2e2','#fce7f3','#e6fffa'].map(c => (
+                    <button key={c} onClick={()=>setTestimonialBgColor(c)} className={`w-6 h-6 rounded-sm border`} style={{ background: c }} aria-label={`bg-${c}`} />
+                  ))}
+                </div>
+                {testimonialBgColor && (<button type="button" onClick={() => setTestimonialBgColor(null)} className="px-2 py-1 border rounded text-red-600">X</button>)}
+              </div>
+
+              <div contentEditable ref={testimonialEditorRef} onInput={(e) => setTestimonialContentHtml(e.currentTarget.innerHTML)} className="min-h-[120px] border p-3 rounded" style={{ fontFamily: testimonialFont, color: testimonialTextColor }}></div>
+
+              <div className="mt-3">
+                <p className="text-sm text-gray-600 mb-2">Pré-visualização:</p>
+                <div className={`p-6 rounded-lg min-h-[120px] flex flex-col`} style={{ background: testimonialBgColor || 'transparent' }}>
+                  <h3 style={{ fontFamily: testimonialFont, color: testimonialTextColor, textShadow: testimonialShadowEnabled ? `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}` : 'none' }} className="font-semibold text-lg">{testimonialTitle}</h3>
+                  <div className="mt-2" dangerouslySetInnerHTML={{ __html: testimonialContentHtml }} style={{ fontFamily: testimonialFont, color: testimonialTextColor, textShadow: testimonialShadowEnabled ? `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}` : 'none' }} />
+                  {testimonialRecipient && <div className="mt-3 text-sm text-gray-500">Para: {testimonialRecipient.firstName} {testimonialRecipient.lastName} @{testimonialRecipient.username}</div>}
+                </div>
               </div>
             </div>
           )}

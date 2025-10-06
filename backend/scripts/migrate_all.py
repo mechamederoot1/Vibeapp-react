@@ -167,6 +167,40 @@ def _ensure_work_education_tables():
         conn.execute(text("CREATE INDEX IF NOT EXISTS ix_education_user_order_created ON education(user_id, order_index DESC, created_at DESC)"))
 
 
+def _ensure_friendships_table():
+    """Ensure friendships table exists and has required columns (SQLite-safe)."""
+    required_cols = ['id','user_id','friend_id','status','initiated_by','created_at','updated_at']
+    with engine.begin() as conn:
+        # Create table if not exists
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS friendships (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                friend_id INTEGER NOT NULL,
+                status TEXT DEFAULT 'pending',
+                initiated_by INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME
+            )
+        """))
+        # Add missing columns if any
+        for col in required_cols:
+            if not _has_col(conn, 'friendships', col):
+                if col == 'id':
+                    continue
+                if col in ('user_id','friend_id','initiated_by'):
+                    conn.execute(text(f"ALTER TABLE friendships ADD COLUMN {col} INTEGER"))
+                elif col == 'status':
+                    conn.execute(text(f"ALTER TABLE friendships ADD COLUMN status TEXT DEFAULT 'pending'"))
+                elif col == 'created_at':
+                    conn.execute(text(f"ALTER TABLE friendships ADD COLUMN created_at DATETIME"))
+                elif col == 'updated_at':
+                    conn.execute(text(f"ALTER TABLE friendships ADD COLUMN updated_at DATETIME"))
+        # Indexes
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_friendships_user_id ON friendships(user_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_friendships_friend_id ON friendships(friend_id)"))
+
+
 def _migrate_public_profile_id(db):
     # Ensure last_seen exists (some environments may call this migration path)
     if not _has_col(db, 'users', 'last_seen'):
@@ -246,6 +280,35 @@ def _ensure_profile_covers_table(db):
     """))
     db.execute(text("CREATE INDEX IF NOT EXISTS idx_profile_covers_user_created ON profile_covers(user_id, created_at DESC)"))
     db.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_profile_covers_user_hash ON profile_covers(user_id, blob_hash)"))
+    db.commit()
+
+
+def _ensure_testimonials_table(db):
+    # Testimonials table and saves (to mark as saved in profiles)
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS testimonials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            author_id INTEGER NOT NULL,
+            recipient_id INTEGER NOT NULL,
+            title TEXT,
+            content TEXT NOT NULL,
+            background_color TEXT,
+            font TEXT,
+            is_active BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS testimonial_saves (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            testimonial_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
+    db.execute(text("CREATE INDEX IF NOT EXISTS ix_testimonials_recipient_created ON testimonials(recipient_id, created_at DESC)"))
+    db.execute(text("CREATE INDEX IF NOT EXISTS ix_testimonial_saves_user_testimonial ON testimonial_saves(user_id, testimonial_id)"))
     db.commit()
 
 
@@ -383,6 +446,8 @@ def migrate_all() -> bool:
         _ensure_optional_columns()
         # 2b) Ensure work/education tables and columns for multiple entries
         _ensure_work_education_tables()
+        # Ensure friendships table and columns
+        _ensure_friendships_table()
         # 3) Data/ID migrations
         db = SessionLocal()
         try:
@@ -390,6 +455,7 @@ def migrate_all() -> bool:
             _migrate_post_public_id(db)
             _backfill_profile_photos(db)
             _backfill_profile_covers_and_update_posts(db)
+            _ensure_testimonials_table(db)
         finally:
             db.close()
         # 4) Additional data migrations

@@ -78,8 +78,8 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
         setError('Por favor, selecione apenas arquivos de imagem')
         return
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError('A imagem deve ter no máximo 5MB')
+      if (file.size > 6 * 1024 * 1024) {
+        setError('A imagem deve ter no máximo 6MB')
         return
       }
       setCoverImage(file)
@@ -97,7 +97,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
 
     files.forEach((file, idx) => {
       if (!file.type.startsWith('image/')) return
-      if (file.size > 10 * 1024 * 1024) return
+      if (file.size > 6 * 1024 * 1024) return
       const id = Date.now() + Math.random() + idx
       const reader = new FileReader()
       reader.onload = (e) => {

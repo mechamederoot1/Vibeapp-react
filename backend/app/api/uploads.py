@@ -15,10 +15,17 @@ from .auth import get_current_user
 router = APIRouter()
 
 # Configurações de upload
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+# Limit uploads to 6MB for stories/highlights/uploads
+MAX_FILE_SIZE = 6 * 1024 * 1024  # 6MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 ALLOWED_STORY_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
+
+# Image resolution constraints
+MIN_IMAGE_WIDTH = 800
+MIN_IMAGE_HEIGHT = 400
+# Maximum allowed dimension (will be downscaled to fit) - accept up to 8192
+MAX_IMAGE_DIMENSION = 8192
 
 from io import BytesIO
 import base64
@@ -40,7 +47,7 @@ def generate_filename(original_filename: str, prefix: str = "") -> str:
     return f"{prefix}{unique_id}.{ext}"
 
 async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = None):
-    """Read image upload, optionally resize, and return bytes and mime"""
+    """Read image upload, validate dimensions, optionally resize, and return bytes and mime"""
     content = await file.read()
     try:
         with Image.open(BytesIO(content)) as img:
@@ -49,14 +56,33 @@ async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = Non
                 rgb_img = Image.new('RGB', img.size, (255, 255, 255))
                 rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = rgb_img
+
+            w, h = img.size
+            # Validate minimum dimensions
+            if w < MIN_IMAGE_WIDTH or h < MIN_IMAGE_HEIGHT:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Imagem muito pequena: {w}x{h}. Mínimo é {MIN_IMAGE_WIDTH}x{MIN_IMAGE_HEIGHT}.")
+
+            # If image is extremely large, downscale to MAX_IMAGE_DIMENSION
+            max_dim = max(w, h)
+            if max_dim > MAX_IMAGE_DIMENSION:
+                scale = MAX_IMAGE_DIMENSION / float(max_dim)
+                new_w = int(w * scale)
+                new_h = int(h * scale)
+                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+            # Respect max_size parameter if provided (e.g., thumbnails)
             if max_size:
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
             out = BytesIO()
             img.save(out, format='JPEG', quality=85, optimize=True)
             out.seek(0)
             return out.read(), 'image/jpeg'
-    except Exception:
-        # Fallback: return original bytes
+    except HTTPException:
+        # Re-raise HTTPExceptions to be handled by caller
+        raise
+    except Exception as e:
+        # Fallback: return original bytes (but do not mask validation errors)
         return content, file.content_type or 'application/octet-stream'
 
 @router.post("/avatar")
@@ -69,7 +95,8 @@ async def upload_avatar(
     # Validate file
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Soft size cap: only enforce if UploadFile exposes size; otherwise accept and resize
+    if getattr(file, 'size', None) and file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
@@ -130,7 +157,8 @@ async def upload_cover_photo(
     """Upload da foto de capa - store in DB and return data URL and immutable id URL"""
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Soft size cap: only enforce if UploadFile exposes size; otherwise accept and resize
+    if getattr(file, 'size', None) and file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
@@ -243,11 +271,13 @@ async def upload_story_media(
     # Validate file
     if file.content_type not in ALLOWED_STORY_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Soft size cap: only enforce if UploadFile exposes size; otherwise accept and resize/process
+    if getattr(file, 'size', None) and file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
         if file.content_type in ALLOWED_IMAGE_TYPES:
+            # Validate dimensions and resize for story constraints
             content_bytes, mime = await save_and_resize_image_to_bytes(file, (1080, 1920))
             media_type = 'image'
         else:
@@ -262,5 +292,8 @@ async def upload_story_media(
             "url": data_url,
             "type": media_type
         }
+    except HTTPException:
+        # Propagate validation HTTP errors (image too small, etc.)
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da mídia: {str(e)}")
