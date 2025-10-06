@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI, testimonialsAPI, usersAPI } from '../services/api'
+import { postsAPI, testimonialsAPI, usersAPI, friendshipsAPI } from '../services/api'
 
 const PostModal = ({ isOpen, onClose, onPost }) => {
   const { user } = useAuth()
@@ -17,6 +17,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [testimonialTextColor, setTestimonialTextColor] = useState('#000000')
   const [testimonialSearchResults, setTestimonialSearchResults] = useState([])
   const testimonialEditorRef = useRef(null)
+  const searchTimeoutRef = useRef(null)
 
   // Shadow controls
   const [testimonialShadowEnabled, setTestimonialShadowEnabled] = useState(false)
@@ -232,17 +233,50 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     return fallback.filter(u => (u.firstName + ' ' + (u.lastName||'') + ' ' + (u.username||'')).toLowerCase().includes(q.toLowerCase()))
   }
 
-  const handleRecipientQueryChange = async (q) => {
+  const handleRecipientQueryChange = (q) => {
     setTestimonialRecipientQuery(q)
     setTestimonialRecipient(null)
-    if (!q || q.length < 2) { setTestimonialSearchResults([]); return }
-    try {
-      const res = await usersAPI.searchUsers(q, 6)
-      setTestimonialSearchResults(res.data || [])
-    } catch (e) {
-      const local = searchUsersLocalFallback(q)
-      setTestimonialSearchResults(local)
+    setTestimonialSearchResults([])
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
     }
+
+    if (!q || q.length < 2) return
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const [usersRes, friendsRes] = await Promise.allSettled([
+          usersAPI.searchUsers(q, 10),
+          friendshipsAPI.getUserFriends(user?.id, 50)
+        ])
+
+        let users = []
+        if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value.data)) {
+          users = usersRes.value.data
+        } else {
+          users = searchUsersLocalFallback(q)
+        }
+
+        let friends = []
+        if (friendsRes.status === 'fulfilled' && Array.isArray(friendsRes.value.data)) {
+          friends = friendsRes.value.data.map(item => item.user_info).filter(Boolean)
+        }
+
+        const ql = q.toLowerCase()
+        const matchingFriends = friends.filter(f => ((f.firstName||'') + ' ' + (f.lastName||'') + ' ' + (f.username||'')).toLowerCase().includes(ql))
+
+        const combined = [
+          ...matchingFriends,
+          ...users.filter(u => !matchingFriends.some(f => f.id === u.id))
+        ].slice(0,6)
+
+        setTestimonialSearchResults(combined)
+      } catch (err) {
+        const local = searchUsersLocalFallback(q)
+        setTestimonialSearchResults(local)
+      }
+    }, 250)
   }
 
   const handleSubmit = async (e) => {
