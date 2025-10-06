@@ -28,6 +28,7 @@ import AddToHighlightModal from '../components/AddToHighlightModal'
 import StoryViewer from '../components/StoryViewer'
 import FriendshipButton from '../components/FriendshipButton'
 import FollowButton from '../components/FollowButton'
+import TestimonialsList from '../components/TestimonialsList'
 import useWebSocket from '../hooks/useWebSocket'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
