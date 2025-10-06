@@ -472,6 +472,8 @@ def migrate_all() -> bool:
         _ensure_work_education_tables()
         # Ensure friendships table and columns
         _ensure_friendships_table()
+        # Ensure follows table
+        _ensure_follows_table()
         # 3) Data/ID migrations
         db = SessionLocal()
         try:
