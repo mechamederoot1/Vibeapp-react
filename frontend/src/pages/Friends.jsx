@@ -110,17 +110,23 @@ const Friends = () => {
   }
 
   const tabs = [
-    { 
-      key: 'friends', 
-      label: 'Amigos', 
+    {
+      key: 'friends',
+      label: 'Amigos',
       count: friends.length,
       icon: Users
     },
-    { 
-      key: 'requests', 
-      label: 'Pedidos', 
+    {
+      key: 'requests',
+      label: 'Pedidos',
       count: receivedRequests.length + sentRequests.length,
       icon: Bell
+    },
+    {
+      key: 'suggestions',
+      label: 'Sugestões',
+      count: 0,
+      icon: Search
     }
   ]
 
