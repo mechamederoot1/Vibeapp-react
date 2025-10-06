@@ -131,6 +131,8 @@ const Profile = () => {
     postsCount: 0,
     profileViewsCount: 0
   })
+  const [pendingReceivedCount, setPendingReceivedCount] = useState(0)
+  const [pendingSentCount, setPendingSentCount] = useState(0)
   const [userPosts, setUserPosts] = useState([])
   const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
@@ -1433,7 +1435,7 @@ const Profile = () => {
                 className="btn-secondary w-auto px-4 flex items-center space-x-2"
               >
                 <Users size={20} />
-                <span className="hidden sm:inline">Conex��es</span>
+                <span className="hidden sm:inline">Conexões</span>
               </button>
             </>
           ) : (
