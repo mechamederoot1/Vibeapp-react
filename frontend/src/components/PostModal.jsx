@@ -187,8 +187,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const handleFileUpload = async (file, type) => {
     if (type === 'image') {
       try {
-        const v = await validateImageDimensions(file, { ...presetOptions('post'), maxBytes: 10 * 1024 * 1024 })
-        if (!v.ok) { setError(v.error || 'Imagem inv��lida'); return }
+        const v = await validateImageDimensions(file, { ...presetOptions('post'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 10 * 1024 * 1024 })
+        if (!v.ok) { setError(v.error || 'Imagem inválida'); return }
         const processed = await processImageFile(file)
         setImageFile(processed)
         setVideoFile(null)
