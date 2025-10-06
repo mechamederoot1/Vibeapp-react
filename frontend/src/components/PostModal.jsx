@@ -248,7 +248,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!content.trim() && !imageFile && !videoFile && !audioFile) {
+    if (postType !== 'testimonial' && !content.trim() && !imageFile && !videoFile && !audioFile) {
       setError('Por favor, adicione conteúdo ao seu post')
       return
     }
