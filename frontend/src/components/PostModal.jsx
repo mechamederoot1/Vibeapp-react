@@ -215,6 +215,36 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     })
   }
 
+  // Helpers for recipient search fallback when backend is offline
+  const searchUsersLocalFallback = (q) => {
+    const demoFriends = JSON.parse(localStorage.getItem('demo:friends') || '[]')
+    if (demoFriends.length > 0) {
+      const ql = q.toLowerCase()
+      return demoFriends.filter(u => (u.firstName + ' ' + (u.lastName||'') + ' ' + (u.username||'')).toLowerCase().includes(ql)).slice(0,6)
+    }
+    const fallback = []
+    if (user) {
+      fallback.push({ id: `f_${user.id}_1`, firstName: 'Amigo', lastName: 'Demo', username: 'amigo_demo' })
+      fallback.push({ id: `f_${user.id}_2`, firstName: 'Colega', lastName: 'Teste', username: 'colega_teste' })
+    } else {
+      fallback.push({ id: 'f_demo_1', firstName: 'Amigo', lastName: 'Demo', username: 'amigo_demo' })
+    }
+    return fallback.filter(u => (u.firstName + ' ' + (u.lastName||'') + ' ' + (u.username||'')).toLowerCase().includes(q.toLowerCase()))
+  }
+
+  const handleRecipientQueryChange = async (q) => {
+    setTestimonialRecipientQuery(q)
+    setTestimonialRecipient(null)
+    if (!q || q.length < 2) { setTestimonialSearchResults([]); return }
+    try {
+      const res = await usersAPI.searchUsers(q, 6)
+      setTestimonialSearchResults(res.data || [])
+    } catch (e) {
+      const local = searchUsersLocalFallback(q)
+      setTestimonialSearchResults(local)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
@@ -430,18 +460,9 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 <input value={testimonialTitle} onChange={(e) => setTestimonialTitle(e.target.value)} placeholder="Título do depoimento" className="w-full p-2 border rounded" />
               </div>
               <div className="mb-2 relative">
-                <input value={testimonialRecipientQuery} onChange={async (e) => {
-                  const q = e.target.value; setTestimonialRecipientQuery(q); setTestimonialRecipient(null);
-                  if (q.length < 2) { setTestimonialSearchResults([]); return }
-                  try {
-                    const res = await usersAPI.searchUsers(q, 6)
-                    setTestimonialSearchResults(res.data || [])
-                  } catch (e) {
-                    setTestimonialSearchResults([])
-                  }
-                }} placeholder="Marcar amigo (digite nome ou @usuario)" className="w-full p-2 border rounded" />
+                <input value={testimonialRecipientQuery} onChange={(e) => handleRecipientQueryChange(e.target.value)} placeholder="Marcar amigo (digite nome ou @usuario)" className="w-full p-2 border rounded" />
                 {testimonialSearchResults.length > 0 && (
-                  <div className="absolute z-40 bg-white border rounded mt-1 w-full max-h-40 overflow-auto">
+                  <div className="absolute z-50 bg-white border rounded mt-1 w-full max-h-40 overflow-auto">
                     {testimonialSearchResults.map(u => (
                       <div key={u.id} className="p-2 hover:bg-gray-50 cursor-pointer" onClick={() => { setTestimonialRecipient(u); setTestimonialRecipientQuery(u.username || u.firstName); setTestimonialSearchResults([]) }}>{u.firstName} {u.lastName} @{u.username}</div>
                     ))}
@@ -450,7 +471,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               </div>
 
               {/* Toolbar */}
-              <div className="flex items-center space-x-2 mb-2">
+              <div className="flex items-center space-x-2 mb-2 overflow-x-auto whitespace-nowrap px-2 py-1">
                 <button type="button" onClick={() => document.execCommand('bold')} className="px-2 py-1 border rounded">B</button>
                 <button type="button" onClick={() => document.execCommand('italic')} className="px-2 py-1 border rounded">I</button>
                 <button type="button" onClick={() => document.execCommand('underline')} className="px-2 py-1 border rounded">U</button>
