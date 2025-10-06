@@ -97,7 +97,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
 
     files.forEach((file, idx) => {
       if (!file.type.startsWith('image/')) return
-      if (file.size > 10 * 1024 * 1024) return
+      if (file.size > 50 * 1024 * 1024) return
       const id = Date.now() + Math.random() + idx
       const reader = new FileReader()
       reader.onload = (e) => {
