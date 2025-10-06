@@ -271,11 +271,23 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
           backgroundColor: testimonialBgColor,
           font: testimonialFont
         }
-        const res = await testimonialsAPI.create(payload)
-        const created = res.data
-        onPost?.(created)
-        resetAndClose()
-        return
+        try {
+          const res = await testimonialsAPI.create(payload)
+          const created = res.data
+          onPost?.(created)
+          resetAndClose()
+          return
+        } catch (err) {
+          console.warn('Testimonials API failed, falling back to local storage', err)
+          const demo = JSON.parse(localStorage.getItem('demo:testimonials') || '[]')
+          const id = `demo_${Date.now()}`
+          const created = { id, ...payload, authorId: user?.id || null, createdAt: new Date().toISOString(), isActive: true }
+          demo.unshift(created)
+          localStorage.setItem('demo:testimonials', JSON.stringify(demo))
+          onPost?.(created)
+          resetAndClose()
+          return
+        }
       }
 
       let postData = {
