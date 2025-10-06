@@ -454,6 +454,7 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                 <button type="button" onClick={() => document.execCommand('bold')} className="px-2 py-1 border rounded">B</button>
                 <button type="button" onClick={() => document.execCommand('italic')} className="px-2 py-1 border rounded">I</button>
                 <button type="button" onClick={() => document.execCommand('underline')} className="px-2 py-1 border rounded">U</button>
+
                 <select value={testimonialFont} onChange={(e) => { setTestimonialFont(e.target.value); try { document.execCommand('fontName', false, e.target.value) } catch(e){} }} className="p-1 border rounded">
                   <option>Montserrat</option>
                   <option>Tahoma</option>
@@ -464,18 +465,37 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
                   <option>Mathematical Sans-Serif Bold</option>
                   <option>Mathematical Bold</option>
                 </select>
-                <input type="color" value={testimonialTextColor} onChange={(e) => { setTestimonialTextColor(e.target.value); try { document.execCommand('foreColor', false, e.target.value) } catch(e){} }} className="w-8 h-8 p-0 border rounded" />
+
+                <input title="Cor do texto" type="color" value={testimonialTextColor} onChange={(e) => { setTestimonialTextColor(e.target.value); try { document.execCommand('foreColor', false, e.target.value) } catch(e){} }} className="w-8 h-8 p-0 border rounded" />
+
+                {/* Shadow controls */}
+                <input title="Cor da sombra" type="color" value={testimonialShadowColor} onChange={(e)=>setTestimonialShadowColor(e.target.value)} className="w-8 h-8 p-0 border rounded" />
+                <div className="flex items-center space-x-1">
+                  <input title="Deslocamento" type="range" min="0" max="12" value={testimonialShadowOffset} onChange={(e)=>setTestimonialShadowOffset(Number(e.target.value))} className="w-20" />
+                  <input title="Blur" type="range" min="0" max="24" value={testimonialShadowBlur} onChange={(e)=>setTestimonialShadowBlur(Number(e.target.value))} className="w-20" />
+                </div>
                 <button type="button" onClick={() => {
-                  // toggle shadow: wrap selection in span with text-shadow
                   try {
                     const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) return
                     const range = sel.getRangeAt(0)
                     const span = document.createElement('span')
-                    span.style.textShadow = `2px 2px 4px rgba(0,0,0,0.25)`
+                    span.style.textShadow = `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}`
                     range.surroundContents(span)
                   } catch (e) { console.warn('shadow failed', e) }
-                }} className="px-2 py-1 border rounded">Sombra</button>
-                <button type="button" onClick={() => { setTestimonialBgColor('#ffffff') }} className="px-2 py-1 border rounded">Fundo</button>
+                }} className="px-2 py-1 border rounded">Aplicar sombra</button>
+
+                <label className="flex items-center space-x-2 px-2 py-1 border rounded">
+                  <input type="checkbox" checked={testimonialShadowEnabled} onChange={(e)=>setTestimonialShadowEnabled(e.target.checked)} />
+                  <span className="text-sm">Sombra no título</span>
+                </label>
+
+                {/* Background color picker + palette */}
+                <input title="Cor de fundo" type="color" value={testimonialBgColor || '#ffffff'} onChange={(e)=>setTestimonialBgColor(e.target.value)} className="w-8 h-8 p-0 border rounded" />
+                <div className="flex items-center space-x-1">
+                  {['#ffffff','#fef3c7','#dbeafe','#ecfccb','#fee2e2','#fce7f3','#e6fffa'].map(c => (
+                    <button key={c} onClick={()=>setTestimonialBgColor(c)} className={`w-6 h-6 rounded-sm border`} style={{ background: c }} aria-label={`bg-${c}`} />
+                  ))}
+                </div>
                 {testimonialBgColor && (<button type="button" onClick={() => setTestimonialBgColor(null)} className="px-2 py-1 border rounded text-red-600">X</button>)}
               </div>
 
