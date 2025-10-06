@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime
 from ..database.database import Base
 
 class Friendship(Base):
