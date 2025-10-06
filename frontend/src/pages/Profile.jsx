@@ -1365,7 +1365,7 @@ const Profile = () => {
 
         {/* Indicadores */}
         <div className="mx-auto mb-4 max-w-xs">
-          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
+          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-4 divide-x divide-gray-200 text-center">
             <div className="px-2">
               <p className="text-sm font-semibold text-gray-900">{currentProfileData.posts}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
@@ -1383,6 +1383,16 @@ const Profile = () => {
             >
               <p className="text-sm font-semibold">{currentProfileData.following}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
+            </button>
+            <button
+              onClick={() => setShowFriends(true)}
+              className="px-2 hover:text-vibe-blue transition-colors relative"
+            >
+              <p className="text-sm font-semibold">{currentProfileData.friends}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Amigos</p>
+              {pendingReceivedCount > 0 && (
+                <span className="absolute -top-2 right-1 bg-red-500 text-white text-[10px] px-1 py-0.5 rounded-full">{pendingReceivedCount}</span>
+              )}
             </button>
           </div>
         </div>
@@ -1423,7 +1433,7 @@ const Profile = () => {
                 className="btn-secondary w-auto px-4 flex items-center space-x-2"
               >
                 <Users size={20} />
-                <span className="hidden sm:inline">Conexões</span>
+                <span className="hidden sm:inline">Conex��es</span>
               </button>
             </>
           ) : (
