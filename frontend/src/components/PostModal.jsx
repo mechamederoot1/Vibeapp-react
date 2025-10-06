@@ -286,6 +286,16 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setPrivacy('public')
     setShowOptions(false)
     setShowMediaFullscreen(false)
+    // Reset testimonial state
+    setTestimonialTitle('')
+    setTestimonialRecipientQuery('')
+    setTestimonialRecipient(null)
+    setTestimonialContentHtml('')
+    setTestimonialFont('Montserrat')
+    setTestimonialBgColor(null)
+    setTestimonialTextColor('#000000')
+    setTestimonialSearchResults([])
+    if (testimonialEditorRef.current) testimonialEditorRef.current.innerHTML = ''
     onClose()
   }
 
