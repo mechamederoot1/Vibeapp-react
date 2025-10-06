@@ -174,6 +174,7 @@ app.include_router(personal_info_router, prefix="/api", tags=["personal_info"])
 app.include_router(highlights_router, prefix="/api", tags=["highlights"])
 app.include_router(work_experience_router, prefix="/api", tags=["work_experience"])
 app.include_router(education_router, prefix="/api", tags=["education"])
+app.include_router(testimonials_router, prefix="/api/testimonials", tags=["testimonials"])
 
 # WebSocket endpoint
 @app.websocket("/ws")
