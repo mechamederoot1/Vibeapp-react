@@ -18,6 +18,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [testimonialSearchResults, setTestimonialSearchResults] = useState([])
   const testimonialEditorRef = useRef(null)
 
+  // Shadow controls
+  const [testimonialShadowEnabled, setTestimonialShadowEnabled] = useState(false)
+  const [testimonialShadowColor, setTestimonialShadowColor] = useState('#000000')
+  const [testimonialShadowOffset, setTestimonialShadowOffset] = useState(2)
+  const [testimonialShadowBlur, setTestimonialShadowBlur] = useState(4)
+
   useEffect(() => {
     if (testimonialEditorRef.current && testimonialEditorRef.current.innerHTML !== testimonialContentHtml) {
       testimonialEditorRef.current.innerHTML = testimonialContentHtml
