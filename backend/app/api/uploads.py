@@ -246,7 +246,8 @@ async def upload_story_media(
     # Validate file
     if file.content_type not in ALLOWED_STORY_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Soft size cap: only enforce if UploadFile exposes size; otherwise accept and resize/process
+    if getattr(file, 'size', None) and file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
