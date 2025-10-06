@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Home, Search, PlusCircle, Eye, User, MessageCircle } from 'lucide-react'
+import { Home, Search, Users, Eye, User, MessageCircle } from 'lucide-react'
 import { api } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
 import { useAuth } from '../contexts/AuthContext'
