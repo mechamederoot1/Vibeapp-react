@@ -78,8 +78,8 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
         setError('Por favor, selecione apenas arquivos de imagem')
         return
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError('A imagem deve ter no máximo 5MB')
+      if (file.size > 50 * 1024 * 1024) {
+        setError('A imagem deve ter no máximo 50MB')
         return
       }
       setCoverImage(file)
