@@ -872,6 +872,7 @@ const Profile = () => {
         coverStoryId: highlightData.coverStoryId || null
       }
       const createRes = await highlightsAPI.create(basePayload)
+      console.log('highlights.create response:', createRes?.data)
       const createdHighlight = createRes.data?.highlight || createRes.data
       const highlightId = createdHighlight.id
 
@@ -908,6 +909,7 @@ const Profile = () => {
           createdStoryIds.push(storyId)
           await highlightsAPI.addStory(highlightId, storyId)
           await highlightsAPI.update(highlightId, { coverStoryId: storyId })
+          console.log('Updated highlight coverStoryId ->', highlightId, storyId)
         } catch (e) {
           console.error('Erro ao criar story de capa:', e)
         }
@@ -917,6 +919,7 @@ const Profile = () => {
       if (highlightData.coverStoryId) {
         try {
           await highlightsAPI.update(highlightId, { coverStoryId: Number(highlightData.coverStoryId) })
+          console.log('Set coverStoryId from existing story ->', highlightId, highlightData.coverStoryId)
         } catch (e) {
           console.error('Erro ao definir story de capa:', e)
         }
