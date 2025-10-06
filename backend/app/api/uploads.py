@@ -15,8 +15,8 @@ from .auth import get_current_user
 router = APIRouter()
 
 # Configurações de upload
-# Allow larger uploads (up to 50MB) while still resizing images server-side to reasonable dimensions.
-MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+# Limit uploads to 6MB for stories/highlights/uploads
+MAX_FILE_SIZE = 6 * 1024 * 1024  # 6MB
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 ALLOWED_STORY_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
