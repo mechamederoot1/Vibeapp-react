@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { postsAPI } from '../services/api'
+import { postsAPI, testimonialsAPI, usersAPI } from '../services/api'
 
 const PostModal = ({ isOpen, onClose, onPost }) => {
   const { user } = useAuth()
