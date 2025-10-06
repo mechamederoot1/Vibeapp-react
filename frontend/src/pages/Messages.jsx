@@ -469,7 +469,7 @@ const Messages = () => {
   const sendImage = async (file) => {
     if (!selectedConversation) return
 
-    const v = await validateImageDimensions(file, { ...presetOptions('message'), maxBytes: 10 * 1024 * 1024 })
+    const v = await validateImageDimensions(file, { ...presetOptions('message'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 10 * 1024 * 1024 })
     if (!v.ok) { alert(v.error || 'Imagem inválida'); return }
 
     try {
