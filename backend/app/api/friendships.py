@@ -179,11 +179,13 @@ async def send_friend_request(
         status="pending",
         initiated_by=current_user.id
     )
-    
+
     db.add(new_friendship)
     db.commit()
     db.refresh(new_friendship)
-    
+
+    print(f"Created friendship request {new_friendship.id} from {current_user.id} to {request.friend_id}")
+
     # Criar notificação para o usuário alvo
     notification = Notification(
         user_id=request.friend_id,
@@ -200,6 +202,7 @@ async def send_friend_request(
     # WebSocket push
     try:
         from ..websocket import manager
+        print(f"Sending WS notification for friend_request {notification.id} to {request.friend_id}")
         await manager.send_notification({
             "id": notification.id,
             "type": "friend_request",
@@ -211,6 +214,7 @@ async def send_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": request.friend_id, "status": "request_sent"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, request.friend_id)
+        print(f"WS notification sent for friend_request {notification.id}")
     except Exception as e:
         print(f"WebSocket send error in send_friend_request: {e}")
 
