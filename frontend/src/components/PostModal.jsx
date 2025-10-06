@@ -19,6 +19,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const testimonialEditorRef = useRef(null)
   const searchTimeoutRef = useRef(null)
 
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
+    }
+  }, [])
+
   // Shadow controls
   const [testimonialShadowEnabled, setTestimonialShadowEnabled] = useState(false)
   const [testimonialShadowColor, setTestimonialShadowColor] = useState('#000000')
