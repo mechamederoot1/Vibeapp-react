@@ -34,7 +34,7 @@ const SimpleStoryCreator = ({ isOpen, onClose, onStoryCreate }) => {
     }
 
     if (isImage) {
-      const v = await validateImageDimensions(file, { ...presetOptions('story'), maxBytes: 10 * 1024 * 1024 })
+      const v = await validateImageDimensions(file, { ...presetOptions('story'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 10 * 1024 * 1024 })
       if (!v.ok) { alert(v.error || 'Imagem inválida'); return }
     } else if (file.size > 50 * 1024 * 1024) {
       alert('Vídeo muito grande. Máximo 50MB.')
