@@ -852,7 +852,7 @@ const Profile = () => {
         setUploadSuccess(null)
       }, 3000)
     } catch (error) {
-      console.error('Erro ao salvar informações pessoais:', error)
+      console.error('Erro ao salvar informaç��es pessoais:', error)
       setUploadError('Erro ao salvar informações pessoais. Tente novamente.')
     } finally {
       setPersonalInfoLoading(false)
@@ -2208,6 +2208,23 @@ const Profile = () => {
       )}
 
       {/* Modals */}
+
+      {/* Testimonials Modal */}
+      {showTestimonialsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4 sm:items-center">
+          <div className="bg-white w-full max-w-2xl rounded-lg shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">Depoimentos recebidos</h3>
+              <button onClick={() => setShowTestimonialsModal(false)} className="p-2 rounded-full hover:bg-gray-100">
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <TestimonialsList targetUserId={targetUserIdState} />
+            </div>
+          </div>
+        </div>
+      )}
       {showFriends && (
         <FriendsList
           onClose={() => setShowFriends(false)}
