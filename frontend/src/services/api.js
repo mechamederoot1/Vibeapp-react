@@ -261,6 +261,8 @@ export const followsAPI = {
   getStatus: (userId) => api.get(`/follows/users/${userId}/status`),
   follow: (userId) => api.post(`/follows/users/${userId}`),
   unfollow: (userId) => api.delete(`/follows/users/${userId}`),
+  getFollowers: (userId) => api.get(`/follows/users/${userId}/followers`),
+  getFollowing: (userId) => api.get(`/follows/users/${userId}/following`),
 }
 
 // Highlights endpoints

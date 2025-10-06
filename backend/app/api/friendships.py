@@ -114,10 +114,10 @@ async def send_friend_request(
     if existing_friendship:
         if existing_friendship.status == "pending":
             # Se já existe um pedido enviado por mim, tornar idempotente
-            if existing_friendship.user_id == current_user.id and existing_friendship.friend_id == request.friend_id:
+            if getattr(existing_friendship, 'user_id', None) == current_user.id and getattr(existing_friendship, 'friend_id', None) == request.friend_id:
                 return existing_friendship
             # Se existe um pedido inverso (o outro usuário me enviou), aceitar automaticamente
-            if existing_friendship.user_id == request.friend_id and existing_friendship.friend_id == current_user.id:
+            if getattr(existing_friendship, 'user_id', None) == request.friend_id and getattr(existing_friendship, 'friend_id', None) == current_user.id:
                 existing_friendship.status = "accepted"
                 existing_friendship.updated_at = datetime.utcnow()
                 db.commit()
@@ -126,12 +126,12 @@ async def send_friend_request(
                 # Notificar o remetente original que foi aceito
                 try:
                     notification = Notification(
-                        user_id=existing_friendship.user_id,
+                        user_id=getattr(existing_friendship, 'user_id', None),
                         type="friend_accepted",
                         title="Pedido de amizade aceito",
                         message=f"{current_user.display_name or current_user.username} aceitou seu pedido de amizade",
                         related_user_id=current_user.id,
-                        related_id=existing_friendship.id
+                        related_id=getattr(existing_friendship, 'id', None)
                     )
                     db.add(notification)
                     db.commit()
@@ -148,10 +148,10 @@ async def send_friend_request(
                         "message": notification.message,
                         "related_user_id": current_user.id,
                         "created_at": notification.created_at.isoformat()
-                    }, existing_friendship.user_id)
-                    payload = {"type": "friendship_update", "data": {"userA": existing_friendship.user_id, "userB": existing_friendship.friend_id, "status": "friends"}}
-                    await manager.send_personal_message(payload, existing_friendship.user_id)
-                    await manager.send_personal_message(payload, existing_friendship.friend_id)
+                    }, getattr(existing_friendship, 'user_id', None))
+                    payload = {"type": "friendship_update", "data": {"userA": getattr(existing_friendship, 'user_id', None), "userB": getattr(existing_friendship, 'friend_id', None), "status": "friends"}}
+                    await manager.send_personal_message(payload, getattr(existing_friendship, 'user_id', None))
+                    await manager.send_personal_message(payload, getattr(existing_friendship, 'friend_id', None))
                 except Exception:
                     pass
 
@@ -179,11 +179,13 @@ async def send_friend_request(
         status="pending",
         initiated_by=current_user.id
     )
-    
+
     db.add(new_friendship)
     db.commit()
     db.refresh(new_friendship)
-    
+
+    print(f"Created friendship request {new_friendship.id} from {current_user.id} to {request.friend_id}")
+
     # Criar notificação para o usuário alvo
     notification = Notification(
         user_id=request.friend_id,
@@ -200,6 +202,7 @@ async def send_friend_request(
     # WebSocket push
     try:
         from ..websocket import manager
+        print(f"Sending WS notification for friend_request {notification.id} to {request.friend_id}")
         await manager.send_notification({
             "id": notification.id,
             "type": "friend_request",
@@ -211,8 +214,9 @@ async def send_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": request.friend_id, "status": "request_sent"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, request.friend_id)
-    except Exception:
-        pass
+        print(f"WS notification sent for friend_request {notification.id}")
+    except Exception as e:
+        print(f"WebSocket send error in send_friend_request: {e}")
 
     return new_friendship
 
@@ -230,16 +234,17 @@ def get_received_friend_requests(
     
     result = []
     for friendship in requests:
-        requester = db.query(User).filter(User.id == friendship.user_id).first()
-        mutual_count = count_mutual_friends(db, current_user.id, friendship.user_id)
-        
+        fid = getattr(friendship, 'user_id', None)
+        requester = db.query(User).filter(User.id == fid).first() if fid else None
+        mutual_count = count_mutual_friends(db, current_user.id, fid) if fid else 0
+
         result.append(FriendWithUser(
             friendship=friendship,
             user_info=UserBasicInfo(
-                id=requester.id,
-                username=requester.username,
-                display_name=requester.display_name,
-                avatar_url=requester.avatar_url
+                id=requester.id if requester else None,
+                username=requester.username if requester else '',
+                display_name=requester.display_name if requester else None,
+                avatar_url=requester.avatar_url if requester else None
             ),
             mutual_friends_count=mutual_count
         ))
@@ -260,16 +265,17 @@ def get_sent_friend_requests(
     
     result = []
     for friendship in requests:
-        target_user = db.query(User).filter(User.id == friendship.friend_id).first()
-        mutual_count = count_mutual_friends(db, current_user.id, friendship.friend_id)
-        
+        fid = getattr(friendship, 'friend_id', None)
+        target_user = db.query(User).filter(User.id == fid).first() if fid else None
+        mutual_count = count_mutual_friends(db, current_user.id, fid) if fid else 0
+
         result.append(FriendWithUser(
             friendship=friendship,
             user_info=UserBasicInfo(
-                id=target_user.id,
-                username=target_user.username,
-                display_name=target_user.display_name,
-                avatar_url=target_user.avatar_url
+                id=target_user.id if target_user else None,
+                username=target_user.username if target_user else '',
+                display_name=target_user.display_name if target_user else None,
+                avatar_url=target_user.avatar_url if target_user else None
             ),
             mutual_friends_count=mutual_count
         ))
@@ -330,8 +336,8 @@ async def accept_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": friendship.user_id, "userB": current_user.id, "status": "friends"}}
         await manager.send_personal_message(payload, friendship.user_id)
         await manager.send_personal_message(payload, current_user.id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in accept_friend_request: {e}")
 
     return friendship
 
@@ -364,8 +370,8 @@ async def reject_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": friendship.user_id, "userB": current_user.id, "status": "none"}}
         await manager.send_personal_message(payload, friendship.user_id)
         await manager.send_personal_message(payload, current_user.id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in reject_friend_request: {e}")
 
     return {"message": "Pedido de amizade rejeitado"}
 
@@ -394,8 +400,8 @@ async def remove_friend(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": user_id, "status": "none"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in remove_friend: {e}")
 
     return {"message": "Amigo removido com sucesso"}
 
@@ -422,12 +428,12 @@ def get_user_friends(
     result = []
     for friendship in friendships:
         # Determinar qual é o amigo (não o user_id solicitado)
-        friend_id = friendship.friend_id if friendship.user_id == user_id else friendship.user_id
-        friend_user = db.query(User).filter(User.id == friend_id).first()
-        
+        friend_id = getattr(friendship, 'friend_id', None) if getattr(friendship, 'user_id', None) == user_id else getattr(friendship, 'user_id', None)
+        friend_user = db.query(User).filter(User.id == friend_id).first() if friend_id else None
+
         if friend_user:
             mutual_count = count_mutual_friends(db, current_user.id, friend_id)
-            
+
             result.append(FriendWithUser(
                 friendship=friendship,
                 user_info=UserBasicInfo(
@@ -466,8 +472,8 @@ async def cancel_sent_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": user_id, "status": "none"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in cancel_sent_friend_request: {e}")
 
     return {"message": "Pedido de amizade cancelado"}
 

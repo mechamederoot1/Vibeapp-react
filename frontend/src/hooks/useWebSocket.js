@@ -87,6 +87,11 @@ export const useWebSocket = () => {
             if (message.type === 'friendship_update' || message.normalizedType === 'friendship_update') {
               window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: message }))
             }
+
+            // Also handle notification-wrapped friend events (friend_request, friend_accepted)
+            if (message.type === 'notification' && message.data && (message.data.type === 'friend_request' || message.data.type === 'friend_accepted')) {
+              try { window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: message })) } catch(e){}
+            }
           } catch(e) {}
 
           // Responder pings automaticamente

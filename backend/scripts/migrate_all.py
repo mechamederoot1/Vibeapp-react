@@ -201,6 +201,30 @@ def _ensure_friendships_table():
         conn.execute(text("CREATE INDEX IF NOT EXISTS ix_friendships_friend_id ON friendships(friend_id)"))
 
 
+def _ensure_follows_table():
+    """Ensure follows table exists and has required columns (SQLite-safe)."""
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS follows (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                follower_id INTEGER NOT NULL,
+                following_id INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+        # Add missing columns if any
+        if not _has_col(conn, 'follows', 'follower_id'):
+            conn.execute(text("ALTER TABLE follows ADD COLUMN follower_id INTEGER"))
+        if not _has_col(conn, 'follows', 'following_id'):
+            conn.execute(text("ALTER TABLE follows ADD COLUMN following_id INTEGER"))
+        if not _has_col(conn, 'follows', 'created_at'):
+            conn.execute(text("ALTER TABLE follows ADD COLUMN created_at DATETIME"))
+        # Indexes and unique constraint
+        conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_follows_pair ON follows(follower_id, following_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_follows_follower_id ON follows(follower_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_follows_following_id ON follows(following_id)"))
+
+
 def _migrate_public_profile_id(db):
     # Ensure last_seen exists (some environments may call this migration path)
     if not _has_col(db, 'users', 'last_seen'):
@@ -448,6 +472,8 @@ def migrate_all() -> bool:
         _ensure_work_education_tables()
         # Ensure friendships table and columns
         _ensure_friendships_table()
+        # Ensure follows table
+        _ensure_follows_table()
         # 3) Data/ID migrations
         db = SessionLocal()
         try:

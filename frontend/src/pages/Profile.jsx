@@ -7,7 +7,7 @@ import {
   GraduationCap, Globe, Calendar, Heart as HeartIcon, Plus
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI, testimonialsAPI } from '../services/api'
+import { usersAPI, postsAPI, uploadsAPI, personalInfoAPI, highlightsAPI, storiesAPI, friendshipsAPI } from '../services/api'
 import { getPublicProfileId } from '../utils/profileId'
 import FriendsList from '../components/FriendsList'
 import ProfileVisitors from '../components/ProfileVisitors'
@@ -133,6 +133,8 @@ const Profile = () => {
     postsCount: 0,
     profileViewsCount: 0
   })
+  const [pendingReceivedCount, setPendingReceivedCount] = useState(0)
+  const [pendingSentCount, setPendingSentCount] = useState(0)
   const [userPosts, setUserPosts] = useState([])
   const [userStories, setUserStories] = useState([])
   const [profileVisitors, setProfileVisitors] = useState([])
@@ -552,6 +554,21 @@ const Profile = () => {
             profileViewsCount: 0,
             friendsCount: 0
           })
+        }
+
+        // If viewing own profile, also fetch pending friend requests counts
+        if (own) {
+          try {
+            const [recvRes, sentRes] = await Promise.all([
+              friendshipsAPI.getReceivedRequests().catch(() => ({ data: [] })),
+              friendshipsAPI.getSentRequests().catch(() => ({ data: [] }))
+            ])
+            setPendingReceivedCount((recvRes.data || []).length)
+            setPendingSentCount((sentRes.data || []).length)
+          } catch (e) {
+            setPendingReceivedCount(0)
+            setPendingSentCount(0)
+          }
         }
 
         // Posts (paged)
@@ -1398,7 +1415,7 @@ const Profile = () => {
 
         {/* Indicadores */}
         <div className="mx-auto mb-4 max-w-xs">
-          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-3 divide-x divide-gray-200 text-center">
+          <div className="bg-gray-50/90 border border-gray-200 rounded-xl px-3 py-2 grid grid-cols-4 divide-x divide-gray-200 text-center">
             <div className="px-2">
               <p className="text-sm font-semibold text-gray-900">{currentProfileData.posts}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Posts</p>
@@ -1416,6 +1433,16 @@ const Profile = () => {
             >
               <p className="text-sm font-semibold">{currentProfileData.following}</p>
               <p className="text-[11px] text-gray-500 leading-none mt-0.5">Seguindo</p>
+            </button>
+            <button
+              onClick={() => setShowFriends(true)}
+              className="px-2 hover:text-vibe-blue transition-colors relative"
+            >
+              <p className="text-sm font-semibold">{currentProfileData.friends}</p>
+              <p className="text-[11px] text-gray-500 leading-none mt-0.5">Amigos</p>
+              {pendingReceivedCount > 0 && (
+                <span className="absolute -top-2 right-1 bg-red-500 text-white text-[10px] px-1 py-0.5 rounded-full">{pendingReceivedCount}</span>
+              )}
             </button>
           </div>
         </div>

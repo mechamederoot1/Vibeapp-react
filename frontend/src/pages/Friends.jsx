@@ -25,7 +25,13 @@ const Friends = () => {
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
     const onFriendsChanged = () => {
-      if (activeTab === 'friends' && currentUser?.id) loadFriends()
+      // Re-load all relevant data so tabs and counts stay in sync
+      if (currentUser?.id) {
+        loadData()
+        // Also refresh friends list explicitly in case UI relies on it
+        loadFriends()
+        loadRequests()
+      }
     }
     window.addEventListener('vibe:friends:changed', onFriendsChanged)
     return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
@@ -110,23 +116,29 @@ const Friends = () => {
   }
 
   const tabs = [
-    { 
-      key: 'friends', 
-      label: 'Amigos', 
+    {
+      key: 'friends',
+      label: 'Amigos',
       count: friends.length,
       icon: Users
     },
-    { 
-      key: 'requests', 
-      label: 'Pedidos', 
+    {
+      key: 'requests',
+      label: 'Pedidos',
       count: receivedRequests.length + sentRequests.length,
       icon: Bell
+    },
+    {
+      key: 'suggestions',
+      label: 'Sugestões',
+      count: 0,
+      icon: Search
     }
   ]
 
   const getFilteredData = () => {
     let data = []
-    
+
     if (activeTab === 'friends') {
       data = friends.map(item => ({
         ...item.user_info,
@@ -148,13 +160,22 @@ const Friends = () => {
         type: 'sent'
       }))
       data = [...received, ...sent]
+    } else if (activeTab === 'suggestions') {
+      // For suggestions we provide a CTA to the Explore page and leave the list to the Explore flow
+      data = [{
+        id: 'suggestions-cta',
+        username: 'explore',
+        display_name: 'Encontrar pessoas',
+        avatar_url: null,
+        type: 'suggestion'
+      }]
     }
 
     // Filtrar por busca
     if (searchQuery) {
-      data = data.filter(item => 
-        (item.display_name || item.username).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.username.toLowerCase().includes(searchQuery.toLowerCase())
+      data = data.filter(item =>
+        ((item.display_name || item.username) + '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.username + '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
@@ -176,7 +197,7 @@ const Friends = () => {
   const renderActionButtons = (item) => {
     if (item.type === 'friend') {
       return (
-        <button 
+        <button
           onClick={() => handleRemoveFriend(item.id)}
           className="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm transition-colors"
         >
@@ -186,13 +207,13 @@ const Friends = () => {
     } else if (item.type === 'received') {
       return (
         <div className="flex items-center space-x-2">
-          <button 
+          <button
             onClick={() => handleRejectRequest(item.friendship.id)}
             className="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
           >
             Rejeitar
           </button>
-          <button 
+          <button
             onClick={() => handleAcceptRequest(item.friendship.id)}
             className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark transition-colors"
           >
@@ -203,6 +224,15 @@ const Friends = () => {
     } else if (item.type === 'sent') {
       return (
         <span className="text-gray-500 text-sm">Pendente</span>
+      )
+    } else if (item.type === 'suggestion') {
+      return (
+        <button
+          onClick={() => navigate('/explore')}
+          className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark"
+        >
+          Ver sugestões
+        </button>
       )
     }
   }
