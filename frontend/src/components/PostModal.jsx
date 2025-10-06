@@ -18,6 +18,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const [testimonialTextColor, setTestimonialTextColor] = useState('#000000')
   const [testimonialSearchResults, setTestimonialSearchResults] = useState([])
   const testimonialEditorRef = useRef(null)
+
+  useEffect(() => {
+    if (testimonialEditorRef.current && testimonialEditorRef.current.innerHTML !== testimonialContentHtml) {
+      testimonialEditorRef.current.innerHTML = testimonialContentHtml
+    }
+  }, [testimonialContentHtml])
   const [imageFile, setImageFile] = useState(null)
   const [videoFile, setVideoFile] = useState(null)
   const [audioFile, setAudioFile] = useState(null)
