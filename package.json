@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Rede social moderna e responsiva",
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "npm run dev:frontend",
     "dev:frontend": "cd frontend && npm run dev",
     "dev:frontend-only": "cd frontend && npm run dev",
     "dev:backend": "cd backend && python3 main.py",
