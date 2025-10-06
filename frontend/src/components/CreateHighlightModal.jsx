@@ -75,7 +75,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
   const handleCoverFileSelect = async (event) => {
     const file = event.target.files[0]
     if (file) {
-      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), maxBytes: 6 * 1024 * 1024 })
+      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 6 * 1024 * 1024 })
       if (!v.ok) { setError(v.error || 'Imagem inválida'); return }
       setCoverImage(file)
       const reader = new FileReader()
