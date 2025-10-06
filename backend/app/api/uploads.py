@@ -132,7 +132,8 @@ async def upload_cover_photo(
     """Upload da foto de capa - store in DB and return data URL and immutable id URL"""
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid image type")
-    if file.size and file.size > MAX_FILE_SIZE:
+    # Soft size cap: only enforce if UploadFile exposes size; otherwise accept and resize
+    if getattr(file, 'size', None) and file.size and file.size > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File too large")
 
     try:
