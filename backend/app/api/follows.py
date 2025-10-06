@@ -48,7 +48,7 @@ async def follow_user(user_id: int, current_user: User = Depends(get_current_use
         user_id=user_id,
         type="follow",
         title="Novo seguidor",
-        content=f"{current_user.display_name or current_user.username} começou a seguir você",
+        message=f"{current_user.display_name or current_user.username} começou a seguir você",
         related_user_id=current_user.id,
         related_id=follow.id
     )
@@ -62,7 +62,7 @@ async def follow_user(user_id: int, current_user: User = Depends(get_current_use
             "id": notification.id,
             "type": "follow",
             "title": notification.title,
-            "message": notification.content,
+            "message": notification.message,
             "related_user_id": current_user.id,
             "created_at": notification.created_at.isoformat()
         }, user_id)
