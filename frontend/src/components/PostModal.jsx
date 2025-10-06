@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { X, Image, Video, Type, Send, Palette, Mic, BarChart3, Calendar, MapPin, Users, Smile, Plus, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { postsAPI, testimonialsAPI, usersAPI, friendshipsAPI } from '../services/api'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const PostModal = ({ isOpen, onClose, onPost }) => {
   const { user } = useAuth()
@@ -186,6 +187,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
   const handleFileUpload = async (file, type) => {
     if (type === 'image') {
       try {
+        const v = await validateImageDimensions(file, { ...presetOptions('post'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 10 * 1024 * 1024 })
+        if (!v.ok) { setError(v.error || 'Imagem inválida'); return }
         const processed = await processImageFile(file)
         setImageFile(processed)
         setVideoFile(null)

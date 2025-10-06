@@ -5,6 +5,7 @@ import { LiveWaveform, PlaybackWaveform } from '../components/AudioWaveform';
 import { playNotification } from '../utils/notificationSound';
 import { useAuth } from '../contexts/AuthContext';
 import { api, uploadsAPI, usersAPI } from '../services/api';
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation';
 import useWebSocket from '../hooks/useWebSocket';
 import useViewportHeight from '../hooks/useViewportHeight';
 import CallAttentionButton from '../components/CallAttentionButton';
@@ -467,6 +468,10 @@ const Messages = () => {
   // Enviar mídia
   const sendImage = async (file) => {
     if (!selectedConversation) return
+
+    const v = await validateImageDimensions(file, { ...presetOptions('message'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 10 * 1024 * 1024 })
+    if (!v.ok) { alert(v.error || 'Imagem inválida'); return }
+
     try {
       const formData = new FormData()
       formData.append('receiver_id', selectedConversation.otherUser.id)

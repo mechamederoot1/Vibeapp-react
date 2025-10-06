@@ -28,6 +28,7 @@ import AddToHighlightModal from '../components/AddToHighlightModal'
 import StoryViewer from '../components/StoryViewer'
 import FriendshipButton from '../components/FriendshipButton'
 import FollowButton from '../components/FollowButton'
+import TestimonialsList from '../components/TestimonialsList'
 import useWebSocket from '../hooks/useWebSocket'
 
 const AvatarWithStory = ({ user, userStories, size = 'md', className = '' }) => {
@@ -97,6 +98,7 @@ const Profile = () => {
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+  const [showTestimonialsModal, setShowTestimonialsModal] = useState(false)
 
   // Estados para informações pessoais
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
@@ -282,7 +284,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! ������',
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! ��������',
             createdAt: '2024-01-13T09:15:00Z',
             likes: 73,
             comments: 18,
@@ -867,7 +869,7 @@ const Profile = () => {
         setUploadSuccess(null)
       }, 3000)
     } catch (error) {
-      console.error('Erro ao salvar informações pessoais:', error)
+      console.error('Erro ao salvar informaç��es pessoais:', error)
       setUploadError('Erro ao salvar informações pessoais. Tente novamente.')
     } finally {
       setPersonalInfoLoading(false)
@@ -889,6 +891,7 @@ const Profile = () => {
         coverStoryId: highlightData.coverStoryId || null
       }
       const createRes = await highlightsAPI.create(basePayload)
+      console.log('highlights.create response:', createRes?.data)
       const createdHighlight = createRes.data?.highlight || createRes.data
       const highlightId = createdHighlight.id
 
@@ -925,6 +928,7 @@ const Profile = () => {
           createdStoryIds.push(storyId)
           await highlightsAPI.addStory(highlightId, storyId)
           await highlightsAPI.update(highlightId, { coverStoryId: storyId })
+          console.log('Updated highlight coverStoryId ->', highlightId, storyId)
         } catch (e) {
           console.error('Erro ao criar story de capa:', e)
         }
@@ -934,6 +938,7 @@ const Profile = () => {
       if (highlightData.coverStoryId) {
         try {
           await highlightsAPI.update(highlightId, { coverStoryId: Number(highlightData.coverStoryId) })
+          console.log('Set coverStoryId from existing story ->', highlightId, highlightData.coverStoryId)
         } catch (e) {
           console.error('Erro ao definir story de capa:', e)
         }
@@ -943,10 +948,38 @@ const Profile = () => {
       try {
         const highlightsRes = await highlightsAPI.get()
         const remoteHighlights = highlightsRes.data.highlights || []
-        const normalized = remoteHighlights.map(h => ({
+        let normalized = remoteHighlights.map(h => ({
           ...h,
-          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl
+          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl,
+          coverStoryId: h.coverStoryId || h.cover_story_id || h.cover_story || h.coverStoryId
         }))
+
+        // For highlights missing a cover image but with a coverStoryId, fetch the story to derive media URL
+        const needFetch = normalized.filter(h => (!h.coverImageUrl) && h.coverStoryId)
+        if (needFetch.length > 0) {
+          try {
+            const fetches = await Promise.allSettled(needFetch.map(async (h) => {
+              try {
+                const res = await storiesAPI.getStory(h.coverStoryId)
+                const s = res.data || res.data?.story || {}
+                const mediaUrl = s.mediaUrl || s.media_url || s.imageUrl || s.image_url || s.media || null
+                return { id: h.id, coverImageUrl: mediaUrl }
+              } catch (e) {
+                return null
+              }
+            }))
+
+            const coverMap = {}
+            fetches.forEach(r => {
+              if (r.status === 'fulfilled' && r.value) coverMap[r.value.id] = r.value.coverImageUrl
+            })
+
+            normalized = normalized.map(h => ({ ...h, coverImageUrl: h.coverImageUrl || coverMap[h.id] || null }))
+          } catch (e) {
+            console.warn('Falha ao buscar capas das stories:', e)
+          }
+        }
+
         setHighlights(normalized)
       } catch (reloadErr) {
         console.error('Erro ao recarregar destaques:', reloadErr)
@@ -1871,14 +1904,15 @@ const Profile = () => {
           <Grid size={20} />
         </button>
         <button
-          onClick={() => setActiveTab('saved')}
+          onClick={() => setShowTestimonialsModal(true)}
           className={`flex-1 p-3 flex items-center justify-center ${
             activeTab === 'saved'
               ? 'border-b-2 border-gray-900 text-gray-900'
               : 'text-gray-500'
           }`}
+          title="Depoimentos"
         >
-          <Bookmark size={20} />
+          <Heart size={20} />
         </button>
 
         {/* View Mode Toggle */}
@@ -2201,6 +2235,23 @@ const Profile = () => {
       )}
 
       {/* Modals */}
+
+      {/* Testimonials Modal */}
+      {showTestimonialsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4 sm:items-center">
+          <div className="bg-white w-full max-w-2xl rounded-lg shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">Depoimentos recebidos</h3>
+              <button onClick={() => setShowTestimonialsModal(false)} className="p-2 rounded-full hover:bg-gray-100">
+                ✕
+              </button>
+            </div>
+            <div className="p-4">
+              <TestimonialsList targetUserId={targetUserIdState} />
+            </div>
+          </div>
+        </div>
+      )}
       {showFriends && (
         <FriendsList
           onClose={() => setShowFriends(false)}

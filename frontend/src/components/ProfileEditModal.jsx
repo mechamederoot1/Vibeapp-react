@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react'
 import { X, Camera, Save, User, Mail, Calendar, MapPin, Globe, Phone, Heart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { personalInfoAPI } from '../services/api'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
   const { user, updateProfile } = useAuth()
@@ -34,8 +35,11 @@ const ProfileEditModal = ({ isOpen, onClose, onUpdated }) => {
     setSuccess('')
   }
 
-  const handleImageUpload = (field, file) => {
+  const handleImageUpload = async (field, file) => {
     if (file) {
+      const preset = field === 'avatar' ? 'avatar' : 'cover'
+      const v = await validateImageDimensions(file, { ...presetOptions(preset), maxBytes: 6 * 1024 * 1024 })
+      if (!v.ok) { setError(v.error || 'Imagem inválida'); return }
       const reader = new FileReader()
       reader.onload = (e) => {
         handleInputChange(field, e.target.result)
