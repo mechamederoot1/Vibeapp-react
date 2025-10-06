@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { Camera, Upload, X, Image as ImageIcon } from 'lucide-react'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const ImageUpload = ({ 
   currentImage, 
@@ -17,52 +18,44 @@ const ImageUpload = ({
   const maxSize = 5 * 1024 * 1024 // 5MB
   const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp']
 
-  const validateFile = (file) => {
+  const validateFile = async (file) => {
     if (!file) return false
-
-    // Verificar tipo
-    if (!acceptedTypes.includes(file.type)) {
-      alert('Formato não suportado. Use JPEG, PNG ou WebP.')
+    const preset = isAvatar ? 'avatar' : 'cover'
+    const v = await validateImageDimensions(file, { ...presetOptions(preset), allowedTypes: acceptedTypes, maxBytes: maxSize })
+    if (!v.ok) {
+      alert(v.error || 'Imagem inválida')
       return false
     }
-
-    // Verificar tamanho
-    if (file.size > maxSize) {
-      alert('Arquivo muito grande. Máximo 5MB.')
-      return false
-    }
-
     return true
   }
 
-  const handleFileSelect = (file) => {
-    if (!validateFile(file)) return
+  const handleFileSelect = async (file) => {
+    const isValid = await validateFile(file)
+    if (!isValid) return
 
-    // Criar preview
     const reader = new FileReader()
     reader.onload = (e) => {
       setPreviewImage(e.target.result)
     }
     reader.readAsDataURL(file)
 
-    // Callback com o arquivo
     onImageSelect?.(file)
   }
 
-  const handleFileInputChange = (e) => {
+  const handleFileInputChange = async (e) => {
     const file = e.target.files?.[0]
     if (file) {
-      handleFileSelect(file)
+      await handleFileSelect(file)
     }
   }
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault()
     setIsDragOver(false)
-    
+
     const file = e.dataTransfer.files?.[0]
     if (file) {
-      handleFileSelect(file)
+      await handleFileSelect(file)
     }
   }
 

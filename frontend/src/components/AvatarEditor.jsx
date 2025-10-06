@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { X, RotateCcw, Check, Camera } from 'lucide-react'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
   const [image, setImage] = useState(null)
@@ -63,18 +64,13 @@ const AvatarEditor = ({ isOpen, onClose, onSave, currentImage }) => {
     setPosition({ x: 0, y: 0 })
   }
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validar arquivo
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      alert('Formato não suportado. Use JPEG, PNG ou WebP.')
-      return
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Arquivo muito grande. Máximo 5MB.')
+    const v = await validateImageDimensions(file, { ...presetOptions('avatar'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 5 * 1024 * 1024 })
+    if (!v.ok) {
+      alert(v.error || 'Imagem inválida')
       return
     }
 

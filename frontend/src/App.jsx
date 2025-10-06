@@ -22,6 +22,7 @@ import SplashScreen from './components/SplashScreen'
 import VibeLogoSimple from './components/VibeLogoSimple'
 import PermissionsHandler from './components/PermissionsHandler'
 import useWebSocket from './hooks/useWebSocket'
+import Suggestions from './pages/Suggestions'
 import { api, usersAPI } from './services/api'
 
 const ProtectedRoute = ({ children }) => {
@@ -106,7 +107,7 @@ const AppContent = () => {
         setAttentionAlert(`${name} chamou sua tenção!`);
         setTimeout(() => setAttentionAlert(null), 2000);
       } catch (e) {
-        setAttentionAlert('Fulano chamou sua tenção!');
+        setAttentionAlert('Fulano chamou sua tenç��o!');
         setTimeout(() => setAttentionAlert(null), 2000);
       }
     })();
@@ -185,6 +186,16 @@ const AppContent = () => {
             <ProtectedRoute>
               <Layout onOpenPostModal={handleOpenPostModal}>
                 <Explore />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/feed/suggestions"
+          element={
+            <ProtectedRoute>
+              <Layout onOpenPostModal={handleOpenPostModal}>
+                <Suggestions />
               </Layout>
             </ProtectedRoute>
           }
