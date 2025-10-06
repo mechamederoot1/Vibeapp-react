@@ -211,8 +211,8 @@ async def send_friend_request(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": request.friend_id, "status": "request_sent"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, request.friend_id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in send_friend_request: {e}")
 
     return new_friendship
 
