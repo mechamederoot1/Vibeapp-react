@@ -82,6 +82,13 @@ export const useWebSocket = () => {
           console.log('📨 Mensagem WebSocket recebida:', enhancedMessage);
           setLastMessage(enhancedMessage);
 
+          // If friendship update, notify other parts of the app to refresh friends lists
+          try {
+            if (message.type === 'friendship_update' || message.normalizedType === 'friendship_update') {
+              window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: message }))
+            }
+          } catch(e) {}
+
           // Responder pings automaticamente
           if (normalizedType === 'ping') {
             wsRef.current.send(JSON.stringify({ type: 'pong', data: {} }));
