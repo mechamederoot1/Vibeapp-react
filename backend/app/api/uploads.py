@@ -277,6 +277,7 @@ async def upload_story_media(
 
     try:
         if file.content_type in ALLOWED_IMAGE_TYPES:
+            # Validate dimensions and resize for story constraints
             content_bytes, mime = await save_and_resize_image_to_bytes(file, (1080, 1920))
             media_type = 'image'
         else:
@@ -291,5 +292,8 @@ async def upload_story_media(
             "url": data_url,
             "type": media_type
         }
+    except HTTPException:
+        # Propagate validation HTTP errors (image too small, etc.)
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Erro ao fazer upload da mídia: {str(e)}")
