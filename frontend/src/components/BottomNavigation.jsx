@@ -23,11 +23,33 @@ const BottomNavigation = () => {
     messages: 0,
     visits: 0
   })
+  const [friendBadge, setFriendBadge] = useState(0)
 
   // Carregar contadores de mensagens e notificações não lidas
   const loadUnreadCounts = async () => {
     // Mantém contadores zerados inicialmente; mensagens/visitas serão atualizadas por WS
     setUnreadCounts({ messages: 0, visits: 0 })
+  }
+
+  // Carregar contadores relacionados a amigos (pendentes)
+  const loadFriendCounts = async () => {
+    try {
+      if (!user?.id) return
+      // Use the friendships endpoints to compute pending requests
+      const [receivedRes, sentRes, statsRes] = await Promise.all([
+        friendshipsAPI.getReceivedRequests().catch(() => ({ data: [] })),
+        friendshipsAPI.getSentRequests().catch(() => ({ data: [] })),
+        usersAPI.getUserStats(user.id).catch(() => ({ data: null }))
+      ])
+
+      const pending = (receivedRes.data || []).length
+      const sent = (sentRes.data || []).length
+      setFriendBadge(pending + sent)
+
+      // Optionally you could store friendsCount elsewhere if needed
+    } catch (e) {
+      console.error('Erro ao carregar contadores de amigos:', e)
+    }
   }
 
   // Atualizar contadores quando receber mensagens WebSocket
@@ -47,12 +69,19 @@ const BottomNavigation = () => {
         visits: prev.visits + 1
       }))
     }
+
+    // Update friend badge when receiving friendship updates or friend notifications
+    if (lastMessage.type === 'friendship_update' || lastMessage.type === 'notification' || lastMessage.normalizedType === 'friendship_update') {
+      // Reload friend counts
+      loadFriendCounts()
+    }
   }, [lastMessage])
 
   // Carregar contadores ao montar
   useEffect(() => {
     loadUnreadCounts()
-  }, [])
+    loadFriendCounts()
+  }, [user?.id])
 
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
