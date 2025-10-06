@@ -504,8 +504,8 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               <div className="mt-3">
                 <p className="text-sm text-gray-600 mb-2">Pré-visualização:</p>
                 <div className={`p-6 rounded-lg min-h-[120px] flex flex-col`} style={{ background: testimonialBgColor || 'transparent' }}>
-                  <h3 style={{ fontFamily: testimonialFont, color: testimonialTextColor }} className="font-semibold text-lg">{testimonialTitle}</h3>
-                  <div className="mt-2" dangerouslySetInnerHTML={{ __html: testimonialContentHtml }} style={{ fontFamily: testimonialFont, color: testimonialTextColor }} />
+                  <h3 style={{ fontFamily: testimonialFont, color: testimonialTextColor, textShadow: testimonialShadowEnabled ? `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}` : 'none' }} className="font-semibold text-lg">{testimonialTitle}</h3>
+                  <div className="mt-2" dangerouslySetInnerHTML={{ __html: testimonialContentHtml }} style={{ fontFamily: testimonialFont, color: testimonialTextColor, textShadow: testimonialShadowEnabled ? `${testimonialShadowOffset}px ${testimonialShadowOffset}px ${testimonialShadowBlur}px ${testimonialShadowColor}` : 'none' }} />
                   {testimonialRecipient && <div className="mt-3 text-sm text-gray-500">Para: {testimonialRecipient.firstName} {testimonialRecipient.lastName} @{testimonialRecipient.username}</div>}
                 </div>
               </div>
