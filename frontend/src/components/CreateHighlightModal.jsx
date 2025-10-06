@@ -93,7 +93,7 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
     for (let idx = 0; idx < files.length; idx++) {
       const file = files[idx]
       if (!file.type.startsWith('image/')) continue
-      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), maxBytes: 6 * 1024 * 1024 })
+      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), allowedTypes: ['image/jpeg','image/png','image/webp'], maxBytes: 6 * 1024 * 1024 })
       if (!v.ok) { setError(v.error || 'Imagem inválida'); continue }
       const id = Date.now() + Math.random() + idx
       const reader = new FileReader()
