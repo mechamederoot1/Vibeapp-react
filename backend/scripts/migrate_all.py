@@ -249,6 +249,35 @@ def _ensure_profile_covers_table(db):
     db.commit()
 
 
+def _ensure_testimonials_table(db):
+    # Testimonials table and saves (to mark as saved in profiles)
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS testimonials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            author_id INTEGER NOT NULL,
+            recipient_id INTEGER NOT NULL,
+            title TEXT,
+            content TEXT NOT NULL,
+            background_color TEXT,
+            font TEXT,
+            is_active BOOLEAN DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
+    db.execute(text("""
+        CREATE TABLE IF NOT EXISTS testimonial_saves (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            testimonial_id INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """))
+    db.execute(text("CREATE INDEX IF NOT EXISTS ix_testimonials_recipient_created ON testimonials(recipient_id, created_at DESC)"))
+    db.execute(text("CREATE INDEX IF NOT EXISTS ix_testimonial_saves_user_testimonial ON testimonial_saves(user_id, testimonial_id)"))
+    db.commit()
+
+
 def _backfill_profile_photos(db):
     _ensure_profile_photos_table(db)
     rows = db.execute(text("SELECT id, avatar_blob, avatar_mime, COALESCE(updated_at, created_at) FROM users WHERE avatar_blob IS NOT NULL")).fetchall()
