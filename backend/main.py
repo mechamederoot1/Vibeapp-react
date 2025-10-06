@@ -32,6 +32,7 @@ from app.api.work_experience import router as work_experience_router
 from app.api.education import router as education_router
 from app.api.media import router as media_router
 from app.api.follows import router as follows_router
+from app.api.testimonials import router as testimonials_router
 
 # Import WebSocket
 from app.websocket import websocket_endpoint
