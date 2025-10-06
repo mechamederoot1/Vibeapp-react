@@ -281,6 +281,14 @@ export const highlightsAPI = {
   getStories: (highlightId) => api.get(`/highlights/${highlightId}/stories`)
 }
 
+// Testimonials endpoints
+export const testimonialsAPI = {
+  create: (data) => api.post('/testimonials/', data),
+  getForUser: (userId) => api.get(`/testimonials/user/${userId}`),
+  get: (id) => api.get(`/testimonials/${id}`),
+  toggleSave: (id) => api.post(`/testimonials/${id}/save`)
+}
+
 
 // Legacy services for backward compatibility
 export const authService = {
