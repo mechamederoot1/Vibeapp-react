@@ -25,9 +25,15 @@ const ConnectionsModal = ({ isOpen, onClose }) => {
 
     setLoading(true)
     try {
-      const { friendshipsAPI } = await import('../services/api')
-      const res = await friendshipsAPI.getUserFriends(user.id)
-      const friends = (res.data || []).map((item) => ({
+      const { friendshipsAPI, followsAPI } = await import('../services/api')
+
+      const [friendsRes, followersRes, followingRes] = await Promise.all([
+        friendshipsAPI.getUserFriends(user.id).catch(() => ({ data: [] })),
+        followsAPI.getFollowers(user.id).catch(() => ({ data: [] })),
+        followsAPI.getFollowing(user.id).catch(() => ({ data: [] }))
+      ])
+
+      const friends = (friendsRes.data || []).map((item) => ({
         id: item.user_info?.id,
         username: item.user_info?.username,
         fullName: item.user_info?.display_name || item.user_info?.username,
@@ -35,7 +41,28 @@ const ConnectionsModal = ({ isOpen, onClose }) => {
         isOnline: false,
         mutualFriends: item.mutual_friends_count || 0
       }))
-      setConnections({ friends, followers: [], following: [] })
+
+      const followers = (followersRes.data || []).map((u) => ({
+        id: u.id,
+        username: u.username,
+        fullName: u.display_name || u.username,
+        avatar: u.avatar_url || u.avatar,
+        isOnline: false,
+        isFollowing: !!u.isFollowing,
+        mutualFriends: 0
+      }))
+
+      const following = (followingRes.data || []).map((u) => ({
+        id: u.id,
+        username: u.username,
+        fullName: u.display_name || u.username,
+        avatar: u.avatar_url || u.avatar,
+        isOnline: false,
+        isFollowing: !!u.isFollowing,
+        mutualFriends: 0
+      }))
+
+      setConnections({ friends, followers, following })
     } catch (error) {
       console.error('Erro ao carregar conexões:', error)
       setConnections({ friends: [], followers: [], following: [] })
