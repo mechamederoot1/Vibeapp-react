@@ -321,6 +321,12 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               </div>
             </div>
           </div>
+
+          {/* Top tabs for Normal / Depoimento */}
+          <div className="mt-4 flex items-center space-x-2">
+            <button onClick={() => setPostType('text')} className={`px-3 py-1 rounded ${postType === 'text' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Normal</button>
+            <button onClick={() => setPostType('testimonial')} className={`px-3 py-1 rounded ${postType === 'testimonial' ? 'bg-vibe-blue text-white' : 'bg-gray-100 text-gray-700'}`}>Depoimento</button>
+          </div>
         </div>
 
         {/* Main Content */}
@@ -370,6 +376,75 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
               <p className="text-sm text-gray-600 mb-2">Preview:</p>
               <div className={`p-6 rounded-lg ${colorOptions.find(c => c.value === backgroundColor)?.gradient} min-h-[120px] flex items-center justify-center`}>
                 <p className="text-white text-center font-medium text-lg leading-relaxed">{content}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Testimonial editor */}
+          {postType === 'testimonial' && (
+            <div className="mb-4">
+              <div className="mb-2">
+                <input value={testimonialTitle} onChange={(e) => setTestimonialTitle(e.target.value)} placeholder="Título do depoimento" className="w-full p-2 border rounded" />
+              </div>
+              <div className="mb-2 relative">
+                <input value={testimonialRecipientQuery} onChange={async (e) => {
+                  const q = e.target.value; setTestimonialRecipientQuery(q); setTestimonialRecipient(null);
+                  if (q.length < 2) { setTestimonialSearchResults([]); return }
+                  try {
+                    const res = await usersAPI.searchUsers(q, 6)
+                    setTestimonialSearchResults(res.data || [])
+                  } catch (e) {
+                    setTestimonialSearchResults([])
+                  }
+                }} placeholder="Marcar amigo (digite nome ou @usuario)" className="w-full p-2 border rounded" />
+                {testimonialSearchResults.length > 0 && (
+                  <div className="absolute z-40 bg-white border rounded mt-1 w-full max-h-40 overflow-auto">
+                    {testimonialSearchResults.map(u => (
+                      <div key={u.id} className="p-2 hover:bg-gray-50 cursor-pointer" onClick={() => { setTestimonialRecipient(u); setTestimonialRecipientQuery(u.username || u.firstName); setTestimonialSearchResults([]) }}>{u.firstName} {u.lastName} @{u.username}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Toolbar */}
+              <div className="flex items-center space-x-2 mb-2">
+                <button type="button" onClick={() => document.execCommand('bold')} className="px-2 py-1 border rounded">B</button>
+                <button type="button" onClick={() => document.execCommand('italic')} className="px-2 py-1 border rounded">I</button>
+                <button type="button" onClick={() => document.execCommand('underline')} className="px-2 py-1 border rounded">U</button>
+                <select value={testimonialFont} onChange={(e) => { setTestimonialFont(e.target.value); try { document.execCommand('fontName', false, e.target.value) } catch(e){} }} className="p-1 border rounded">
+                  <option>Montserrat</option>
+                  <option>Tahoma</option>
+                  <option>Comic Neue</option>
+                  <option>Impact</option>
+                  <option>Sans-Serif</option>
+                  <option>Verdana</option>
+                  <option>Mathematical Sans-Serif Bold</option>
+                  <option>Mathematical Bold</option>
+                </select>
+                <input type="color" value={testimonialTextColor} onChange={(e) => { setTestimonialTextColor(e.target.value); try { document.execCommand('foreColor', false, e.target.value) } catch(e){} }} className="w-8 h-8 p-0 border rounded" />
+                <button type="button" onClick={() => {
+                  // toggle shadow: wrap selection in span with text-shadow
+                  try {
+                    const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) return
+                    const range = sel.getRangeAt(0)
+                    const span = document.createElement('span')
+                    span.style.textShadow = `2px 2px 4px rgba(0,0,0,0.25)`
+                    range.surroundContents(span)
+                  } catch (e) { console.warn('shadow failed', e) }
+                }} className="px-2 py-1 border rounded">Sombra</button>
+                <button type="button" onClick={() => { setTestimonialBgColor('#ffffff') }} className="px-2 py-1 border rounded">Fundo</button>
+                {testimonialBgColor && (<button type="button" onClick={() => setTestimonialBgColor(null)} className="px-2 py-1 border rounded text-red-600">X</button>)}
+              </div>
+
+              <div contentEditable ref={testimonialEditorRef} onInput={(e) => setTestimonialContentHtml(e.currentTarget.innerHTML)} className="min-h-[120px] border p-3 rounded" style={{ fontFamily: testimonialFont, color: testimonialTextColor }}></div>
+
+              <div className="mt-3">
+                <p className="text-sm text-gray-600 mb-2">Pré-visualização:</p>
+                <div className={`p-6 rounded-lg min-h-[120px] flex flex-col`} style={{ background: testimonialBgColor || 'transparent' }}>
+                  <h3 style={{ fontFamily: testimonialFont, color: testimonialTextColor }} className="font-semibold text-lg">{testimonialTitle}</h3>
+                  <div className="mt-2" dangerouslySetInnerHTML={{ __html: testimonialContentHtml }} style={{ fontFamily: testimonialFont, color: testimonialTextColor }} />
+                  {testimonialRecipient && <div className="mt-3 text-sm text-gray-500">Para: {testimonialRecipient.firstName} {testimonialRecipient.lastName} @{testimonialRecipient.username}</div>}
+                </div>
               </div>
             </div>
           )}
