@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { X, Save, Image, Upload, Plus, ChevronLeft, ChevronRight, Check, Camera } from 'lucide-react'
+import { validateImageDimensions, presetOptions } from '../utils/imageValidation'
 
 const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], coverStoryId = null }) => {
   const [formData, setFormData] = useState({
@@ -71,17 +72,11 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
     if (type !== 'upload') setCoverImage(null)
   }
 
-  const handleCoverFileSelect = (event) => {
+  const handleCoverFileSelect = async (event) => {
     const file = event.target.files[0]
     if (file) {
-      if (!file.type.startsWith('image/')) {
-        setError('Por favor, selecione apenas arquivos de imagem')
-        return
-      }
-      if (file.size > 6 * 1024 * 1024) {
-        setError('A imagem deve ter no máximo 6MB')
-        return
-      }
+      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), maxBytes: 6 * 1024 * 1024 })
+      if (!v.ok) { setError(v.error || 'Imagem inválida'); return }
       setCoverImage(file)
       const reader = new FileReader()
       reader.onload = (e) => setCoverImagePreview(e.target.result)
@@ -91,22 +86,23 @@ const CreateHighlightModal = ({ isOpen, onClose, onSave, userStories = [], cover
     }
   }
 
-  const handleAddPhotos = (event) => {
+  const handleAddPhotos = async (event) => {
     const files = Array.from(event.target.files || [])
     if (!files.length) return
 
-    files.forEach((file, idx) => {
-      if (!file.type.startsWith('image/')) return
-      if (file.size > 6 * 1024 * 1024) return
+    for (let idx = 0; idx < files.length; idx++) {
+      const file = files[idx]
+      if (!file.type.startsWith('image/')) continue
+      const v = await validateImageDimensions(file, { ...presetOptions('highlight'), maxBytes: 6 * 1024 * 1024 })
+      if (!v.ok) { setError(v.error || 'Imagem inválida'); continue }
       const id = Date.now() + Math.random() + idx
       const reader = new FileReader()
       reader.onload = (e) => {
         setPhotos(prev => [...prev, { id, file, src: e.target.result }])
       }
       reader.readAsDataURL(file)
-    })
+    }
 
-    // Reset input value to allow selecting same file again
     event.target.value = null
     setFormData(prev => ({ ...prev, coverType: 'collection' }))
   }
