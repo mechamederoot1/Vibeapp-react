@@ -293,7 +293,7 @@ async def accept_friend_request(
     if not friendship:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Pedido de amizade não encontrado"
+            detail="Pedido de amizade n��o encontrado"
         )
     
     # Aceitar o pedido
@@ -394,8 +394,8 @@ async def remove_friend(
         payload = {"type": "friendship_update", "data": {"userA": current_user.id, "userB": user_id, "status": "none"}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in remove_friend: {e}")
 
     return {"message": "Amigo removido com sucesso"}
 
