@@ -52,6 +52,13 @@ const Messages = () => {
   const { lastMessage, sendMessage: sendWebSocketMessage } = useWebSocket();
   const navigate = useNavigate();
 
+  const goToProfile = (u) => {
+    if (!u) return;
+    const pub = u.publicProfileId || u.public_profile_id;
+    if (pub) { try { navigate(`/profile/id/${pub}`); } catch(e) {} return }
+    if (u.id) { try { navigate(`/profile/id/${u.id}`); } catch(e) {} }
+  }
+
   const TypingDots = ({ className = '' }) => (
     <span className={`inline-flex items-center space-x-1 ${className}`}>
       <span className="text-sm text-vibe-blue">digitando</span>
@@ -961,13 +968,13 @@ const Messages = () => {
       <div className={`w-full md:w-1/3 border-r border-gray-200 ${selectedConversation ? 'hidden md:block' : ''} flex flex-col min-h-0`}>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img src={user?.avatar_url || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.firstName||user?.displayName||user?.username||'U'))}&background=2563eb&color=fff`} alt={user?.firstName || user?.username} className="w-12 h-12 rounded-full object-cover" />
+            <button type="button" onClick={() => goToProfile(user)} className="flex items-center space-x-3 text-left p-0 m-0">
+              <img src={user?.avatar_url || user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((user?.firstName||user?.displayName||user?.username||'U'))}&background=2563eb&color=fff`} alt={user?.firstName || user?.username} className="w-12 h-12 rounded-full object-cover cursor-pointer" />
               <div>
                 <div className="text-sm font-semibold text-gray-900">{user?.firstName} {user?.lastName}</div>
                 <div className="text-xs text-gray-500">Online</div>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center space-x-2">
               <button className="p-2 hover:bg-gray-100 rounded-lg" title="Novo">
@@ -1106,7 +1113,7 @@ const Messages = () => {
                 <ArrowLeft size={20} />
               </button>
 
-              <img src={selectedConversation.otherUser.avatar_url || selectedConversation.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((selectedConversation.otherUser.firstName||selectedConversation.otherUser.displayName||selectedConversation.otherUser.username||'U'))}&background=2563eb&color=fff`} alt={`${selectedConversation.otherUser.firstName||''} ${selectedConversation.otherUser.lastName||''}`} className="w-10 h-10 rounded-full object-cover" />
+              <img src={selectedConversation.otherUser.avatar_url || selectedConversation.otherUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((selectedConversation.otherUser.firstName||selectedConversation.otherUser.displayName||selectedConversation.otherUser.username||'U'))}&background=2563eb&color=fff`} alt={`${selectedConversation.otherUser.firstName||''} ${selectedConversation.otherUser.lastName||''}`} className="w-10 h-10 rounded-full object-cover cursor-pointer" onClick={() => goToProfile(selectedConversation.otherUser)} />
 
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">
@@ -1167,7 +1174,7 @@ const Messages = () => {
 
                     <div className={`flex px-3 items-end ${message.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
                       {message.senderId !== user.id && (
-                        <img src={avatarForMessage} alt="avatar" className="w-8 h-8 rounded-full mr-3 flex-shrink-0 object-cover" />
+                        <img src={avatarForMessage} alt="avatar" className="w-8 h-8 rounded-full mr-3 flex-shrink-0 object-cover cursor-pointer" onClick={() => goToProfile(selectedConversation?.otherUser)} />
                       )}
 
                       <div
