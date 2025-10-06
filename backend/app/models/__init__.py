@@ -15,6 +15,8 @@ from .follow import Follow
 from .profile_photo import ProfilePhoto
 from .profile_cover import ProfileCover
 from .session import UserSession
+from .testimonial import Testimonial
+from .testimonial_save import TestimonialSave
 
 __all__ = [
     "User",
@@ -42,4 +44,6 @@ __all__ = [
     "ProfilePhoto",
     "ProfileCover",
     "UserSession",
+    "Testimonial",
+    "TestimonialSave",
 ]
