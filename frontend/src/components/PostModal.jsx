@@ -215,6 +215,27 @@ const PostModal = ({ isOpen, onClose, onPost }) => {
     setError('')
 
     try {
+      if (postType === 'testimonial') {
+        // Ensure recipient
+        if (!testimonialRecipient) {
+          setError('Por favor selecione o amigo para quem enviar o depoimento')
+          setLoading(false)
+          return
+        }
+        const payload = {
+          recipientId: testimonialRecipient.id,
+          title: testimonialTitle,
+          content: testimonialContentHtml || '',
+          backgroundColor: testimonialBgColor,
+          font: testimonialFont
+        }
+        const res = await testimonialsAPI.create(payload)
+        const created = res.data
+        onPost?.(created)
+        resetAndClose()
+        return
+      }
+
       let postData = {
         content: content.trim(),
         type: postType,
