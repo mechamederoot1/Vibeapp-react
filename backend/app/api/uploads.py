@@ -47,7 +47,7 @@ def generate_filename(original_filename: str, prefix: str = "") -> str:
     return f"{prefix}{unique_id}.{ext}"
 
 async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = None):
-    """Read image upload, optionally resize, and return bytes and mime"""
+    """Read image upload, validate dimensions, optionally resize, and return bytes and mime"""
     content = await file.read()
     try:
         with Image.open(BytesIO(content)) as img:
@@ -56,14 +56,33 @@ async def save_and_resize_image_to_bytes(file: UploadFile, max_size: tuple = Non
                 rgb_img = Image.new('RGB', img.size, (255, 255, 255))
                 rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
                 img = rgb_img
+
+            w, h = img.size
+            # Validate minimum dimensions
+            if w < MIN_IMAGE_WIDTH or h < MIN_IMAGE_HEIGHT:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Imagem muito pequena: {w}x{h}. Mínimo é {MIN_IMAGE_WIDTH}x{MIN_IMAGE_HEIGHT}.")
+
+            # If image is extremely large, downscale to MAX_IMAGE_DIMENSION
+            max_dim = max(w, h)
+            if max_dim > MAX_IMAGE_DIMENSION:
+                scale = MAX_IMAGE_DIMENSION / float(max_dim)
+                new_w = int(w * scale)
+                new_h = int(h * scale)
+                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+            # Respect max_size parameter if provided (e.g., thumbnails)
             if max_size:
                 img.thumbnail(max_size, Image.Resampling.LANCZOS)
+
             out = BytesIO()
             img.save(out, format='JPEG', quality=85, optimize=True)
             out.seek(0)
             return out.read(), 'image/jpeg'
-    except Exception:
-        # Fallback: return original bytes
+    except HTTPException:
+        # Re-raise HTTPExceptions to be handled by caller
+        raise
+    except Exception as e:
+        # Fallback: return original bytes (but do not mask validation errors)
         return content, file.content_type or 'application/octet-stream'
 
 @router.post("/avatar")
