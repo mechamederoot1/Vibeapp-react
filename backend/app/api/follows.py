@@ -91,8 +91,8 @@ async def unfollow_user(user_id: int, current_user: User = Depends(get_current_u
         payload = {"type": "follow_update", "data": {"followerId": current_user.id, "followingId": user_id, "isFollowing": False}}
         await manager.send_personal_message(payload, current_user.id)
         await manager.send_personal_message(payload, user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"WebSocket send error in unfollow_user: {e}")
 
     return {"isFollowing": False}
 
