@@ -21,6 +21,12 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 ALLOWED_VIDEO_TYPES = {"video/mp4", "video/webm", "video/quicktime"}
 ALLOWED_STORY_TYPES = ALLOWED_IMAGE_TYPES | ALLOWED_VIDEO_TYPES
 
+# Image resolution constraints
+MIN_IMAGE_WIDTH = 800
+MIN_IMAGE_HEIGHT = 400
+# Maximum allowed dimension (will be downscaled to fit) - accept up to 8192
+MAX_IMAGE_DIMENSION = 8192
+
 from io import BytesIO
 import base64
 
