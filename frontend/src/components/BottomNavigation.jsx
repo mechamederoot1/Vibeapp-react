@@ -56,7 +56,7 @@ const BottomNavigation = () => {
 
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
-    { path: '/create', icon: PlusCircle, label: 'Criar' },
+    { path: '/friends', icon: Users, label: 'Amigos' },
     {
       path: '/messages',
       icon: MessageCircle,
