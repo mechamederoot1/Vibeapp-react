@@ -554,6 +554,21 @@ const Profile = () => {
           })
         }
 
+        // If viewing own profile, also fetch pending friend requests counts
+        if (own) {
+          try {
+            const [recvRes, sentRes] = await Promise.all([
+              friendshipsAPI.getReceivedRequests().catch(() => ({ data: [] })),
+              friendshipsAPI.getSentRequests().catch(() => ({ data: [] }))
+            ])
+            setPendingReceivedCount((recvRes.data || []).length)
+            setPendingSentCount((sentRes.data || []).length)
+          } catch (e) {
+            setPendingReceivedCount(0)
+            setPendingSentCount(0)
+          }
+        }
+
         // Posts (paged)
         if (mapped.posts?.data) {
           const first = mapped.posts.data.posts || []
