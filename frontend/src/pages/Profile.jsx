@@ -280,7 +280,7 @@ const Profile = () => {
               avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
               isVerified: true
             },
-            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! ������',
+            content: 'Reflexão da semana: Como designer, sempre busco entender não apenas o que o usuário precisa, mas também o que ele sente. Empatia é a base de um bom design! ��������',
             createdAt: '2024-01-13T09:15:00Z',
             likes: 73,
             comments: 18,
@@ -1882,7 +1882,7 @@ const Profile = () => {
               : 'text-gray-500'
           }`}
         >
-          <Bookmark size={20} />
+          <Heart size={20} />
         </button>
 
         {/* View Mode Toggle */}
