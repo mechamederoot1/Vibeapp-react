@@ -120,14 +120,20 @@ async def create_story(
 
         # If mediaUrl is a data URL, store as blob
         dataurl_pattern = re.compile(r'data:(?P<mime>[-\w+/]+(?:;[-\w=]+)?)?(;base64)?,(?P<data>.*)')
-        if story_data.mediaUrl and story_data.mediaUrl.startswith('data:'):
-            m = dataurl_pattern.match(story_data.mediaUrl)
-            if m:
-                mime = m.group('mime') or 'application/octet-stream'
-                data = base64.b64decode(m.group('data'))
-                new_story.media_blob = data
-                new_story.media_mime = mime
-                new_story.media_url = f"/api/media/stories/{new_story.id}"
+        if story_data.mediaUrl:
+            if story_data.mediaUrl.startswith('data:'):
+                m = dataurl_pattern.match(story_data.mediaUrl)
+                if m:
+                    mime = m.group('mime') or 'application/octet-stream'
+                    data = base64.b64decode(m.group('data'))
+                    new_story.media_blob = data
+                    new_story.media_mime = mime
+                    new_story.media_url = f"/api/media/stories/{new_story.id}"
+                    db.commit()
+                    db.refresh(new_story)
+            else:
+                # If mediaUrl is a hosted URL (not data URI), persist it directly
+                new_story.media_url = story_data.mediaUrl
                 db.commit()
                 db.refresh(new_story)
 
