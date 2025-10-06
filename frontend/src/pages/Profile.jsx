@@ -926,10 +926,38 @@ const Profile = () => {
       try {
         const highlightsRes = await highlightsAPI.get()
         const remoteHighlights = highlightsRes.data.highlights || []
-        const normalized = remoteHighlights.map(h => ({
+        let normalized = remoteHighlights.map(h => ({
           ...h,
-          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl
+          coverImageUrl: h.coverImageUrl || h.cover_image_url || h.coverImage || h.cover_image || h.cover || h.coverImageUrl,
+          coverStoryId: h.coverStoryId || h.cover_story_id || h.cover_story || h.coverStoryId
         }))
+
+        // For highlights missing a cover image but with a coverStoryId, fetch the story to derive media URL
+        const needFetch = normalized.filter(h => (!h.coverImageUrl) && h.coverStoryId)
+        if (needFetch.length > 0) {
+          try {
+            const fetches = await Promise.allSettled(needFetch.map(async (h) => {
+              try {
+                const res = await storiesAPI.getStory(h.coverStoryId)
+                const s = res.data || res.data?.story || {}
+                const mediaUrl = s.mediaUrl || s.media_url || s.imageUrl || s.image_url || s.media || null
+                return { id: h.id, coverImageUrl: mediaUrl }
+              } catch (e) {
+                return null
+              }
+            }))
+
+            const coverMap = {}
+            fetches.forEach(r => {
+              if (r.status === 'fulfilled' && r.value) coverMap[r.value.id] = r.value.coverImageUrl
+            })
+
+            normalized = normalized.map(h => ({ ...h, coverImageUrl: h.coverImageUrl || coverMap[h.id] || null }))
+          } catch (e) {
+            console.warn('Falha ao buscar capas das stories:', e)
+          }
+        }
+
         setHighlights(normalized)
       } catch (reloadErr) {
         console.error('Erro ao recarregar destaques:', reloadErr)
