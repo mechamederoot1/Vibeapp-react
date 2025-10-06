@@ -90,6 +90,8 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
     onStatusChange?.(userId, 'none')
     try {
       await friendshipsAPI.removeFriend(userId)
+      // notify other parts of the app to refresh friends list
+      try { window.dispatchEvent(new CustomEvent('vibe:friends:changed')) } catch(e){}
       await refreshStatusSafe(400)
     } catch (error) {
       console.error('Erro ao remover amigo:', error)
@@ -190,6 +192,8 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
             try {
               // Enviar pedido inverso para acionar auto-aceite no backend
               await friendshipsAPI.sendFriendRequest(userId)
+              // after responding we may now be friends — notify listeners
+              try { window.dispatchEvent(new CustomEvent('vibe:friends:changed')) } catch(e){}
               await refreshStatusSafe(400)
             } catch (e) {
               console.error('Erro ao aceitar pedido:', e)
@@ -240,6 +244,8 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
         // Fallback ao auto-aceite via envio inverso
         await friendshipsAPI.sendFriendRequest(userId)
       }
+      // notify other parts of the app to refresh friends list
+      try { window.dispatchEvent(new CustomEvent('vibe:friends:changed')) } catch(e){}
       await refreshStatusSafe(300)
     } catch (e) {
       console.error('Erro ao aceitar pedido:', e)
