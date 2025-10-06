@@ -98,6 +98,7 @@ const Profile = () => {
   const [showCoverViewer, setShowCoverViewer] = useState(false)
   const [showPostModal, setShowPostModal] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+  const [showTestimonialsModal, setShowTestimonialsModal] = useState(false)
 
   // Estados para informações pessoais
   const [showPersonalInfoModal, setShowPersonalInfoModal] = useState(false)
