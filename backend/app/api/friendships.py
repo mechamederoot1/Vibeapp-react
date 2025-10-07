@@ -41,6 +41,8 @@ class FriendWithUser(BaseModel):
     user_info: UserBasicInfo
     mutual_friends_count: int = 0
 
+    model_config = ConfigDict(from_attributes=True)
+
 # Função helper para verificar se existe amizade
 def get_friendship_between_users(db: Session, user1_id: int, user2_id: int) -> Optional[Friendship]:
     return db.query(Friendship).filter(
