@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import FriendshipButton from '../components/FriendshipButton'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Friends = () => {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
+  const { lastMessage } = useWebSocket()
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,33 +22,35 @@ const Friends = () => {
     if (currentUser?.id) {
       loadData()
     }
-  }, [currentUser?.id, activeTab])
+  }, [currentUser?.id])
 
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
     const onFriendsChanged = () => {
-      // Re-load all relevant data so tabs and counts stay in sync
       if (currentUser?.id) {
-        loadData()
-        // Also refresh friends list explicitly in case UI relies on it
         loadFriends()
         loadRequests()
       }
     }
     window.addEventListener('vibe:friends:changed', onFriendsChanged)
     return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
-  }, [activeTab, currentUser?.id])
+  }, [currentUser?.id])
+
+  // Real-time updates for requests via WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+    const t = lastMessage.type || lastMessage.normalizedType
+    if (t === 'friendship_update' || t === 'notification') {
+      loadRequests()
+    }
+  }, [lastMessage])
 
   const loadData = async () => {
     setLoading(true)
     setError('')
 
     try {
-      if (activeTab === 'friends') {
-        await loadFriends()
-      } else if (activeTab === 'requests') {
-        await loadRequests()
-      }
+      await Promise.all([loadFriends(), loadRequests()])
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       setError('Erro ao carregar dados. Tente novamente.')
@@ -67,14 +71,20 @@ const Friends = () => {
 
   const loadRequests = async () => {
     try {
-      const [receivedRes, sentRes] = await Promise.all([
+      const [recRes, sentRes] = await Promise.allSettled([
         friendshipsAPI.getReceivedRequests(),
         friendshipsAPI.getSentRequests()
       ])
-      setReceivedRequests(receivedRes.data || [])
-      setSentRequests(sentRes.data || [])
+      const recOk = recRes.status === 'fulfilled' && Array.isArray(recRes.value?.data)
+      const sentOk = sentRes.status === 'fulfilled' && Array.isArray(sentRes.value?.data)
+      setReceivedRequests(recOk ? recRes.value.data : [])
+      setSentRequests(sentOk ? sentRes.value.data : [])
+      if (!recOk && !sentOk) {
+        setError('Não foi possível carregar pedidos de amizade agora.')
+      }
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error)
+      setError('Não foi possível carregar pedidos de amizade agora.')
       setReceivedRequests([])
       setSentRequests([])
     }
@@ -236,6 +246,15 @@ const Friends = () => {
       )
     }
   }
+
+  // Polling fallback: refresh requests periodically in case WS is blocked
+  useEffect(() => {
+    if (!currentUser?.id) return
+    const id = setInterval(() => {
+      loadRequests()
+    }, 10000)
+    return () => clearInterval(id)
+  }, [currentUser?.id])
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

@@ -35,9 +35,17 @@ export const useWebSocket = () => {
   const pingIntervalRef = useRef(null);
 
   const connect = useCallback(() => {
-    if (!token || wsRef.current?.readyState === WebSocket.OPEN) {
-      return;
-    }
+    if (!token) return;
+
+    // Reuse global connection if available
+    try {
+      const g = typeof window !== 'undefined' ? window.__vibeWS : null
+      if (g && (g.readyState === WebSocket.OPEN || g.readyState === WebSocket.CONNECTING)) {
+        wsRef.current = g
+        setIsConnected(g.readyState === WebSocket.OPEN)
+        return
+      }
+    } catch(_) {}
 
     try {
       const getWsUrl = () => {
@@ -59,10 +67,14 @@ export const useWebSocket = () => {
       const wsUrl = getWsUrl();
       console.log('🔌 Conectando WebSocket...', wsUrl);
 
+      // Mark as connecting globally to avoid duplicates
+      try { if (typeof window !== 'undefined') window.__vibeWSConnecting = true } catch(_){}
       wsRef.current = new WebSocket(wsUrl);
+      try { if (typeof window !== 'undefined') window.__vibeWS = wsRef.current } catch(_){}
 
       wsRef.current.onopen = () => {
         console.log('✅ WebSocket conectado!');
+        try { if (typeof window !== 'undefined') window.__vibeWSConnecting = false } catch(_){}
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
         
@@ -81,6 +93,7 @@ export const useWebSocket = () => {
           const enhancedMessage = { ...message, normalizedType };
           console.log('📨 Mensagem WebSocket recebida:', enhancedMessage);
           setLastMessage(enhancedMessage);
+          try { window.dispatchEvent(new CustomEvent('vibe:ws:message', { detail: enhancedMessage })) } catch(_){}
 
           // If friendship update, notify other parts of the app to refresh friends lists
           try {
@@ -106,7 +119,8 @@ export const useWebSocket = () => {
       wsRef.current.onclose = (event) => {
         console.log('🔌 WebSocket desconectado:', event.code, event.reason);
         setIsConnected(false);
-        
+        try { if (typeof window !== 'undefined') window.__vibeWSConnecting = false } catch(_){}
+
         if (pingIntervalRef.current) {
           clearInterval(pingIntervalRef.current);
           pingIntervalRef.current = null;
@@ -116,7 +130,7 @@ export const useWebSocket = () => {
         if (event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
           console.log(`🔄 Tentativa de reconexão ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts} em ${delay}ms`);
-          
+
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connect();
@@ -144,9 +158,20 @@ export const useWebSocket = () => {
       pingIntervalRef.current = null;
     }
 
+    try {
+      if (typeof window !== 'undefined') {
+        window.__vibeWSUsers = Math.max(0, (window.__vibeWSUsers || 1) - 1)
+        if (window.__vibeWSUsers > 0) {
+          // other listeners still active; don't close shared WS
+          return
+        }
+      }
+    } catch(_) {}
+
     if (wsRef.current) {
-      wsRef.current.close(1000, 'Desconexão intencional');
+      try { wsRef.current.close(1000, 'Desconexão intencional'); } catch(_){}
       wsRef.current = null;
+      try { if (typeof window !== 'undefined') window.__vibeWS = null } catch(_){ }
     }
 
     setIsConnected(false);
@@ -164,10 +189,17 @@ export const useWebSocket = () => {
   // Conectar quando o hook for montado e tivermos token
   useEffect(() => {
     if (token) {
+      try { if (typeof window !== 'undefined') window.__vibeWSUsers = (window.__vibeWSUsers || 0) + 1 } catch(_){}
       connect();
     }
 
+    const onGlobal = (e) => {
+      setLastMessage(e.detail)
+    }
+    try { window.addEventListener('vibe:ws:message', onGlobal) } catch(_){}
+
     return () => {
+      try { window.removeEventListener('vibe:ws:message', onGlobal) } catch(_){}
       disconnect();
     };
   }, [token, connect, disconnect]);

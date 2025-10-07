@@ -100,6 +100,14 @@ const Header = ({ onOpenPostModal }) => {
     loadUnreadCounts()
   }, [loadUnreadCounts])
 
+  // Polling fallback for unread counts (WS may be blocked on some networks)
+  useEffect(() => {
+    const id = setInterval(() => {
+      loadUnreadCounts()
+    }, 15000)
+    return () => clearInterval(id)
+  }, [loadUnreadCounts])
+
   // Handle outside click/touch to close search
   useEffect(() => {
     const onOutside = (e) => {

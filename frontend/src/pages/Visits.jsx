@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Eye, MessageCircle, ChevronLeft, Clock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import FriendshipButton from '../components/FriendshipButton'
 import { useAuth } from '../contexts/AuthContext'
 import { usersAPI } from '../services/api'
 import useWebSocket from '../hooks/useWebSocket'
@@ -173,11 +172,6 @@ const Visits = () => {
                 <button className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors">
                   <MessageCircle size={18} />
                 </button>
-
-                <FriendshipButton
-                  userId={visitor.id}
-                  username={visitor.username}
-                />
               </div>
             </div>
           </div>
