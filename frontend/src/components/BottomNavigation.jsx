@@ -83,6 +83,15 @@ const BottomNavigation = () => {
     loadFriendCounts()
   }, [user?.id])
 
+  // Polling fallback in case WS is blocked
+  useEffect(() => {
+    if (!user?.id) return
+    const id = setInterval(() => {
+      loadFriendCounts()
+    }, 10000)
+    return () => clearInterval(id)
+  }, [user?.id])
+
   const navItems = [
     { path: '/', icon: Home, label: 'Feed' },
     { path: '/friends', icon: Users, label: 'Amigos', badge: friendBadge },
