@@ -339,7 +339,7 @@ async def accept_friend_request(
     except Exception as e:
         print(f"WebSocket send error in accept_friend_request: {e}")
 
-    return friendship
+    return FriendshipResponse.model_validate(friendship, from_attributes=True)
 
 @router.put("/requests/{friendship_id}/reject")
 async def reject_friend_request(
