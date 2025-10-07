@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import FriendshipButton from '../components/FriendshipButton'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Friends = () => {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
+  const { lastMessage } = useWebSocket()
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,6 +38,15 @@ const Friends = () => {
     window.addEventListener('vibe:friends:changed', onFriendsChanged)
     return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
   }, [activeTab, currentUser?.id])
+
+  // Real-time updates for requests via WebSocket
+  useEffect(() => {
+    if (!lastMessage) return
+    const t = lastMessage.type || lastMessage.normalizedType
+    if (t === 'friendship_update' || t === 'notification') {
+      loadRequests()
+    }
+  }, [lastMessage])
 
   const loadData = async () => {
     setLoading(true)
