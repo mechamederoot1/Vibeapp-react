@@ -3,9 +3,11 @@ import { UserPlus, UserCheck, Clock, UserX } from 'lucide-react'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import useWebSocket from '../hooks/useWebSocket'
+import { useNavigate } from 'react-router-dom'
 
-const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) => {
+const FriendshipButton = ({ userId, username, onStatusChange, className = '', showDecisionButtons = true }) => {
   const { user: currentUser } = useAuth()
+  const navigate = useNavigate()
   const [status, setStatus] = useState('none') // none, request_sent, request_received, friends, self
   const [loading, setLoading] = useState(false)
   const { lastMessage } = useWebSocket()
@@ -286,6 +288,16 @@ const FriendshipButton = ({ userId, username, onStatusChange, className = '' }) 
   const Icon = config.icon
 
   if (status === 'request_received') {
+    if (!showDecisionButtons) {
+      return (
+        <button
+          onClick={() => navigate('/friends')}
+          className={`px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 hover:bg-yellow-200 ${className}`}
+        >
+          Pedido pendente
+        </button>
+      )
+    }
     return (
       <div className={`flex items-center gap-2 ${className}`}>
         <button
