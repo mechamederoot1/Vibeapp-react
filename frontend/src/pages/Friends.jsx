@@ -20,7 +20,7 @@ const Friends = () => {
     if (currentUser?.id) {
       loadData()
     }
-  }, [currentUser?.id, activeTab])
+  }, [currentUser?.id])
 
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
@@ -42,11 +42,7 @@ const Friends = () => {
     setError('')
 
     try {
-      if (activeTab === 'friends') {
-        await loadFriends()
-      } else if (activeTab === 'requests') {
-        await loadRequests()
-      }
+      await Promise.all([loadFriends(), loadRequests()])
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       setError('Erro ao carregar dados. Tente novamente.')
