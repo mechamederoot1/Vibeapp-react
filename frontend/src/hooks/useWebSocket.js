@@ -158,9 +158,20 @@ export const useWebSocket = () => {
       pingIntervalRef.current = null;
     }
 
+    try {
+      if (typeof window !== 'undefined') {
+        window.__vibeWSUsers = Math.max(0, (window.__vibeWSUsers || 1) - 1)
+        if (window.__vibeWSUsers > 0) {
+          // other listeners still active; don't close shared WS
+          return
+        }
+      }
+    } catch(_) {}
+
     if (wsRef.current) {
-      wsRef.current.close(1000, 'Desconexão intencional');
+      try { wsRef.current.close(1000, 'Desconexão intencional'); } catch(_){}
       wsRef.current = null;
+      try { if (typeof window !== 'undefined') window.__vibeWS = null } catch(_){ }
     }
 
     setIsConnected(false);
@@ -178,6 +189,7 @@ export const useWebSocket = () => {
   // Conectar quando o hook for montado e tivermos token
   useEffect(() => {
     if (token) {
+      try { if (typeof window !== 'undefined') window.__vibeWSUsers = (window.__vibeWSUsers || 0) + 1 } catch(_){}
       connect();
     }
 
