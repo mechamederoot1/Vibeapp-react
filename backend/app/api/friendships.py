@@ -9,7 +9,7 @@ from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.notification import Notification
 from .auth import get_current_user
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
 
