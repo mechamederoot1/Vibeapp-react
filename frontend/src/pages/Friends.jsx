@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import FriendshipButton from '../components/FriendshipButton'
+import useWebSocket from '../hooks/useWebSocket'
 
 const Friends = () => {
   const navigate = useNavigate()
@@ -15,6 +16,7 @@ const Friends = () => {
   const [receivedRequests, setReceivedRequests] = useState([])
   const [sentRequests, setSentRequests] = useState([])
   const [error, setError] = useState('')
+  const { lastMessage } = useWebSocket()
 
   useEffect(() => {
     if (currentUser?.id) {
@@ -114,6 +116,32 @@ const Friends = () => {
   const handleProfileClick = (username) => {
     navigate(`/profile/id/${username}`)
   }
+
+  // Atualizar pela chegada de eventos WebSocket relevantes
+  useEffect(() => {
+    if (!lastMessage) return
+    const isFriendEvent = lastMessage.type === 'friendship_update' ||
+      (lastMessage.type === 'notification' && (lastMessage.data?.type === 'friend_request' || lastMessage.data?.type === 'friend_accepted'))
+    if (!isFriendEvent) return
+    if (activeTab === 'friends') {
+      loadFriends()
+    } else if (activeTab === 'requests') {
+      loadRequests()
+    }
+  }, [lastMessage, activeTab])
+
+  // Polling a cada 15s para garantir atualização mesmo sem WS
+  useEffect(() => {
+    if (!currentUser?.id) return
+    const iv = setInterval(() => {
+      if (activeTab === 'friends') {
+        loadFriends()
+      } else if (activeTab === 'requests') {
+        loadRequests()
+      }
+    }, 15000)
+    return () => clearInterval(iv)
+  }, [activeTab, currentUser?.id])
 
   const tabs = [
     {

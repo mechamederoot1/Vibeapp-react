@@ -77,10 +77,15 @@ const BottomNavigation = () => {
     }
   }, [lastMessage])
 
-  // Carregar contadores ao montar
+  // Carregar contadores ao montar e fazer polling para robustez mesmo sem WS
   useEffect(() => {
     loadUnreadCounts()
     loadFriendCounts()
+
+    const iv = setInterval(() => {
+      loadFriendCounts()
+    }, 15000)
+    return () => clearInterval(iv)
   }, [user?.id])
 
   const navItems = [

@@ -9,7 +9,7 @@ from ..models.user import User
 from ..models.friendship import Friendship
 from ..models.notification import Notification
 from .auth import get_current_user
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
 
@@ -25,23 +25,23 @@ class FriendshipResponse(BaseModel):
     initiated_by: int
     created_at: datetime
     updated_at: Optional[datetime]
-    
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBasicInfo(BaseModel):
     id: int
     username: str
     display_name: Optional[str]
     avatar_url: Optional[str]
-    
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class FriendWithUser(BaseModel):
     friendship: FriendshipResponse
     user_info: UserBasicInfo
     mutual_friends_count: int = 0
+
+    model_config = ConfigDict(from_attributes=True)
 
 # Função helper para verificar se existe amizade
 def get_friendship_between_users(db: Session, user1_id: int, user2_id: int) -> Optional[Friendship]:
@@ -115,7 +115,7 @@ async def send_friend_request(
         if existing_friendship.status == "pending":
             # Se já existe um pedido enviado por mim, tornar idempotente
             if getattr(existing_friendship, 'user_id', None) == current_user.id and getattr(existing_friendship, 'friend_id', None) == request.friend_id:
-                return existing_friendship
+                return FriendshipResponse.model_validate(existing_friendship, from_attributes=True)
             # Se existe um pedido inverso (o outro usuário me enviou), aceitar automaticamente
             if getattr(existing_friendship, 'user_id', None) == request.friend_id and getattr(existing_friendship, 'friend_id', None) == current_user.id:
                 existing_friendship.status = "accepted"
@@ -155,7 +155,7 @@ async def send_friend_request(
                 except Exception:
                     pass
 
-                return existing_friendship
+                return FriendshipResponse.model_validate(existing_friendship, from_attributes=True)
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -218,7 +218,7 @@ async def send_friend_request(
     except Exception as e:
         print(f"WebSocket send error in send_friend_request: {e}")
 
-    return new_friendship
+    return FriendshipResponse.model_validate(new_friendship, from_attributes=True)
 
 @router.get("/requests/received", response_model=List[FriendWithUser])
 def get_received_friend_requests(
@@ -239,7 +239,7 @@ def get_received_friend_requests(
         mutual_count = count_mutual_friends(db, current_user.id, fid) if fid else 0
 
         result.append(FriendWithUser(
-            friendship=friendship,
+            friendship=FriendshipResponse.model_validate(friendship, from_attributes=True),
             user_info=UserBasicInfo(
                 id=requester.id if requester else None,
                 username=requester.username if requester else '',
@@ -270,7 +270,7 @@ def get_sent_friend_requests(
         mutual_count = count_mutual_friends(db, current_user.id, fid) if fid else 0
 
         result.append(FriendWithUser(
-            friendship=friendship,
+            friendship=FriendshipResponse.model_validate(friendship, from_attributes=True),
             user_info=UserBasicInfo(
                 id=target_user.id if target_user else None,
                 username=target_user.username if target_user else '',
@@ -339,7 +339,7 @@ async def accept_friend_request(
     except Exception as e:
         print(f"WebSocket send error in accept_friend_request: {e}")
 
-    return friendship
+    return FriendshipResponse.model_validate(friendship, from_attributes=True)
 
 @router.put("/requests/{friendship_id}/reject")
 async def reject_friend_request(
@@ -435,7 +435,7 @@ def get_user_friends(
             mutual_count = count_mutual_friends(db, current_user.id, friend_id)
 
             result.append(FriendWithUser(
-                friendship=friendship,
+                friendship=FriendshipResponse.model_validate(friendship, from_attributes=True),
                 user_info=UserBasicInfo(
                     id=friend_user.id,
                     username=friend_user.username,
