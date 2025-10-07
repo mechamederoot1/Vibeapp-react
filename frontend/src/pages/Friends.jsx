@@ -27,17 +27,14 @@ const Friends = () => {
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
     const onFriendsChanged = () => {
-      // Re-load all relevant data so tabs and counts stay in sync
       if (currentUser?.id) {
-        loadData()
-        // Also refresh friends list explicitly in case UI relies on it
         loadFriends()
         loadRequests()
       }
     }
     window.addEventListener('vibe:friends:changed', onFriendsChanged)
     return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
-  }, [activeTab, currentUser?.id])
+  }, [currentUser?.id])
 
   // Real-time updates for requests via WebSocket
   useEffect(() => {
@@ -78,10 +75,11 @@ const Friends = () => {
         friendshipsAPI.getReceivedRequests(),
         friendshipsAPI.getSentRequests()
       ])
-      setReceivedRequests(receivedRes.data || [])
-      setSentRequests(sentRes.data || [])
+      setReceivedRequests(Array.isArray(receivedRes.data) ? receivedRes.data : [])
+      setSentRequests(Array.isArray(sentRes.data) ? sentRes.data : [])
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error)
+      setError('Não foi possível carregar pedidos de amizade agora.')
       setReceivedRequests([])
       setSentRequests([])
     }
@@ -243,6 +241,15 @@ const Friends = () => {
       )
     }
   }
+
+  // Polling fallback: refresh requests periodically in case WS is blocked
+  useEffect(() => {
+    if (!currentUser?.id) return
+    const id = setInterval(() => {
+      loadRequests()
+    }, 10000)
+    return () => clearInterval(id)
+  }, [currentUser?.id])
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
