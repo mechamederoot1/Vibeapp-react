@@ -155,7 +155,7 @@ async def send_friend_request(
                 except Exception:
                     pass
 
-                return existing_friendship
+                return FriendshipResponse.model_validate(existing_friendship, from_attributes=True)
 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
