@@ -218,7 +218,7 @@ async def send_friend_request(
     except Exception as e:
         print(f"WebSocket send error in send_friend_request: {e}")
 
-    return new_friendship
+    return FriendshipResponse.model_validate(new_friendship, from_attributes=True)
 
 @router.get("/requests/received", response_model=List[FriendWithUser])
 def get_received_friend_requests(
