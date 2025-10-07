@@ -435,7 +435,7 @@ def get_user_friends(
             mutual_count = count_mutual_friends(db, current_user.id, friend_id)
 
             result.append(FriendWithUser(
-                friendship=friendship,
+                friendship=FriendshipResponse.model_validate(friendship, from_attributes=True),
                 user_info=UserBasicInfo(
                     id=friend_user.id,
                     username=friend_user.username,
