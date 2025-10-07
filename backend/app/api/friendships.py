@@ -59,31 +59,32 @@ def are_friends(db: Session, user1_id: int, user2_id: int) -> bool:
 
 # Função helper para contar amigos em comum
 def count_mutual_friends(db: Session, user1_id: int, user2_id: int) -> int:
-    user1_friends = db.query(Friendship.friend_id).filter(
-        Friendship.user_id == user1_id, 
+    # Label the selected column uniformly across the union to avoid AttributeError
+    user1_friends = db.query(Friendship.friend_id.label('friend_id')).filter(
+        Friendship.user_id == user1_id,
         Friendship.status == "accepted"
     ).union(
-        db.query(Friendship.user_id).filter(
-            Friendship.friend_id == user1_id, 
+        db.query(Friendship.user_id.label('friend_id')).filter(
+            Friendship.friend_id == user1_id,
             Friendship.status == "accepted"
         )
     ).subquery()
-    
-    user2_friends = db.query(Friendship.friend_id).filter(
-        Friendship.user_id == user2_id, 
+
+    user2_friends = db.query(Friendship.friend_id.label('friend_id')).filter(
+        Friendship.user_id == user2_id,
         Friendship.status == "accepted"
     ).union(
-        db.query(Friendship.user_id).filter(
-            Friendship.friend_id == user2_id, 
+        db.query(Friendship.user_id.label('friend_id')).filter(
+            Friendship.friend_id == user2_id,
             Friendship.status == "accepted"
         )
     ).subquery()
-    
+
     # Contar interseção
     mutual_count = db.query(user1_friends.c.friend_id).join(
         user2_friends, user1_friends.c.friend_id == user2_friends.c.friend_id
     ).count()
-    
+
     return mutual_count
 
 @router.post("/requests", response_model=FriendshipResponse)
