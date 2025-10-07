@@ -33,9 +33,8 @@ class UserBasicInfo(BaseModel):
     username: str
     display_name: Optional[str]
     avatar_url: Optional[str]
-    
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class FriendWithUser(BaseModel):
     friendship: FriendshipResponse
