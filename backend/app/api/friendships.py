@@ -239,7 +239,7 @@ def get_received_friend_requests(
         mutual_count = count_mutual_friends(db, current_user.id, fid) if fid else 0
 
         result.append(FriendWithUser(
-            friendship=friendship,
+            friendship=FriendshipResponse.model_validate(friendship, from_attributes=True),
             user_info=UserBasicInfo(
                 id=requester.id if requester else None,
                 username=requester.username if requester else '',
