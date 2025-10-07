@@ -115,7 +115,7 @@ async def send_friend_request(
         if existing_friendship.status == "pending":
             # Se já existe um pedido enviado por mim, tornar idempotente
             if getattr(existing_friendship, 'user_id', None) == current_user.id and getattr(existing_friendship, 'friend_id', None) == request.friend_id:
-                return existing_friendship
+                return FriendshipResponse.model_validate(existing_friendship, from_attributes=True)
             # Se existe um pedido inverso (o outro usuário me enviou), aceitar automaticamente
             if getattr(existing_friendship, 'user_id', None) == request.friend_id and getattr(existing_friendship, 'friend_id', None) == current_user.id:
                 existing_friendship.status = "accepted"
