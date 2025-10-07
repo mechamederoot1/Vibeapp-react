@@ -177,6 +177,7 @@ const Visits = () => {
                 <FriendshipButton
                   userId={visitor.id}
                   username={visitor.username}
+                  showDecisionButtons={false}
                 />
               </div>
             </div>
