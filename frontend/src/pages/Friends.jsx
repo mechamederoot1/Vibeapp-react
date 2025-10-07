@@ -71,12 +71,17 @@ const Friends = () => {
 
   const loadRequests = async () => {
     try {
-      const [receivedRes, sentRes] = await Promise.all([
+      const [recRes, sentRes] = await Promise.allSettled([
         friendshipsAPI.getReceivedRequests(),
         friendshipsAPI.getSentRequests()
       ])
-      setReceivedRequests(Array.isArray(receivedRes.data) ? receivedRes.data : [])
-      setSentRequests(Array.isArray(sentRes.data) ? sentRes.data : [])
+      const recOk = recRes.status === 'fulfilled' && Array.isArray(recRes.value?.data)
+      const sentOk = sentRes.status === 'fulfilled' && Array.isArray(sentRes.value?.data)
+      setReceivedRequests(recOk ? recRes.value.data : [])
+      setSentRequests(sentOk ? sentRes.value.data : [])
+      if (!recOk && !sentOk) {
+        setError('Não foi possível carregar pedidos de amizade agora.')
+      }
     } catch (error) {
       console.error('Erro ao carregar pedidos:', error)
       setError('Não foi possível carregar pedidos de amizade agora.')
