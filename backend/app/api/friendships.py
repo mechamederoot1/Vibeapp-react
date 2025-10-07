@@ -25,9 +25,8 @@ class FriendshipResponse(BaseModel):
     initiated_by: int
     created_at: datetime
     updated_at: Optional[datetime]
-    
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class UserBasicInfo(BaseModel):
     id: int
