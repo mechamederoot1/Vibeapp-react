@@ -63,22 +63,19 @@ def are_friends(db: Session, user1_id: int, user2_id: int) -> bool:
 
 
 def count_mutual_friends(db: Session, user1_id: int, user2_id: int) -> int:
-    # Simple implementation: count accepted friendships where both share the same third-party friend id
-    user1_friends = db.query(Friendship.friend_id).filter(Friendship.user_id == user1_id, Friendship.status == 'accepted')
-    user1_friends_union = user1_friends.union(
-        db.query(Friendship.user_id).filter(Friendship.friend_id == user1_id, Friendship.status == 'accepted')
-    ).subquery()
-
-    user2_friends = db.query(Friendship.friend_id).filter(Friendship.user_id == user2_id, Friendship.status == 'accepted')
-    user2_friends_union = user2_friends.union(
-        db.query(Friendship.user_id).filter(Friendship.friend_id == user2_id, Friendship.status == 'accepted')
-    ).subquery()
-
+    """Count mutual accepted friends between two users using simple sets to avoid SQL subtleties."""
     try:
-        mutual_count = db.query(user1_friends_union.c.friend_id).join(
-            user2_friends_union, user1_friends_union.c.friend_id == user2_friends_union.c.friend_id
-        ).count()
-        return mutual_count
+        # Friends where user1 is the initiator
+        f1 = db.query(Friendship.friend_id).filter(Friendship.user_id == user1_id, Friendship.status == 'accepted').all()
+        # Friends where user1 is the recipient
+        f1b = db.query(Friendship.user_id).filter(Friendship.friend_id == user1_id, Friendship.status == 'accepted').all()
+        ids1 = {r[0] for r in (f1 + f1b) if r and r[0] is not None}
+
+        f2 = db.query(Friendship.friend_id).filter(Friendship.user_id == user2_id, Friendship.status == 'accepted').all()
+        f2b = db.query(Friendship.user_id).filter(Friendship.friend_id == user2_id, Friendship.status == 'accepted').all()
+        ids2 = {r[0] for r in (f2 + f2b) if r and r[0] is not None}
+
+        return len(ids1.intersection(ids2))
     except Exception:
         return 0
 
