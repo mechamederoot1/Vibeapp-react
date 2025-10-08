@@ -18,10 +18,10 @@ const defaultText = () => ({
 
 const colorPalette = ['#000000','#ffffff','#ff3b30','#ff9500','#ffcc00','#34c759','#0a84ff','#5856d6']
 
-export default function StoryCreator({ initialOpen = false, onClose = () => {} }) {
+export default function StoryCreator({ isOpen = false, onClose = () => {}, onStoryCreate = null }) {
   const fileInputRef = useRef(null)
   const canvasRef = useRef(null)
-  const [open, setOpen] = useState(initialOpen)
+  const open = !!isOpen
   const [stage, setStage] = useState('picker') // picker, editor
   const [imageDataUrl, setImageDataUrl] = useState(null)
   const [textItems, setTextItems] = useState([])
