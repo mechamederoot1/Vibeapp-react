@@ -3,7 +3,7 @@ import { ArrowLeft, Camera as CameraIcon, Image, MapPin, Users, Smile, Video, Ty
 import { useNavigate } from 'react-router-dom'
 import Camera from '../components/Camera'
 import { useLocation } from '../hooks/useLocation'
-import StoryCreator from '../components/StoryCreator'
+import StoryEditor from '../components/StoryEditor'
 
 const CreatePost = () => {
   const navigate = useNavigate()
