@@ -33,14 +33,23 @@ export default function StoryCreator({ isOpen = false, onClose = () => {}, onSto
 
   useEffect(() => {
     if (open && stage === 'editor') renderCanvas()
-  }, [imageDataUrl, textItems, stage])
+  }, [imageDataUrl, textItems, stage, open])
+
+  // Auto open gallery when modal opens (native-like behavior)
+  useEffect(() => {
+    if (open && !imageDataUrl) {
+      setTimeout(() => {
+        fileInputRef.current?.click()
+      }, 80)
+    }
+  }, [open, imageDataUrl])
+
 
   const openPicker = () => {
     if (fileInputRef.current) fileInputRef.current.click()
   }
 
   const closeAll = () => {
-    setOpen(false)
     setStage('picker')
     setImageDataUrl(null)
     setTextItems([])
@@ -224,6 +233,7 @@ export default function StoryCreator({ isOpen = false, onClose = () => {}, onSto
       try {
         const resp = await uploadsAPI.uploadStoryMedia(blob)
         console.log('Story uploaded:', resp)
+        try { onStoryCreate && onStoryCreate(resp.data) } catch(e){}
       } catch (e) {
         console.error('Upload failed:', e)
       }
@@ -236,7 +246,7 @@ export default function StoryCreator({ isOpen = false, onClose = () => {}, onSto
     }
   }
 
-  if (!open && !initialOpen) return null
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center p-4">
@@ -258,7 +268,6 @@ export default function StoryCreator({ isOpen = false, onClose = () => {}, onSto
             <div className="text-center p-6">
               <p className="mb-4">Selecione uma imagem para seu story</p>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-              <button onClick={openPicker} className="btn-primary">Abrir Galeria</button>
             </div>
           )}
 
