@@ -136,10 +136,11 @@ const CreatePost = () => {
                     <CameraIcon size={20} />
                     <span>Abrir Câmera</span>
                   </button>
-                  <button className="btn-secondary flex items-center space-x-2">
+                  <button onClick={() => setShowStoryCreator(true)} className="btn-secondary flex items-center space-x-2">
                     <Image size={20} />
                     <span>Galeria</span>
                   </button>
+                  {showStoryCreator && <StoryCreator initialOpen={true} onClose={() => setShowStoryCreator(false)} />}
                 </div>
               </div>
             )}
