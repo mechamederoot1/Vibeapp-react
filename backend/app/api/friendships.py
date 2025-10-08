@@ -26,8 +26,7 @@ class FriendshipResponse(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class UserBasicInfo(BaseModel):
     id: int
@@ -35,16 +34,14 @@ class UserBasicInfo(BaseModel):
     display_name: Optional[str] = None
     avatar_url: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class FriendWithUser(BaseModel):
     friendship: FriendshipResponse
     user_info: UserBasicInfo
     mutual_friends_count: int = 0
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 # --- Helpers ---
 
