@@ -52,6 +52,20 @@ const Friends = () => {
       console.error('Erro loadRequests:', e)
       setReceivedRequests([])
       setSentRequests([])
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadRequests()
+      loadFriends()
+    }
+  }, [currentUser?.id])
+
+  useEffect(() => {
+    const onFriendsChanged = () => {
+      if (currentUser?.id) {
+        loadData()
+        loadFriends()
+        loadRequests()
+      }
     }
   }, [currentUser?.id])
 
@@ -172,6 +186,13 @@ const Friends = () => {
       data = [...received, ...sent]
     } else if (activeTab === 'suggestions') {
       data = [{ id: 'suggestions-cta', username: 'explore', display_name: 'Encontrar pessoas', avatar_url: null, type: 'suggestion' }]
+      data = [{
+        id: 'suggestions-cta',
+        username: 'explore',
+        display_name: 'Encontrar pessoas',
+        avatar_url: null,
+        type: 'suggestion'
+      }]
     }
 
     if (searchQuery) {
