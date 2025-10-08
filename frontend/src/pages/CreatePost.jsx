@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import Camera from '../components/Camera'
 import { useLocation } from '../hooks/useLocation'
 import StoryCreator from '../components/StoryCreator'
-import { useState } from 'react'
 
 const CreatePost = () => {
   const navigate = useNavigate()
