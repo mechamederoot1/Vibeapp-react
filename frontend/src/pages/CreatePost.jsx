@@ -3,6 +3,7 @@ import { ArrowLeft, Camera as CameraIcon, Image, MapPin, Users, Smile, Video, Ty
 import { useNavigate } from 'react-router-dom'
 import Camera from '../components/Camera'
 import { useLocation } from '../hooks/useLocation'
+import StoryEditor from '../components/StoryEditor'
 
 const CreatePost = () => {
   const navigate = useNavigate()
@@ -11,6 +12,7 @@ const CreatePost = () => {
   const [capturedImage, setCapturedImage] = useState(null)
   const [caption, setCaption] = useState('')
   const [isLocationEnabled, setIsLocationEnabled] = useState(false)
+  const [showStoryCreator, setShowStoryCreator] = useState(false)
   
   const { location, getCurrentLocation, loading: locationLoading } = useLocation()
 
@@ -136,10 +138,11 @@ const CreatePost = () => {
                     <CameraIcon size={20} />
                     <span>Abrir Câmera</span>
                   </button>
-                  <button className="btn-secondary flex items-center space-x-2">
+                  <button onClick={() => setShowStoryCreator(true)} className="btn-secondary flex items-center space-x-2">
                     <Image size={20} />
                     <span>Galeria</span>
                   </button>
+                  {showStoryCreator && <StoryEditor isOpen={showStoryCreator} onClose={() => setShowStoryCreator(false)} onStoryCreate={(s) => { setShowStoryCreator(false); setCapturedImage(s.mediaUrl || null); }} />}
                 </div>
               </div>
             )}
