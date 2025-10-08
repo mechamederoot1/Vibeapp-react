@@ -44,10 +44,14 @@ const Friends = () => {
         friendshipsAPI.getReceivedRequests(),
         friendshipsAPI.getSentRequests()
       ])
+      console.log('DEBUG: getReceivedRequests response:', receivedRes?.data)
+      console.log('DEBUG: getSentRequests response:', sentRes?.data)
       setReceivedRequests(receivedRes.data || [])
       setSentRequests(sentRes.data || [])
     } catch (e) {
       console.error('Erro loadRequests:', e)
+      setReceivedRequests([])
+      setSentRequests([])
     }
   }, [currentUser?.id])
 
@@ -71,6 +75,7 @@ const Friends = () => {
 
   // Initial load
   useEffect(() => {
+    console.log('DEBUG: Inicializando Friends.loadAllData')
     loadAllData()
   }, [loadAllData])
 
@@ -86,12 +91,14 @@ const Friends = () => {
   // React to websocket events that affect friendship state
   useEffect(() => {
     if (!lastMessage) return
+    console.log('DEBUG: Friends received WS message:', lastMessage)
 
     const isFriendEvent = lastMessage.type === 'friendship_update' ||
       (lastMessage.type === 'notification' && (lastMessage.data?.type === 'friend_request' || lastMessage.data?.type === 'friend_accepted')) ||
       (lastMessage.normalizedType === 'friendship_update')
 
     if (isFriendEvent) {
+      console.log('DEBUG: Friends - WS indicates friend event, reloading')
       // refresh both lists so counters remain correct
       loadAllData()
     }
@@ -100,7 +107,10 @@ const Friends = () => {
   // Polling fallback to keep counters updated even if WS fails
   useEffect(() => {
     if (!currentUser?.id) return
-    const iv = setInterval(() => loadAllData(), 15000)
+    const iv = setInterval(() => {
+      console.log('DEBUG: Polling: Iniciando loadAllData')
+      loadAllData()
+    }, 15000)
     return () => clearInterval(iv)
   }, [currentUser?.id, loadAllData])
 
@@ -174,6 +184,14 @@ const Friends = () => {
   const friendsCount = (friends || []).length
   const requestsCount = (receivedRequests || []).length + (sentRequests || []).length
 
+  // Debug: log data arrays when they change
+  useEffect(() => {
+    console.log('DEBUG: receivedRequests:', receivedRequests)
+    console.log('DEBUG: sentRequests:', sentRequests)
+    console.log('DEBUG: friends:', friends)
+    console.log('DEBUG: activeTab:', activeTab)
+  }, [receivedRequests, sentRequests, friends, activeTab])
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -209,7 +227,7 @@ const Friends = () => {
           {TABS.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => { console.log('DEBUG: Selecionando aba:', tab.key); setActiveTab(tab.key); }}
               className={`flex-1 p-3 text-center font-medium transition-colors ${activeTab === tab.key ? 'border-b-2 border-vibe-blue text-vibe-blue' : 'text-gray-500 hover:text-gray-700'}`}>
               <div className="flex items-center justify-center space-x-2">
                 <span>{tab.label}</span>
