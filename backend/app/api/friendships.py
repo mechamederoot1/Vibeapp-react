@@ -131,7 +131,7 @@ async def send_friend_request(request: FriendshipRequest, current_user: User = D
         if existing.status == 'accepted':
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Vocês já são amigos')
         if existing.status == 'blocked':
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Não é possível enviar pedido de amizade')
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='Não é poss��vel enviar pedido de amizade')
 
     # Create new pending friendship
     new_f = Friendship(user_id=current_user.id, friend_id=target_id, status='pending', initiated_by=current_user.id)
@@ -343,3 +343,12 @@ def get_friendship_status(user_id: int, current_user: User = Depends(get_current
     if f.status == 'blocked':
         return {"status": "blocked"}
     return {"status": "unknown"}
+
+# Helper exported for other modules (like privacy utilities)
+def is_friends(db: Session, user1_id: int, user2_id: int) -> bool:
+    """Verifica se dois usuários são amigos (aceito)"""
+    try:
+        f = get_friendship_between_users(db, user1_id, user2_id)
+        return f is not None and f.status == 'accepted'
+    except Exception:
+        return False
