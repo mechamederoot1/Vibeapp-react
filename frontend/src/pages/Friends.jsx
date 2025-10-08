@@ -52,10 +52,12 @@ const Friends = () => {
     setError('')
 
     try {
-      if (activeTab === 'friends') {
-        await loadFriends()
-      } else if (activeTab === 'requests') {
-        await loadRequests()
+      // Always try to refresh both lists so tabs remain in sync and cached
+      const results = await Promise.allSettled([loadFriends(), loadRequests()])
+
+      const bothFailed = results.every(r => r.status === 'rejected')
+      if (bothFailed) {
+        throw new Error('Falha ao carregar amigos e pedidos')
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
@@ -131,25 +133,20 @@ const Friends = () => {
     const isFriendEvent = lastMessage.type === 'friendship_update' ||
       (lastMessage.type === 'notification' && (lastMessage.data?.type === 'friend_request' || lastMessage.data?.type === 'friend_accepted'))
     if (!isFriendEvent) return
-    if (activeTab === 'friends') {
-      loadFriends()
-    } else if (activeTab === 'requests') {
-      loadRequests()
-    }
-  }, [lastMessage, activeTab])
+    // Refresh both lists to keep counts and UI in sync
+    loadFriends()
+    loadRequests()
+  }, [lastMessage])
 
   // Polling a cada 15s para garantir atualização mesmo sem WS
   useEffect(() => {
     if (!currentUser?.id) return
     const iv = setInterval(() => {
-      if (activeTab === 'friends') {
-        loadFriends()
-      } else if (activeTab === 'requests') {
-        loadRequests()
-      }
+      loadFriends()
+      loadRequests()
     }, 15000)
     return () => clearInterval(iv)
-  }, [activeTab, currentUser?.id])
+  }, [currentUser?.id])
 
   const tabs = [
     {
