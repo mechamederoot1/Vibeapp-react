@@ -17,6 +17,16 @@ const FriendsList = ({ onClose, userId = null }) => {
 
   const targetUserId = userId || currentUser?.id
 
+  // Preload friends and (if self) requests to keep counts updated
+  useEffect(() => {
+    if (targetUserId) {
+      loadFriends()
+      if (targetUserId === currentUser?.id) {
+        loadRequests()
+      }
+    }
+  }, [targetUserId, currentUser?.id])
+
   useEffect(() => {
     if (targetUserId) {
       loadData()
