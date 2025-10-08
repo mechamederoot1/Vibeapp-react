@@ -142,7 +142,7 @@ const CreatePost = () => {
                     <Image size={20} />
                     <span>Galeria</span>
                   </button>
-                  {showStoryCreator && <StoryCreator isOpen={showStoryCreator} onClose={() => setShowStoryCreator(false)} onStoryCreate={(s) => { setShowStoryCreator(false); setCapturedImage(s.mediaUrl || null); }} />}
+                  {showStoryCreator && <StoryEditor isOpen={showStoryCreator} onClose={() => setShowStoryCreator(false)} onStoryCreate={(s) => { setShowStoryCreator(false); setCapturedImage(s.mediaUrl || null); }} />}
                 </div>
               </div>
             )}
