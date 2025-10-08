@@ -1,83 +1,44 @@
-import React, { useState, useEffect } from 'react'
-import { Search, Users, UserPlus, Bell, ChevronLeft, Filter } from 'lucide-react'
+import React, { useEffect, useState, useCallback } from 'react'
+import { Search, Users, Bell, ChevronLeft, Filter, UserPlus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { friendshipsAPI } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
-import FriendshipButton from '../components/FriendshipButton'
 import useWebSocket from '../hooks/useWebSocket'
+import FriendshipButton from '../components/FriendshipButton'
+
+const TABS = [
+  { key: 'friends', label: 'Amigos' },
+  { key: 'requests', label: 'Pedidos' },
+  { key: 'suggestions', label: 'Sugestões' }
+]
 
 const Friends = () => {
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
+  const { lastMessage } = useWebSocket()
+
   const [activeTab, setActiveTab] = useState('friends')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
   const [friends, setFriends] = useState([])
   const [receivedRequests, setReceivedRequests] = useState([])
   const [sentRequests, setSentRequests] = useState([])
-  const [error, setError] = useState('')
-  const { lastMessage } = useWebSocket()
 
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadData()
-    }
-  }, [currentUser?.id, activeTab])
-
-  // Preload friends and requests on mount/when user changes so tab counts are correct
-  useEffect(() => {
-    if (currentUser?.id) {
-      loadFriends()
-      loadRequests()
+  const loadFriends = useCallback(async () => {
+    if (!currentUser?.id) return
+    try {
+      const res = await friendshipsAPI.getUserFriends(currentUser.id)
+      setFriends(res.data || [])
+    } catch (e) {
+      console.error('Erro loadFriends:', e)
+      // keep previous state if error, but log
     }
   }, [currentUser?.id])
 
-  // Listen for global friend changes and refresh when needed
-  useEffect(() => {
-    const onFriendsChanged = () => {
-      // Re-load all relevant data so tabs and counts stay in sync
-      if (currentUser?.id) {
-        loadData()
-        // Also refresh friends list explicitly in case UI relies on it
-        loadFriends()
-        loadRequests()
-      }
-    }
-    window.addEventListener('vibe:friends:changed', onFriendsChanged)
-    return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
-  }, [activeTab, currentUser?.id])
-
-  const loadData = async () => {
-    setLoading(true)
-    setError('')
-
-    try {
-      // Always try to refresh both lists so tabs remain in sync and cached
-      const results = await Promise.allSettled([loadFriends(), loadRequests()])
-
-      const bothFailed = results.every(r => r.status === 'rejected')
-      if (bothFailed) {
-        throw new Error('Falha ao carregar amigos e pedidos')
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error)
-      setError('Erro ao carregar dados. Tente novamente.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const loadFriends = async () => {
-    try {
-      const response = await friendshipsAPI.getUserFriends(currentUser.id)
-      setFriends(response.data || [])
-    } catch (error) {
-      console.error('Erro ao carregar amigos:', error)
-      setFriends([])
-    }
-  }
-
-  const loadRequests = async () => {
+  const loadRequests = useCallback(async () => {
+    if (!currentUser?.id) return
     try {
       const [receivedRes, sentRes] = await Promise.all([
         friendshipsAPI.getReceivedRequests(),
@@ -85,20 +46,71 @@ const Friends = () => {
       ])
       setReceivedRequests(receivedRes.data || [])
       setSentRequests(sentRes.data || [])
-    } catch (error) {
-      console.error('Erro ao carregar pedidos:', error)
-      setReceivedRequests([])
-      setSentRequests([])
+    } catch (e) {
+      console.error('Erro loadRequests:', e)
     }
-  }
+  }, [currentUser?.id])
+
+  const loadAllData = useCallback(async () => {
+    if (!currentUser?.id) return
+    setLoading(true)
+    setError('')
+    try {
+      const results = await Promise.allSettled([loadFriends(), loadRequests()])
+      // If both failed, show an error
+      if (results.every(r => r.status === 'rejected')) {
+        setError('Erro ao carregar conexões. Tente novamente mais tarde.')
+      }
+    } catch (e) {
+      console.error('Erro loadAllData:', e)
+      setError('Erro ao carregar conexões. Tente novamente mais tarde.')
+    } finally {
+      setLoading(false)
+    }
+  }, [currentUser?.id, loadFriends, loadRequests])
+
+  // Initial load
+  useEffect(() => {
+    loadAllData()
+  }, [loadAllData])
+
+  // Listen to global events (optimistic updates elsewhere)
+  useEffect(() => {
+    const onFriendsChanged = () => {
+      if (currentUser?.id) loadAllData()
+    }
+    window.addEventListener('vibe:friends:changed', onFriendsChanged)
+    return () => window.removeEventListener('vibe:friends:changed', onFriendsChanged)
+  }, [currentUser?.id, loadAllData])
+
+  // React to websocket events that affect friendship state
+  useEffect(() => {
+    if (!lastMessage) return
+
+    const isFriendEvent = lastMessage.type === 'friendship_update' ||
+      (lastMessage.type === 'notification' && (lastMessage.data?.type === 'friend_request' || lastMessage.data?.type === 'friend_accepted')) ||
+      (lastMessage.normalizedType === 'friendship_update')
+
+    if (isFriendEvent) {
+      // refresh both lists so counters remain correct
+      loadAllData()
+    }
+  }, [lastMessage, loadAllData])
+
+  // Polling fallback to keep counters updated even if WS fails
+  useEffect(() => {
+    if (!currentUser?.id) return
+    const iv = setInterval(() => loadAllData(), 15000)
+    return () => clearInterval(iv)
+  }, [currentUser?.id, loadAllData])
 
   const handleAcceptRequest = async (friendshipId) => {
     try {
       await friendshipsAPI.acceptFriendRequest(friendshipId)
-      await loadRequests()
-      await loadFriends()
-    } catch (error) {
-      console.error('Erro ao aceitar pedido:', error)
+      await loadAllData()
+      try { window.dispatchEvent(new CustomEvent('vibe:friends:changed')) } catch (e) {}
+    } catch (e) {
+      console.error('Erro ao aceitar pedido:', e)
       setError('Erro ao aceitar pedido de amizade.')
     }
   }
@@ -106,9 +118,9 @@ const Friends = () => {
   const handleRejectRequest = async (friendshipId) => {
     try {
       await friendshipsAPI.rejectFriendRequest(friendshipId)
-      await loadRequests()
-    } catch (error) {
-      console.error('Erro ao rejeitar pedido:', error)
+      await loadAllData()
+    } catch (e) {
+      console.error('Erro ao rejeitar pedido:', e)
       setError('Erro ao rejeitar pedido de amizade.')
     }
   }
@@ -116,58 +128,13 @@ const Friends = () => {
   const handleRemoveFriend = async (friendUserId) => {
     try {
       await friendshipsAPI.removeFriend(friendUserId)
-      await loadFriends()
-    } catch (error) {
-      console.error('Erro ao remover amigo:', error)
+      await loadAllData()
+      try { window.dispatchEvent(new CustomEvent('vibe:friends:changed')) } catch (e) {}
+    } catch (e) {
+      console.error('Erro ao remover amigo:', e)
       setError('Erro ao remover amigo.')
     }
   }
-
-  const handleProfileClick = (username) => {
-    navigate(`/profile/id/${username}`)
-  }
-
-  // Atualizar pela chegada de eventos WebSocket relevantes
-  useEffect(() => {
-    if (!lastMessage) return
-    const isFriendEvent = lastMessage.type === 'friendship_update' ||
-      (lastMessage.type === 'notification' && (lastMessage.data?.type === 'friend_request' || lastMessage.data?.type === 'friend_accepted'))
-    if (!isFriendEvent) return
-    // Refresh both lists to keep counts and UI in sync
-    loadFriends()
-    loadRequests()
-  }, [lastMessage])
-
-  // Polling a cada 15s para garantir atualização mesmo sem WS
-  useEffect(() => {
-    if (!currentUser?.id) return
-    const iv = setInterval(() => {
-      loadFriends()
-      loadRequests()
-    }, 15000)
-    return () => clearInterval(iv)
-  }, [currentUser?.id])
-
-  const tabs = [
-    {
-      key: 'friends',
-      label: 'Amigos',
-      count: friends.length,
-      icon: Users
-    },
-    {
-      key: 'requests',
-      label: 'Pedidos',
-      count: receivedRequests.length + sentRequests.length,
-      icon: Bell
-    },
-    {
-      key: 'suggestions',
-      label: 'Sugestões',
-      count: 0,
-      icon: Search
-    }
-  ]
 
   const getFilteredData = () => {
     let data = []
@@ -180,13 +147,13 @@ const Friends = () => {
         type: 'friend'
       }))
     } else if (activeTab === 'requests') {
-      const received = receivedRequests.map(item => ({
+      const received = (receivedRequests || []).map(item => ({
         ...item.user_info,
         friendship: item.friendship,
         mutual_friends_count: item.mutual_friends_count,
         type: 'received'
       }))
-      const sent = sentRequests.map(item => ({
+      const sent = (sentRequests || []).map(item => ({
         ...item.user_info,
         friendship: item.friendship,
         mutual_friends_count: item.mutual_friends_count,
@@ -194,92 +161,25 @@ const Friends = () => {
       }))
       data = [...received, ...sent]
     } else if (activeTab === 'suggestions') {
-      // For suggestions we provide a CTA to the Explore page and leave the list to the Explore flow
-      data = [{
-        id: 'suggestions-cta',
-        username: 'explore',
-        display_name: 'Encontrar pessoas',
-        avatar_url: null,
-        type: 'suggestion'
-      }]
+      data = [{ id: 'suggestions-cta', username: 'explore', display_name: 'Encontrar pessoas', avatar_url: null, type: 'suggestion' }]
     }
 
-    // Filtrar por busca
     if (searchQuery) {
-      data = data.filter(item =>
-        ((item.display_name || item.username) + '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.username + '').toLowerCase().includes(searchQuery.toLowerCase())
-      )
+      data = data.filter(item => ((item.display_name || item.username) + '').toLowerCase().includes(searchQuery.toLowerCase()))
     }
 
     return data
   }
 
-  const formatTimeAgo = (dateString) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffInSeconds = Math.floor((now - date) / 1000)
-
-    if (diffInSeconds < 60) return 'agora'
-    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)}min`
-    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)}h`
-    if (diffInSeconds < 604800) return `há ${Math.floor(diffInSeconds / 86400)}d`
-    return `há ${Math.floor(diffInSeconds / 604800)}sem`
-  }
-
-  const renderActionButtons = (item) => {
-    if (item.type === 'friend') {
-      return (
-        <button
-          onClick={() => handleRemoveFriend(item.id)}
-          className="text-red-600 hover:bg-red-50 px-3 py-1 rounded text-sm transition-colors"
-        >
-          Remover
-        </button>
-      )
-    } else if (item.type === 'received') {
-      return (
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handleRejectRequest(item.friendship.id)}
-            className="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-          >
-            Rejeitar
-          </button>
-          <button
-            onClick={() => handleAcceptRequest(item.friendship.id)}
-            className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark transition-colors"
-          >
-            Aceitar
-          </button>
-        </div>
-      )
-    } else if (item.type === 'sent') {
-      return (
-        <span className="text-gray-500 text-sm">Pendente</span>
-      )
-    } else if (item.type === 'suggestion') {
-      return (
-        <button
-          onClick={() => navigate('/explore')}
-          className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark"
-        >
-          Ver sugestões
-        </button>
-      )
-    }
-  }
+  const friendsCount = (friends || []).length
+  const requestsCount = (receivedRequests || []).length + (sentRequests || []).length
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <ChevronLeft size={24} className="text-gray-600" />
             </button>
             <div>
@@ -292,7 +192,6 @@ const Friends = () => {
           </button>
         </div>
 
-        {/* Busca */}
         <div className="px-4 pb-4">
           <div className="relative">
             <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -306,41 +205,27 @@ const Friends = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex border-b border-gray-100">
-          {tabs.map((tab) => {
-            const Icon = tab.icon
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 p-3 text-center font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? 'border-b-2 border-vibe-blue text-vibe-blue'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <div className="flex items-center justify-center space-x-2">
-                  <Icon size={18} />
-                  <span>{tab.label}</span>
-                  <span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">
-                    {tab.count}
-                  </span>
-                </div>
-              </button>
-            )
-          })}
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 p-3 text-center font-medium transition-colors ${activeTab === tab.key ? 'border-b-2 border-vibe-blue text-vibe-blue' : 'text-gray-500 hover:text-gray-700'}`}>
+              <div className="flex items-center justify-center space-x-2">
+                <span>{tab.label}</span>
+                <span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{tab.key === 'friends' ? friendsCount : tab.key === 'requests' ? requestsCount : 0}</span>
+              </div>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Erro */}
       {error && (
         <div className="p-4 bg-red-50 border-l-4 border-red-400 mx-4 mt-4">
           <p className="text-red-700 text-sm">{error}</p>
         </div>
       )}
 
-      {/* Conteúdo */}
       <div className="bg-white">
         {loading ? (
           <div className="flex items-center justify-center py-12">
@@ -349,23 +234,10 @@ const Friends = () => {
         ) : getFilteredData().length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Users size={64} className="text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              {searchQuery ? 'Nenhum resultado encontrado' : 
-               activeTab === 'friends' ? 'Nenhum amigo ainda' : 'Nenhum pedido'}
-            </h3>
-            <p className="text-gray-500 text-center mb-6">
-              {searchQuery 
-                ? `Não encontramos ninguém com "${searchQuery}"`
-                : activeTab === 'friends' 
-                  ? 'Comece adicionando pessoas para criar sua rede!'
-                  : 'Não há pedidos de amizade pendentes'
-              }
-            </p>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">{searchQuery ? 'Nenhum resultado encontrado' : activeTab === 'friends' ? 'Nenhum amigo ainda' : 'Nenhum pedido'}</h3>
+            <p className="text-gray-500 text-center mb-6">{searchQuery ? `Não encontramos ninguém com "${searchQuery}"` : activeTab === 'friends' ? 'Comece adicionando pessoas para criar sua rede!' : 'Não há pedidos de amizade pendentes'}</p>
             {activeTab === 'friends' && !searchQuery && (
-              <button
-                onClick={() => navigate('/explore')}
-                className="bg-vibe-blue text-white px-6 py-3 rounded-lg font-medium hover:bg-vibe-blue-dark transition-colors"
-              >
+              <button onClick={() => navigate('/explore')} className="bg-vibe-blue text-white px-6 py-3 rounded-lg font-medium hover:bg-vibe-blue-dark transition-colors">
                 <div className="flex items-center space-x-2">
                   <UserPlus size={20} />
                   <span>Encontrar Pessoas</span>
@@ -379,41 +251,44 @@ const Friends = () => {
               <div key={`${item.id}-${item.type}`} className="p-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3 flex-1">
-                    <img
-                      src={item.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.display_name || item.username)}&background=2563eb&color=fff`}
-                      alt={item.display_name || item.username}
-                      className="w-14 h-14 rounded-full object-cover"
-                    />
-                    
+                    <img src={item.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.display_name || item.username)}&background=2563eb&color=fff`} alt={item.display_name || item.username} className="w-14 h-14 rounded-full object-cover" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => handleProfileClick(item.username)}
-                          className="font-semibold text-lg truncate hover:text-vibe-blue transition-colors text-left"
-                        >
-                          {item.display_name || item.username}
-                        </button>
-                        {item.type === 'received' && (
-                          <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">
-                            Novo
-                          </span>
-                        )}
+                        <button onClick={() => navigate(`/profile/id/${item.username}`)} className="font-semibold text-lg truncate hover:text-vibe-blue transition-colors text-left">{item.display_name || item.username}</button>
+                        {item.type === 'received' && <span className="text-vibe-blue text-xs bg-vibe-blue/10 px-2 py-1 rounded-full">Novo pedido</span>}
                       </div>
-                      <p className="text-gray-600">@{item.username}</p>
-                      <div className="flex items-center space-x-4 text-gray-500 text-sm mt-1">
-                        {item.mutual_friends_count > 0 && (
-                          <span>{item.mutual_friends_count} amigos em comum</span>
-                        )}
-                        {item.friendship?.created_at && (
-                          <span>{formatTimeAgo(item.friendship.created_at)}</span>
-                        )}
+                      <p className="text-gray-600 text-sm">@{item.username}</p>
+                      <div className="flex items-center space-x-4 text-gray-500 text-xs mt-1">
+                        {item.mutual_friends_count > 0 && <span>{item.mutual_friends_count} amigos em comum</span>}
+                        {item.friendship?.created_at && <span>{new Date(item.friendship.created_at).toLocaleString()}</span>}
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Botões de Ação */}
+
                   <div className="ml-3">
-                    {renderActionButtons(item)}
+                    {item.type === 'friend' && (
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => navigate(`/messages?user=${encodeURIComponent(item.username)}&userId=${item.id}`)} className="p-2 text-vibe-blue hover:bg-vibe-blue hover:text-white rounded-full transition-colors">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        </button>
+                        <button onClick={() => handleRemoveFriend(item.id)} className="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition-colors">Remover</button>
+                      </div>
+                    )}
+
+                    {item.type === 'received' && (
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => handleRejectRequest(item.friendship.id)} className="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors">Rejeitar</button>
+                        <button onClick={() => handleAcceptRequest(item.friendship.id)} className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark transition-colors">Aceitar</button>
+                      </div>
+                    )}
+
+                    {item.type === 'sent' && (
+                      <span className="text-gray-500 text-sm">Pendente</span>
+                    )}
+
+                    {item.type === 'suggestion' && (
+                      <button onClick={() => navigate('/explore')} className="bg-vibe-blue text-white px-3 py-1 rounded text-sm hover:bg-vibe-blue-dark">Ver sugestões</button>
+                    )}
                   </div>
                 </div>
               </div>
