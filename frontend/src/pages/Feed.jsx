@@ -5,7 +5,7 @@ import useWebSocket from '../hooks/useWebSocket'
 import { useNavigate } from 'react-router-dom'
 import { postsAPI, storiesAPI, highlightsAPI } from '../services/api'
 import PostModal from '../components/PostModal'
-import StoryCreator from '../components/StoryCreator'
+import StoryEditor from '../components/StoryEditor'
 import StoryViewer from '../components/StoryViewer'
 import ShareAsStoryModal from '../components/ShareAsStoryModal'
 import ReactionPicker from '../components/ReactionPicker'
@@ -968,7 +968,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         onPost={handleAddPost}
       />
 
-      <StoryCreator
+      <StoryEditor
         isOpen={showStoryCreator}
         onClose={() => setShowStoryCreator(false)}
         onStoryCreate={handleStoryCreate}
