@@ -84,13 +84,13 @@ export const useWebSocket = () => {
 
           // If friendship update, notify other parts of the app to refresh friends lists
           try {
-            if (message.type === 'friendship_update' || message.normalizedType === 'friendship_update') {
-              window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: message }))
+            if (enhancedMessage.type === 'friendship_update' || enhancedMessage.normalizedType === 'friendship_update') {
+              window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: enhancedMessage }))
             }
 
             // Also handle notification-wrapped friend events (friend_request, friend_accepted)
-            if (message.type === 'notification' && message.data && (message.data.type === 'friend_request' || message.data.type === 'friend_accepted')) {
-              try { window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: message })) } catch(e){}
+            if (enhancedMessage.type === 'notification' && enhancedMessage.data && (enhancedMessage.data.type === 'friend_request' || enhancedMessage.data.type === 'friend_accepted')) {
+              try { window.dispatchEvent(new CustomEvent('vibe:friends:changed', { detail: enhancedMessage })) } catch(e){}
             }
           } catch(e) {}
 
