@@ -24,13 +24,17 @@ const Friends = () => {
     }
   }, [currentUser?.id, activeTab])
 
-  // Listen for global friend changes and refresh when needed
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadRequests()
+      loadFriends()
+    }
+  }, [currentUser?.id])
+
   useEffect(() => {
     const onFriendsChanged = () => {
-      // Re-load all relevant data so tabs and counts stay in sync
       if (currentUser?.id) {
         loadData()
-        // Also refresh friends list explicitly in case UI relies on it
         loadFriends()
         loadRequests()
       }
@@ -189,7 +193,6 @@ const Friends = () => {
       }))
       data = [...received, ...sent]
     } else if (activeTab === 'suggestions') {
-      // For suggestions we provide a CTA to the Explore page and leave the list to the Explore flow
       data = [{
         id: 'suggestions-cta',
         username: 'explore',
@@ -199,7 +202,6 @@ const Friends = () => {
       }]
     }
 
-    // Filtrar por busca
     if (searchQuery) {
       data = data.filter(item =>
         ((item.display_name || item.username) + '').toLowerCase().includes(searchQuery.toLowerCase()) ||
