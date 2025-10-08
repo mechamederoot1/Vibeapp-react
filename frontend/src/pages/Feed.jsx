@@ -968,7 +968,7 @@ const Feed = ({ isPostModalOpen, onClosePostModal, onOpenPostModal }) => {
         onPost={handleAddPost}
       />
 
-      <SimpleStoryCreator
+      <StoryCreator
         isOpen={showStoryCreator}
         onClose={() => setShowStoryCreator(false)}
         onStoryCreate={handleStoryCreate}
