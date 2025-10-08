@@ -3,6 +3,8 @@ import { ArrowLeft, Camera as CameraIcon, Image, MapPin, Users, Smile, Video, Ty
 import { useNavigate } from 'react-router-dom'
 import Camera from '../components/Camera'
 import { useLocation } from '../hooks/useLocation'
+import StoryCreator from '../components/StoryCreator'
+import { useState } from 'react'
 
 const CreatePost = () => {
   const navigate = useNavigate()
@@ -11,6 +13,7 @@ const CreatePost = () => {
   const [capturedImage, setCapturedImage] = useState(null)
   const [caption, setCaption] = useState('')
   const [isLocationEnabled, setIsLocationEnabled] = useState(false)
+  const [showStoryCreator, setShowStoryCreator] = useState(false)
   
   const { location, getCurrentLocation, loading: locationLoading } = useLocation()
 
