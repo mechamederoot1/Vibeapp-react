@@ -24,6 +24,14 @@ const Friends = () => {
     }
   }, [currentUser?.id, activeTab])
 
+  // Preload friends and requests on mount/when user changes so tab counts are correct
+  useEffect(() => {
+    if (currentUser?.id) {
+      loadFriends()
+      loadRequests()
+    }
+  }, [currentUser?.id])
+
   // Listen for global friend changes and refresh when needed
   useEffect(() => {
     const onFriendsChanged = () => {
